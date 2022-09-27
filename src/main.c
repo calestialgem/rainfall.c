@@ -1,15 +1,19 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "lib.c"
+#include "dbg/api.h"
 
 #include <stdio.h>
 
 /* Start the program. */
 int main(int argumentCount, char const* const* arguments) {
+  // Check input arguments.
   if (argumentCount != 2) {
-    fprintf(stderr, "Provide a Thrice file!\n");
+    fprintf(
+      stderr, "Provide %s Thrice file!\n",
+      argumentCount > 2 ? "only one" : "a");
     return -1;
   }
-  doSomething(arguments[1]);
+
+  dbgUnexpected(arguments[1]);
 }

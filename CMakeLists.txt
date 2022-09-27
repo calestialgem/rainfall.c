@@ -9,34 +9,21 @@ set(CMAKE_C_STANDARD_REQUIRED true)
 
 project(rainfall-cc)
 
-## List of header files. Compile commands will be generated for these. Otherwise
-## clangd struggles to do any analysis on them.
-set(headers
-  src/lib.c
+## Main executable of the project.
+add_executable(${PROJECT_NAME}
+  # Launcher
+  src/main.c
+
+  # Debug Module
+  src/dbg/mod.c
 )
 
-## Sets the compile options of the given target.
-function(setup target)
-  # Add project source root to include directories.
-  target_include_directories(${target} PRIVATE src)
+# Add project source root to include directories.
+target_include_directories(${PROJECT_NAME} PRIVATE src)
 
-  # Enable all warnings.
-  if(MSVC)
-    target_compile_options(${target} PRIVATE /Wall)
-  else(MSVC)
-    target_compile_options(${target} PRIVATE
-      -Wall
-      -Wextra
-      -Wpedantic
-      -Wno-pragma-once-outside-header
-    )
-  endif(MSVC)
-endfunction(setup target)
-
-## Main executable of the project.
-add_executable(${PROJECT_NAME} src/main.c)
-setup(${PROJECT_NAME})
-
-# Create compile commands for the header files.
-add_library(header_objects OBJECT ${headers})
-setup(header_objects)
+# Enable all warnings.
+if(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE /Wall)
+else(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+endif(MSVC)
