@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-Checks: "bugprone-*,-bugprone-suspicious-include,cert-*,-cert-err09-cpp.MaxSize,-cert-err61-cpp.MaxSize,-cert-err33-c,clang-*,concurrency-*,cppcoreguidelines-*,hicpp-*,-hicpp-braces-around-statements,llvm-*,misc-*,-misc-throw-by-value-catch-by-reference.MaxSize,modernize-*,performance-*,portability-*,readability-*,-readability-braces-around-statements"
+Checks: "bugprone-*,-bugprone-suspicious-include,cert-*,-cert-err09-cpp.MaxSize,-cert-err61-cpp.MaxSize,-cert-err33-c,clang-*,concurrency-*,cppcoreguidelines-*,hicpp-*,-hicpp-braces-around-statements,llvm-*,misc-*,-misc-throw-by-value-catch-by-reference.MaxSize,modernize-*,performance-*,portability-*,readability-*,-readability-braces-around-statements,-readability-identifier-length"
 WarningsAsErrors: ""
 HeaderFilterRegex: ""
 AnalyzeTemporaryDtors: false
@@ -605,7 +605,7 @@ CheckOptions:
   - key: modernize-use-default-member-init.IgnoreMacros
     value: "true"
   - key: llvm-qualified-auto.AddConstToQualified
-    value: "false"
+    value: "true"
   - key: altera-unroll-loops.MaxLoopIterations
     value: "100"
   - key: cert-str34-c.CharTypdefsToIgnore

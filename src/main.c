@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 /* Start the program. */
-int main(int argumentCount, char const* const* arguments) {
+int main(int const argumentCount, char const* const* const arguments) {
   // Check input arguments.
   if (argumentCount != 2) {
     fprintf(

@@ -16,6 +16,9 @@ add_executable(${PROJECT_NAME}
 
   # Debug Module
   src/dbg/mod.c
+
+  # Utility Module
+  src/utl/string.c
 )
 
 # Add project source root to include directories.
