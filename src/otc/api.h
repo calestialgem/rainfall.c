@@ -14,10 +14,10 @@ typedef struct {
 } Source;
 
 /* Load the source file at the given name. */
-Source sourceOf(char const* name);
+Source srcOf(char const* name);
 /* Dispose the contents of the given source file. */
-void   sourceFree(Source* src);
+void   srcFree(Source* src);
 /* Amount of characters in the given source file. */
-ux     sourceLength(Source src);
+ux     srcLen(Source src);
 /* Character at the given index in the given source file. */
-char   sourceAt(Source src, ux i);
+char   srcAt(Source src, ux i);

@@ -38,13 +38,13 @@ typedef struct {
 } String;
 
 /* String of the null-terminated array of characters. */
-String stringOf(char const* terminated);
+String strOf(char const* terminated);
 /* Character at the given index in the given string. */
-char   stringAt(String str, ux i);
+char   strAt(String str, ux i);
 /* Amount of characters in the string. */
-ux     stringLength(String str);
+ux     strLen(String str);
 /* Whether the given strings equal. */
-bool   stringEqual(String lhs, String rhs);
+bool   strEq(String lhs, String rhs);
 
 /* Dynamicly allocated array of characters. Allocation costs are amortized by
  * growing at least the half of the current capacity. */
@@ -58,22 +58,22 @@ typedef struct {
 } Buffer;
 
 /* Buffer with the given initial capacity. */
-Buffer bufferOf(ux cap);
+Buffer bfrOf(ux cap);
 /* Release the memory resources used by the given buffer. */
-void   bufferFree(Buffer* bfr);
+void   bfrFree(Buffer* bfr);
 /* Amount of characters in the given buffer. */
-ux     bufferLength(Buffer bfr);
+ux     bfrLen(Buffer bfr);
 /* Amount of allocated characters in the given buffer. */
-ux     bufferCapacity(Buffer bfr);
+ux     bfrCap(Buffer bfr);
 /* Character at the given index in the given buffer. */
-char   bufferAt(Buffer bfr, ux i);
+char   bfrAt(Buffer bfr, ux i);
 /* View of the given buffer. */
-String bufferView(Buffer bfr);
+String bfrView(Buffer bfr);
 /* Append the given string to the given buffer. */
-void   bufferAppend(Buffer* bfr, String str);
+void   bfrAppend(Buffer* bfr, String str);
 /* Put the given character to the given buffer. */
-void   bufferPut(Buffer* bfr, char c);
+void   bfrPut(Buffer* bfr, char c);
 /* Stream in all the contents of the given stream to the given buffer. */
-void   bufferRead(Buffer* bfr, FILE* stream);
+void   bfrRead(Buffer* bfr, FILE* stream);
 /* Stream out all the character in the given buffer to the given stream. */
-void   bufferWrite(Buffer bfr, FILE* stream);
+void   bfrWrite(Buffer bfr, FILE* stream);

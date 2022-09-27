@@ -7,27 +7,27 @@
 
 #include <stdio.h>
 
-Source sourceOf(char const* const name) {
+Source srcOf(char const* const name) {
   // Join the name with the extension.
-  String const EXTENSION = stringOf("tr");
-  String const str       = stringOf(name);
-  Buffer       path      = bufferOf(0);
-  bufferAppend(&path, str);
-  bufferPut(&path, '.');
-  bufferAppend(&path, EXTENSION);
-  bufferPut(&path, 0);
+  String const EXTENSION = strOf("tr");
+  String const str       = strOf(name);
+  Buffer       path      = bfrOf(0);
+  bfrAppend(&path, str);
+  bfrPut(&path, '.');
+  bfrAppend(&path, EXTENSION);
+  bfrPut(&path, 0);
 
   FILE* const stream = fopen(path.bgn, "r");
-  bufferFree(&path);
+  bfrFree(&path);
   dbgExpect(stream, "Could not open file!");
 
-  Buffer con = bufferOf(0);
-  bufferRead(&con, stream);
+  Buffer con = bfrOf(0);
+  bfrRead(&con, stream);
   return (Source){.name = name, .con = con};
 }
 
-void sourceFree(Source* const src) { bufferFree(&src->con); }
+void srcFree(Source* const src) { bfrFree(&src->con); }
 
-ux sourceLength(Source const src) { return bufferLength(src.con); }
+ux srcLen(Source const src) { return bfrLen(src.con); }
 
-char sourceAt(Source const src, ux const i) { return bufferAt(src.con, i); }
+char srcAt(Source const src, ux const i) { return bfrAt(src.con, i); }

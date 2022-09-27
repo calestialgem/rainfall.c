@@ -17,7 +17,7 @@ int main(int const argumentCount, char const* const* const arguments) {
     return -1;
   }
 
-  Source src = sourceOf(arguments[1]);
-  bufferWrite(src.con, fopen("copy.tr", "w"));
-  sourceFree(&src);
+  Source src = srcOf(arguments[1]);
+  bfrWrite(src.con, fopen("copy.tr", "w"));
+  srcFree(&src);
 }

@@ -11,8 +11,8 @@
 /* Makes sure the given amount of space exists at the end of the given buffer.
  * When necessary, grows by at least half of the current capacity. */
 static void reserve(Buffer* const bfr, ux const amount) {
-  ux const cap   = bufferCapacity(*bfr);
-  ux const len   = bufferLength(*bfr);
+  ux const cap   = bfrCap(*bfr);
+  ux const len   = bfrLen(*bfr);
   ux const space = cap - len;
   if (space >= amount) return;
 
@@ -27,42 +27,42 @@ static void reserve(Buffer* const bfr, ux const amount) {
   bfr->all = mem + newCap;
 }
 
-Buffer bufferOf(ux const cap) {
+Buffer bfrOf(ux const cap) {
   Buffer res = {.bgn = NULL, .end = NULL, .all = NULL};
   if (cap) reserve(&res, cap);
   return res;
 }
 
-void bufferFree(Buffer* const bfr) {
+void bfrFree(Buffer* const bfr) {
   free(bfr->bgn);
   bfr->bgn = NULL;
   bfr->end = NULL;
   bfr->all = NULL;
 }
 
-ux bufferLength(Buffer const bfr) { return bfr.end - bfr.bgn; }
+ux bfrLen(Buffer const bfr) { return bfr.end - bfr.bgn; }
 
-ux bufferCapacity(Buffer const bfr) { return bfr.all - bfr.bgn; }
+ux bfrCap(Buffer const bfr) { return bfr.all - bfr.bgn; }
 
-char bufferAt(Buffer const bfr, ux const i) { return bfr.bgn[i]; }
+char bfrAt(Buffer const bfr, ux const i) { return bfr.bgn[i]; }
 
-String bufferView(Buffer const bfr) {
+String bfrView(Buffer const bfr) {
   return (String){.bgn = bfr.bgn, .end = bfr.end};
 }
 
-void bufferAppend(Buffer* const bfr, String const str) {
-  ux const len = stringLength(str);
+void bfrAppend(Buffer* const bfr, String const str) {
+  ux const len = strLen(str);
   reserve(bfr, len);
   memmove(bfr->end, str.bgn, len);
   bfr->end += len;
 }
 
-void bufferPut(Buffer* const bfr, char const c) {
+void bfrPut(Buffer* const bfr, char const c) {
   reserve(bfr, 1);
   *bfr->end++ = c;
 }
 
-void bufferRead(Buffer* const bfr, FILE* const stream) {
+void bfrRead(Buffer* const bfr, FILE* const stream) {
   ux const CHUNK = 1024;
   for (ux written = CHUNK; written == CHUNK; bfr->end += written) {
     reserve(bfr, CHUNK);
@@ -71,6 +71,6 @@ void bufferRead(Buffer* const bfr, FILE* const stream) {
   dbgExpect(feof(stream), "Error reading stream!");
 }
 
-void bufferWrite(Buffer const bfr, FILE* const stream) {
-  fwrite(bfr.bgn, sizeof(char), bufferLength(bfr), stream);
+void bfrWrite(Buffer const bfr, FILE* const stream) {
+  fwrite(bfr.bgn, sizeof(char), bfrLen(bfr), stream);
 }
