@@ -18,6 +18,7 @@ add_executable(${PROJECT_NAME}
   src/dbg/mod.c
 
   # Utility Module
+  src/utl/buffer.c
   src/utl/string.c
 )
 
@@ -28,5 +29,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE src)
 if(MSVC)
   target_compile_options(${PROJECT_NAME} PRIVATE /Wall)
 else(MSVC)
-  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+  target_compile_options(${PROJECT_NAME} PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+    -Wno-deprecated-declarations
+  )
 endif(MSVC)

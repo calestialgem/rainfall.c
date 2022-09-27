@@ -71,7 +71,7 @@ AllowAllConstructorInitializersOnNextLine: False
 PointerAlignment: Left
 QualifierAlignment: Custom
 QualifierOrder:
-  ["type", "inline", "static", "volatile", "const", "constexpr", "restrict"]
+  ["inline", "static", "type", "volatile", "const", "constexpr", "restrict"]
 RawStringFormats: []
 ReferenceAlignment: Pointer
 ReflowComments: True

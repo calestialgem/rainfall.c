@@ -5,6 +5,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 /* Signed, 1-byte integer. */
 typedef int8_t   i1;
@@ -44,3 +45,29 @@ char   stringAt(String str, ux i);
 ux     stringLength(String str);
 /* Whether the given strings equal. */
 bool   stringEqual(String lhs, String rhs);
+
+/* Dynamicly allocated array of characters. Allocation costs are amortized by
+ * growing at least the half of the current capacity. */
+typedef struct {
+  /* Pointer to the first character if it exists. */
+  char* bgn;
+  /* Pointer to one after the last character. */
+  char* end;
+  /* Pointer to one after the last allocated character. */
+  char* all;
+} Buffer;
+
+/* Buffer with the given initial capacity. */
+Buffer bufferOf(ux cap);
+/* Release the memory resources used by the given buffer. */
+void   bufferFree(Buffer* bfr);
+/* Amount of characters in the given buffer. */
+ux     bufferLength(Buffer bfr);
+/* Amount of allocated characters in the given buffer. */
+ux     bufferCapacity(Buffer bfr);
+/* View of the given buffer. */
+String bufferView(Buffer bfr);
+/* Stream in all the contents of the given stream to the given buffer. */
+void   bufferRead(Buffer* bfr, FILE* stream);
+/* Stream out all the character in the given buffer to the given stream. */
+void   bufferWrite(Buffer bfr, FILE* stream);
