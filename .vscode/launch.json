@@ -1,0 +1,38 @@
+// SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+{
+  "version": "0.2.0",
+  "configurations": [
+    /// Run after rebuilding for Windows.
+    {
+      "name": "Windows Launch",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "preLaunchTask": "${defaultBuildTask}",
+      "program": "${workspaceRoot}/build/rainfall-cc.exe",
+      "cwd": "${workspaceRoot}/res",
+      "args": [
+        "test"
+      ],
+      "environment": [],
+      "stopAtEntry": false,
+      "console": "integratedTerminal"
+    },
+    /// Run after rebuilding for Linux.
+    {
+      "name": "Linux Launch",
+      "type": "cppdbg",
+      "request": "launch",
+      "preLaunchTask": "${defaultBuildTask}",
+      "program": "${workspaceRoot}/build/rainfall-cc",
+      "cwd": "${workspaceRoot}/res",
+      "args": [
+        "test"
+      ],
+      "environment": [],
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "MIMode": "gdb"
+    }
+  ]
+}
