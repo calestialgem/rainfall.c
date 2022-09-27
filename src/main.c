@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "dbg/api.h"
+#include "otc/api.h"
 #include "utl/api.h"
 
 #include <stdio.h>
@@ -16,9 +17,7 @@ int main(int const argumentCount, char const* const* const arguments) {
     return -1;
   }
 
-  char path[1024];
-  sprintf(path, "%s.tr", arguments[1]);
-  Buffer bfr = bufferOf(0);
-  bufferRead(&bfr, fopen(path, "r"));
-  bufferWrite(bfr, fopen("copy.tr", "w"));
+  Source src = sourceOf(arguments[1]);
+  bufferWrite(src.con, fopen("copy.tr", "w"));
+  sourceFree(&src);
 }

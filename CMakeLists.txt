@@ -17,6 +17,10 @@ add_executable(${PROJECT_NAME}
   # Debug Module
   src/dbg/mod.c
 
+  # Outcome Module
+  src/otc/outcome.c
+  src/otc/source.c
+
   # Utility Module
   src/utl/buffer.c
   src/utl/string.c

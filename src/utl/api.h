@@ -65,8 +65,14 @@ void   bufferFree(Buffer* bfr);
 ux     bufferLength(Buffer bfr);
 /* Amount of allocated characters in the given buffer. */
 ux     bufferCapacity(Buffer bfr);
+/* Character at the given index in the given buffer. */
+char   bufferAt(Buffer bfr, ux i);
 /* View of the given buffer. */
 String bufferView(Buffer bfr);
+/* Append the given string to the given buffer. */
+void   bufferAppend(Buffer* bfr, String str);
+/* Put the given character to the given buffer. */
+void   bufferPut(Buffer* bfr, char c);
 /* Stream in all the contents of the given stream to the given buffer. */
 void   bufferRead(Buffer* bfr, FILE* stream);
 /* Stream out all the character in the given buffer to the given stream. */

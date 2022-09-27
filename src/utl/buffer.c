@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* Makes sure the given amount of space exists at the end of the given buffer.
  * When necessary, grows by at least half of the current capacity. */
@@ -43,8 +44,22 @@ ux bufferLength(Buffer const bfr) { return bfr.end - bfr.bgn; }
 
 ux bufferCapacity(Buffer const bfr) { return bfr.all - bfr.bgn; }
 
+char bufferAt(Buffer const bfr, ux const i) { return bfr.bgn[i]; }
+
 String bufferView(Buffer const bfr) {
   return (String){.bgn = bfr.bgn, .end = bfr.end};
+}
+
+void bufferAppend(Buffer* const bfr, String const str) {
+  ux const len = stringLength(str);
+  reserve(bfr, len);
+  memmove(bfr->end, str.bgn, len);
+  bfr->end += len;
+}
+
+void bufferPut(Buffer* const bfr, char const c) {
+  reserve(bfr, 1);
+  *bfr->end++ = c;
 }
 
 void bufferRead(Buffer* const bfr, FILE* const stream) {

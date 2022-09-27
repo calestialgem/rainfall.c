@@ -4,3 +4,7 @@
 let a: i4 =  33;
 let b: i4 = 123;
 let c: i4 = a + a*b + b;
+
+let pi: f8 = 3.14;
+let e : f8 = 2.79;
+let r : f8 = pi/r;
