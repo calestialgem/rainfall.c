@@ -23,6 +23,12 @@ Source srcOf(char const* const name) {
 
   Buffer con = bfrOf(0);
   bfrRead(&con, stream);
+
+  // Put the null-terminator as end of file character, and a new line, which
+  // makes sure that there is always a line that could be reported to user.
+  bfrPut(&con, 0);
+  bfrPut(&con, '\n');
+
   return (Source){.name = name, .con = con};
 }
 
