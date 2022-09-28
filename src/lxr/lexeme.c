@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-char const* lxmTypeName(LexemeType const type) {
+char const* lxmName(LexemeType const type) {
   switch (type) {
   case LXR_EQUAL: return "=";
   case LXR_COLON: return ":";
@@ -29,7 +29,7 @@ char const* lxmTypeName(LexemeType const type) {
 }
 
 void lxmPrint(Lexeme const lxm) {
-  printf("%s `", lxmTypeName(lxm.type));
+  printf("%s `", lxmName(lxm.type));
   strWrite(lxm.val, stdout);
   printf("`\n");
 }

@@ -39,7 +39,7 @@ static void next() { lxr.cur++; }
 static void prev() { lxr.cur--; }
 
 /* String starting from the given position upto the current character. */
-static String val(char const* old) {
+static String val(char const* const old) {
   return (String){.bgn = old, .end = lxr.cur};
 }
 
@@ -139,7 +139,7 @@ static bool decimalInit(char const c) { return digit(c); }
 /* Whether the given character can be rest of a decimal. */
 static bool decimalRest(char const c) { return digit(c) || c == '_'; }
 
-/* Try to lex a word. */
+/* Try to lex a decimal literal. */
 static bool decimal() {
   char const* const old = lxr.cur;
 

@@ -8,7 +8,7 @@
 
 #include <stdlib.h>
 
-/* Makes sure the given amount of space exists at the end of the given lex.
+/* Make sure the given amount of space exists at the end of the given lex.
  * When necessary, grows by at least half of the current capacity. */
 static void reserve(Lex* const lex, ux const amount) {
   ux const cap   = lex->all - lex->bgn;
@@ -44,9 +44,9 @@ ux lexLen(Lex const lex) { return lex.end - lex.bgn; }
 
 Lexeme lexAt(Lex const lex, ux const i) { return lex.bgn[i]; }
 
-void lexAdd(Lex* lex, Lexeme lxm) {
+void lexAdd(Lex* const lex, Lexeme const lxm) {
   reserve(lex, 1);
   *lex->end++ = lxm;
 }
 
-void lexPop(Lex* lex) { lex->end--; }
+void lexPop(Lex* const lex) { lex->end--; }

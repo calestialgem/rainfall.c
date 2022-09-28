@@ -8,21 +8,37 @@
 
 /* Type of a lexeme. */
 typedef enum {
+  /* Mark "=". */
   LXR_EQUAL,
+  /* Mark ":". */
   LXR_COLON,
+  /* Mark ";". */
   LXR_SEMI,
+  /* Mark "(". */
   LXR_OPAREN,
+  /* Mark ")". */
   LXR_CPAREN,
+  /* Mark "+". */
   LXR_PLUS,
+  /* Mark "-". */
   LXR_MINUS,
+  /* Mark "*". */
   LXR_STAR,
+  /* Mark "/". */
   LXR_SLASH,
+  /* Mark "%". */
   LXR_PERCENT,
+  /* Marks the end of the file. */
   LXR_EOF,
+  /* Keyword "let". */
   LXR_LET,
+  /* Keyword "var". */
   LXR_VAR,
-  LXR_DEC,
+  /* Identifier. */
   LXR_ID,
+  /* Decimal number literal. */
+  LXR_DEC,
+  /* Characters that could not be lexed. */
   LXR_ERR
 } LexemeType;
 
@@ -44,11 +60,10 @@ typedef struct {
   Lexeme* all;
 } Lex;
 
-/* Name of the given token type. */
-char const* lxmTypeName(LexemeType type);
-
-/* Print the given token. */
-void lxmPrint(Lexeme lxm);
+/* Name of the given lexeme type. */
+char const* lxmName(LexemeType type);
+/* Print the given lexeme. */
+void        lxmPrint(Lexeme lxm);
 
 /* Lex the given source file. Reports to the given outcome. */
 Lex    lexOf(Outcome* otc, Source src);
