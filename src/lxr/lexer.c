@@ -76,7 +76,7 @@ static bool comment() {
   }
 
   while (has() && get() != '\n') next();
-  next(); // Consume the new line aswell.
+  next(); // Consume the new line as well.
   return true;
 }
 
