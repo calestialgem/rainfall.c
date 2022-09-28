@@ -71,7 +71,7 @@ static bool comment() {
   if (get() != '/') return false;
   next();
   if (!(has() && get() == '/')) {
-    prev(); // Roll back first '/'.
+    prev(); // Roll back the first '/'.
     return false;
   }
 
