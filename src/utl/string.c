@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "api.h"
+#include "utl/api.h"
 
 #include <stdbool.h>
 
@@ -21,4 +21,8 @@ bool strEq(String const lhs, String const rhs) {
   for (ux i = 0; i < length; i++)
     if (strAt(lhs, i) != strAt(rhs, i)) return false;
   return true;
+}
+
+void strWrite(String const str, FILE* const stream) {
+  fwrite(str.bgn, sizeof(char), strLen(str), stream);
 }

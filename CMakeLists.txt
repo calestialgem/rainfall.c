@@ -18,7 +18,9 @@ add_executable(${PROJECT_NAME}
   src/dbg/mod.c
 
   # Outcome Module
+  src/otc/location.c
   src/otc/outcome.c
+  src/otc/portion.c
   src/otc/source.c
 
   # Utility Module

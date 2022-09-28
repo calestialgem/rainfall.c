@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "api.h"
 #include "dbg/api.h"
+#include "otc/api.h"
 #include "utl/api.h"
 
 #include <stdio.h>
@@ -31,3 +31,7 @@ void srcFree(Source* const src) { bfrFree(&src->con); }
 ux srcLen(Source const src) { return bfrLen(src.con); }
 
 char srcAt(Source const src, ux const i) { return bfrAt(src.con, i); }
+
+char const* srcBgn(Source const src) { return src.con.bgn; }
+
+char const* srcEnd(Source const src) { return src.con.end; }

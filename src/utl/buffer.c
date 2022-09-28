@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "api.h"
 #include "dbg/api.h"
+#include "utl/api.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +28,7 @@ static void reserve(Buffer* const bfr, ux const amount) {
 }
 
 Buffer bfrOf(ux const cap) {
-  Buffer res = {.bgn = NULL, .end = NULL, .all = NULL};
+  Buffer res = {0};
   if (cap) reserve(&res, cap);
   return res;
 }

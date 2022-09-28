@@ -45,6 +45,8 @@ char   strAt(String str, ux i);
 ux     strLen(String str);
 /* Whether the given strings equal. */
 bool   strEq(String lhs, String rhs);
+/* Stream out all the characters in the given string to the given stream. */
+void   strWrite(String str, FILE* stream);
 
 /* Dynamicly allocated array of characters. Allocation costs are amortized by
  * growing at least the half of the current capacity. */
@@ -73,7 +75,7 @@ String bfrView(Buffer bfr);
 void   bfrAppend(Buffer* bfr, String str);
 /* Put the given character to the given buffer. */
 void   bfrPut(Buffer* bfr, char c);
-/* Stream in all the contents of the given stream to the given buffer. */
+/* Stream in all the characters from the given stream to the given buffer. */
 void   bfrRead(Buffer* bfr, FILE* stream);
-/* Stream out all the character in the given buffer to the given stream. */
+/* Stream out all the characters in the given buffer to the given stream. */
 void   bfrWrite(Buffer bfr, FILE* stream);
