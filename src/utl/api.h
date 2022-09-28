@@ -37,17 +37,6 @@ typedef struct {
   char const* end;
 } String;
 
-/* String of the null-terminated array of characters. */
-String strOf(char const* terminated);
-/* Character at the given index in the given string. */
-char   strAt(String str, ux i);
-/* Amount of characters in the string. */
-ux     strLen(String str);
-/* Whether the given strings equal. */
-bool   strEq(String lhs, String rhs);
-/* Stream out all the characters in the given string to the given stream. */
-void   strWrite(String str, FILE* stream);
-
 /* Dynamicly allocated array of characters. Allocation costs are amortized by
  * growing at least the half of the current capacity. */
 typedef struct {
@@ -58,6 +47,19 @@ typedef struct {
   /* Pointer to one after the last allocated character. */
   char* all;
 } Buffer;
+
+/* String of the null-terminated array of characters. */
+String strOf(char const* terminated);
+/* Empty string. */
+String strOfEmpty();
+/* Character at the given index in the given string. */
+char   strAt(String str, ux i);
+/* Amount of characters in the string. */
+ux     strLen(String str);
+/* Whether the given strings equal. */
+bool   strEq(String lhs, String rhs);
+/* Stream out all the characters in the given string to the given stream. */
+void   strWrite(String str, FILE* stream);
 
 /* Buffer with the given initial capacity. */
 Buffer bfrOf(ux cap);

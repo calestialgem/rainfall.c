@@ -17,6 +17,11 @@ add_executable(${PROJECT_NAME}
   # Debug Module
   src/dbg/mod.c
 
+  # Lexer Module
+  src/lxr/lex.c
+  src/lxr/lexeme.c
+  src/lxr/lexer.c
+
   # Outcome Module
   src/otc/location.c
   src/otc/outcome.c

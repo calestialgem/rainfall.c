@@ -13,6 +13,16 @@ typedef struct {
   Buffer      con;
 } Source;
 
+/* Compilation result of a source file. */
+typedef struct {
+  /* Source file that results belongs to. */
+  Source src;
+  /* Amount of errors orginated in the source file. */
+  u4     err;
+  /* Amount of warnings orginated in the source file. */
+  u4     wrn;
+} Outcome;
+
 /* Load the source file at the given name. */
 Source      srcOf(char const* name);
 /* Dispose the contents of the given source file. */
@@ -27,16 +37,6 @@ char const* srcBgn(Source src);
 /* Pointer to one after the last character of the contents of the given source
  * file. */
 char const* srcEnd(Source src);
-
-/* Compilation result of a source file. */
-typedef struct {
-  /* Source file that results belongs to. */
-  Source src;
-  /* Amount of errors orginated in the source file. */
-  u4     err;
-  /* Amount of warnings orginated in the source file. */
-  u4     wrn;
-} Outcome;
 
 /* Clean outcome of the given source file. */
 Outcome otcOf(Source src);

@@ -11,6 +11,8 @@ String strOf(char const* const terminated) {
   return res;
 }
 
+String strOfEmpty() { return (String){0}; }
+
 char strAt(String const str, ux const i) { return str.bgn[i]; }
 
 ux strLen(String const str) { return str.end - str.bgn; }
