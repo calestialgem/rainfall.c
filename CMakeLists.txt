@@ -28,6 +28,9 @@ add_executable(${PROJECT_NAME}
   src/otc/portion.c
   src/otc/source.c
 
+  # Parser Module
+  src/psr/operator.c
+
   # Utility Module
   src/utl/buffer.c
   src/utl/string.c
