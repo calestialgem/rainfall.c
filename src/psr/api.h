@@ -173,28 +173,28 @@ typedef struct {
 } Parse;
 
 /* Number literal with decimal digits. */
-extern NullaryOperator const OP_DEC;
+extern Operator const OP_DEC;
 /* Access to a symbol with its id. */
-extern NullaryOperator const OP_ACS;
+extern Operator const OP_ACS;
 /* Expression grouped with parentheses. */
-extern CirnaryOperator const OP_GRP;
+extern Operator const OP_GRP;
 
 /* Posating a number. */
-extern PrenaryOperator const OP_POS;
+extern Operator const OP_POS;
 /* Negating a number. */
-extern PrenaryOperator const OP_NEG;
+extern Operator const OP_NEG;
 
 /* Multiplying two numbers. */
-extern BinaryOperator const OP_MUL;
+extern Operator const OP_MUL;
 /* Dividing two numbers. */
-extern BinaryOperator const OP_DIV;
+extern Operator const OP_DIV;
 /* Reminder from the division two numbers. */
-extern BinaryOperator const OP_REM;
+extern Operator const OP_REM;
 
 /* Adding two numbers. */
-extern BinaryOperator const OP_ADD;
+extern Operator const OP_ADD;
 /* Subtracting two numbers. */
-extern BinaryOperator const OP_SUB;
+extern Operator const OP_SUB;
 
 /* Amount of primary operators. */
 #define OP_PRIMARY_LEN 3
