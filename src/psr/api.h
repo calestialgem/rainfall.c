@@ -218,5 +218,7 @@ extern Operator const OP_TERM[OP_TERM_LEN];
 
 /* Amount of operator precedence levels. */
 #define OP_ORDER_LEN 4
+/* Amounts of operators in precedence levels. */
+extern ux const              OP_LEVEL_LEN[OP_ORDER_LEN];
 /* Precedence levels of operators from low to high. */
 extern Operator const* const OP_ORDER[OP_ORDER_LEN];
