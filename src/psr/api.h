@@ -222,3 +222,12 @@ extern Operator const OP_TERM[OP_TERM_LEN];
 extern ux const              OP_LEVEL_LEN[OP_ORDER_LEN];
 /* Precedence levels of operators from low to high. */
 extern Operator const* const OP_ORDER[OP_ORDER_LEN];
+
+/* Parse the given lex. Reports to the given outcome. */
+Parse     prsOf(Outcome* otc, Lex lex);
+/* Release the memory resources used by the given parse. */
+void      prsFree(Parse* prs);
+/* Amount of statements in the given parse. */
+ux        prsLen(Parse prs);
+/* Statement at the given index in the given parse. */
+Statement prsAt(Parse prs, ux i);

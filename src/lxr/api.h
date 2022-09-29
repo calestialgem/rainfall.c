@@ -71,5 +71,5 @@ Lex    lexOf(Outcome* otc, Source src);
 void   lexFree(Lex* lex);
 /* Amount of lexemes in the given lex. */
 ux     lexLen(Lex lex);
-/* Lexeme at the given index in the given buffer. */
+/* Lexeme at the given index in the given lex. */
 Lexeme lexAt(Lex lex, ux i);
