@@ -92,7 +92,7 @@ static bool mark() {
   for (ux i = 0; i < LENGTH; i++) {
     if (c == MARKS[i]) {
       next();
-      add(val(old), LXR_EQUAL + i);
+      add(val(old), LXM_EQUAL + i);
       return true;
     }
   }
@@ -123,13 +123,13 @@ static bool word() {
 
   for (ux i = 0; i < LENGTH; i++) {
     if (strEq(word, KEYWORDS[i])) {
-      add(word, LXR_LET + i);
+      add(word, LXM_LET + i);
       return true;
     }
   }
 #undef LENGTH
 
-  add(word, LXR_ID);
+  add(word, LXM_ID);
   return true;
 }
 
@@ -171,7 +171,7 @@ static bool decimal() {
     }
   }
 
-  add(val(old), LXR_DEC);
+  add(val(old), LXM_DEC);
   return true;
 }
 
@@ -207,6 +207,6 @@ void lexerLex(Lex* const lex, Outcome* const otc, Source const src) {
     otcErr(
       lxr.otc, err, "Coult not recognize %s!",
       strLen(err) > 1 ? "these characters" : "this character");
-    lexAdd(lxr.lex, (Lexeme){.val = err, .type = LXR_ERR});
+    lexAdd(lxr.lex, (Lexeme){.val = err, .type = LXM_ERR});
   }
 }

@@ -8,22 +8,22 @@
 
 char const* lxmName(LexemeType const type) {
   switch (type) {
-  case LXR_EQUAL: return "=";
-  case LXR_COLON: return ":";
-  case LXR_SEMI: return ";";
-  case LXR_OPAREN: return "(";
-  case LXR_CPAREN: return ")";
-  case LXR_PLUS: return "+";
-  case LXR_MINUS: return "-";
-  case LXR_STAR: return "*";
-  case LXR_SLASH: return "/";
-  case LXR_PERCENT: return "%";
-  case LXR_EOF: return "eof";
-  case LXR_LET: return "let";
-  case LXR_VAR: return "var";
-  case LXR_DEC: return "decimal";
-  case LXR_ID: return "id";
-  case LXR_ERR: return "error";
+  case LXM_EQUAL: return "=";
+  case LXM_COLON: return ":";
+  case LXM_SEMI: return ";";
+  case LXM_OPAREN: return "(";
+  case LXM_CPAREN: return ")";
+  case LXM_PLUS: return "+";
+  case LXM_MINUS: return "-";
+  case LXM_STAR: return "*";
+  case LXM_SLASH: return "/";
+  case LXM_PERCENT: return "%";
+  case LXM_EOF: return "eof";
+  case LXM_LET: return "let";
+  case LXM_VAR: return "var";
+  case LXM_DEC: return "decimal";
+  case LXM_ID: return "id";
+  case LXM_ERR: return "error";
   default: return "unknown";
   }
 }

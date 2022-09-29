@@ -9,37 +9,37 @@
 /* Type of a lexeme. */
 typedef enum {
   /* Mark "=". */
-  LXR_EQUAL,
+  LXM_EQUAL,
   /* Mark ":". */
-  LXR_COLON,
+  LXM_COLON,
   /* Mark ";". */
-  LXR_SEMI,
+  LXM_SEMI,
   /* Mark "(". */
-  LXR_OPAREN,
+  LXM_OPAREN,
   /* Mark ")". */
-  LXR_CPAREN,
+  LXM_CPAREN,
   /* Mark "+". */
-  LXR_PLUS,
+  LXM_PLUS,
   /* Mark "-". */
-  LXR_MINUS,
+  LXM_MINUS,
   /* Mark "*". */
-  LXR_STAR,
+  LXM_STAR,
   /* Mark "/". */
-  LXR_SLASH,
+  LXM_SLASH,
   /* Mark "%". */
-  LXR_PERCENT,
+  LXM_PERCENT,
   /* Marks the end of the file. */
-  LXR_EOF,
+  LXM_EOF,
   /* Keyword "let". */
-  LXR_LET,
+  LXM_LET,
   /* Keyword "var". */
-  LXR_VAR,
+  LXM_VAR,
   /* Identifier. */
-  LXR_ID,
+  LXM_ID,
   /* Decimal number literal. */
-  LXR_DEC,
+  LXM_DEC,
   /* Characters that could not be lexed. */
-  LXR_ERR
+  LXM_ERR
 } LexemeType;
 
 /* Indivisible group of characters from the source file. */
