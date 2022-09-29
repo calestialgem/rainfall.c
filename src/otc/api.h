@@ -40,14 +40,14 @@ char const* srcEnd(Source src);
 
 /* Clean outcome of the given source file. */
 Outcome otcOf(Source src);
-/* Report an error at a part of the source file with the given formatted
+/* Report an error at the given part of the source file with the given formatted
  * message. */
 void    otcErr(Outcome* otc, String part, char const* fmt, ...);
-/* Report a warning at a part of the source file with the given formatted
- * message. */
+/* Report a warning at the given part of the source file with the given
+ * formatted message. */
 void    otcWrn(Outcome* otc, String part, char const* fmt, ...);
-/* Report an information at a part of the source file with the given formatted
- * message. */
+/* Report an information at the given part of the source file with the given
+ * formatted message. */
 void    otcInfo(Outcome otc, String part, char const* fmt, ...);
 /* Report an error for the whole source file with the given formatted message.
  */

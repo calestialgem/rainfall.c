@@ -66,10 +66,14 @@ char const* lxmName(LexemeType type);
 void        lxmPrint(Lexeme lxm);
 
 /* Lex the given source file. Reports to the given outcome. */
-Lex    lexOf(Outcome* otc, Source src);
+Lex           lexOf(Outcome* otc, Source src);
 /* Release the memory resources used by the given lex. */
-void   lexFree(Lex* lex);
+void          lexFree(Lex* lex);
 /* Amount of lexemes in the given lex. */
-ux     lexLen(Lex lex);
+ux            lexLen(Lex lex);
 /* Lexeme at the given index in the given lex. */
-Lexeme lexAt(Lex lex, ux i);
+Lexeme        lexAt(Lex lex, ux i);
+/* Pointer to the first lexeme of the given lex if it exits. */
+Lexeme const* lexBgn(Lex lex);
+/* Pointer to one after the last lexeme of the given lex. */
+Lexeme const* lexEnd(Lex lex);

@@ -30,6 +30,8 @@ add_executable(${PROJECT_NAME}
 
   # Parser Module
   src/psr/operator.c
+  src/psr/parse.c
+  src/psr/parser.c
 
   # Utility Module
   src/utl/buffer.c

@@ -44,6 +44,10 @@ ux lexLen(Lex const lex) { return lex.end - lex.bgn; }
 
 Lexeme lexAt(Lex const lex, ux const i) { return lex.bgn[i]; }
 
+Lexeme const* lexBgn(Lex const lex) { return lex.bgn; }
+
+Lexeme const* lexEnd(Lex const lex) { return lex.end; }
+
 void lexAdd(Lex* const lex, Lexeme const lxm) {
   reserve(lex, 1);
   *lex->end++ = lxm;
