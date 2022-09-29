@@ -171,3 +171,52 @@ typedef struct {
   /* Pointer to one after the last allocated statement. */
   Statement* all;
 } Parse;
+
+/* Number literal with decimal digits. */
+extern NullaryOperator const OP_DEC;
+/* Access to a symbol with its id. */
+extern NullaryOperator const OP_ACS;
+/* Expression grouped with parentheses. */
+extern CirnaryOperator const OP_GRP;
+
+/* Posating a number. */
+extern PrenaryOperator const OP_POS;
+/* Negating a number. */
+extern PrenaryOperator const OP_NEG;
+
+/* Multiplying two numbers. */
+extern BinaryOperator const OP_MUL;
+/* Dividing two numbers. */
+extern BinaryOperator const OP_DIV;
+/* Reminder from the division two numbers. */
+extern BinaryOperator const OP_REM;
+
+/* Adding two numbers. */
+extern BinaryOperator const OP_ADD;
+/* Subtracting two numbers. */
+extern BinaryOperator const OP_SUB;
+
+/* Amount of primary operators. */
+#define OP_PRIMARY_LEN 3
+/* Operators that are the indivisible parts of an expression. */
+extern Operator const OP_PRIMARY[OP_PRIMARY_LEN];
+
+/* Amount of unary operators. */
+#define OP_UNARY_LEN 2
+/* Operators that are bound strongly to a single operand. */
+extern Operator const OP_UNARY[OP_UNARY_LEN];
+
+/* Amount of factor operators. */
+#define OP_FACTOR_LEN 3
+/* Operators between the factors in calculations. */
+extern Operator const OP_FACTOR[OP_FACTOR_LEN];
+
+/* Amount of term operators. */
+#define OP_TERM_LEN 2
+/* Operators between the terms in calculations. */
+extern Operator const OP_TERM[OP_TERM_LEN];
+
+/* Amount of operator precedence levels. */
+#define OP_ORDER_LEN 4
+/* Precedence levels of operators from low to high. */
+extern Operator const* const OP_ORDER[OP_ORDER_LEN];
