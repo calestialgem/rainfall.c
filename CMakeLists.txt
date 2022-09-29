@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}
   src/otc/source.c
 
   # Parser Module
+  src/psr/expression.c
   src/psr/operator.c
   src/psr/parse.c
   src/psr/parser.c
