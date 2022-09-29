@@ -223,6 +223,19 @@ extern ux const              OP_LEVEL_LEN[OP_ORDER_LEN];
 /* Precedence levels of operators from low to high. */
 extern Operator const* const OP_ORDER[OP_ORDER_LEN];
 
+/* Flatten the given nullary operator. */
+Operator opOfNull(NullaryOperator null);
+/* Flatten the given prenary operator. */
+Operator opOfPre(PrenaryOperator pre);
+/* Flatten the given postary operator. */
+Operator opOfPost(PostaryOperator post);
+/* Flatten the given cirnary operator. */
+Operator opOfCir(CirnaryOperator cir);
+/* Flatten the given binary operator. */
+Operator opOfBin(BinaryOperator bin);
+/* Flatten the given variary operator. */
+Operator opOfVar(VariaryOperator var);
+
 /* Parse the given lex. Reports to the given outcome. */
 Parse     prsOf(Outcome* otc, Lex lex);
 /* Release the memory resources used by the given parse. */

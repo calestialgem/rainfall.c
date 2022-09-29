@@ -63,3 +63,27 @@ ux const OP_LEVEL_LEN[OP_ORDER_LEN] = {
   OP_PRIMARY_LEN, OP_UNARY_LEN, OP_FACTOR_LEN, OP_TERM_LEN};
 Operator const* const OP_ORDER[OP_ORDER_LEN] = {
   OP_PRIMARY, OP_UNARY, OP_FACTOR, OP_TERM};
+
+Operator opOfNull(NullaryOperator const null) {
+  return (Operator){.null = null, .tag = OP_NULL};
+}
+
+Operator opOfPre(PrenaryOperator const pre) {
+  return (Operator){.pre = pre, .tag = OP_PRE};
+}
+
+Operator opOfPost(PostaryOperator const post) {
+  return (Operator){.post = post, .tag = OP_POST};
+}
+
+Operator opOfCir(CirnaryOperator const cir) {
+  return (Operator){.cir = cir, .tag = OP_CIR};
+}
+
+Operator opOfBin(BinaryOperator const bin) {
+  return (Operator){.bin = bin, .tag = OP_BIN};
+}
+
+Operator opOfVar(VariaryOperator const var) {
+  return (Operator){.var = var, .tag = OP_VAR};
+}

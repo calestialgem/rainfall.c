@@ -18,6 +18,8 @@ ux             expLen(Expression exp);
 ExpressionNode expAt(Expression exp, ux i);
 /* Add the given node to the end of the given expression. */
 void           expAdd(Expression* exp, ExpressionNode node);
+/* Put the given node at the given index of the given expression. */
+void           expPut(Expression* exp, ux i, ExpressionNode node);
 
 /* Add the given statement to the end of the given parse. */
 void prsAdd(Parse* prs, Statement stt);

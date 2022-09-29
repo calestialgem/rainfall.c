@@ -48,8 +48,15 @@ static bool has() {
 /* Lexeme that is parsed. */
 static Lexeme get() { return *psr.cur; }
 
-/* Go the the next lexeme. */
+/* Go to the next lexeme. */
 static void next() { psr.cur++; }
+
+/* Return the lexeme that was parsed and go to the next lexeme. */
+static Lexeme consume() {
+  Lexeme const lxm = get();
+  next();
+  return lxm;
+}
 
 /* String starting from the given position upto the current lexeme. */
 static String val(Lexeme const* old) {
@@ -93,31 +100,133 @@ static void info(String const part, char const* const fmt, ...) {
 }
 
 /* Whether the current lexeme is of the given type. */
-static bool check(LexemeType const type) { return get().type == type; }
+static bool check(LexemeType const type) { return has() && get().type == type; }
 
-/* Consume the current lexeme if it exists and it is of the given type. Returns
- * whether the lexeme was consumed. */
-static bool consume(LexemeType const type) {
-  if (!(has() && check(type))) return false;
+/* Add a new expression node with the given operator, arity and value. */
+static void expNodeAdd(Operator const op, ux const ary, String const val) {
+  expAdd(&psr.exp, (ExpressionNode){.op = op, .ary = ary, .val = val});
+}
+
+/* Put a new expression node at the given index with the given operator, arity
+ * and value. */
+static void
+expNodePut(ux const i, Operator const op, ux const ary, String const val) {
+  expPut(&psr.exp, i, (ExpressionNode){.op = op, .ary = ary, .val = val});
+}
+
+/* Whether there is a nodes in the expression. */
+static bool expNodeHas() { return expLen(psr.exp) >= 1; }
+
+/* Last expression node. */
+static ExpressionNode expNodeGet() {
+  // How to know which node to stop?
+  dbgUnexpected("Not implemented!");
+}
+
+// Prototype to recursivly parse expressions.
+static Result exp(ux lvl);
+
+/* Try to parse a nullary expression node. */
+static Result expNodeNull(NullaryOperator const null) {
+  if (!check(null.op)) return NO;
+  expNodeAdd(opOfNull(null), 0, consume().val);
+  return YES;
+}
+
+/* Try to parse a prenary expression node. */
+static Result expNodePre(PrenaryOperator const pre, ux const lvl) {
+  if (!check(pre.op)) return NO;
   next();
-  return true;
+  Lexeme const* const old = psr.cur;
+  ux const            i   = expLen(psr.exp);
+  switch (exp(lvl)) {
+  case YES: expNodePut(i, opOfPre(pre), 1, val(old)); return YES;
+  case NO:
+    err(
+      val(old), "Expected an operand after the `%s` in the prenary operation!",
+      lxmName(pre.op));
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+}
+
+/* Try to parse a postary expression node. */
+static Result expNodePost(PostaryOperator const post) {
+  if (!check(post.op)) return NO;
+  if (!expNodeHas()) return ERR;
+  Lexeme const* const old = psr.cur;
+  switch (exp(0)) {
+  case YES: expNodeAdd(opOfPost(post), 1, val(old)); return YES;
+  case NO:
+    err(
+      val(old), "Expected an operand after the `%s` in the postary operation!",
+      lxmName(post.op));
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+}
+
+/* Try to parse a cirnary expression node. */
+static Result expNodeCir(CirnaryOperator const op) {}
+
+/* Try to parse a binary expression node. */
+static Result expNodeBin(BinaryOperator const op, ux const lvl) {}
+
+/* Try to parse a variary expression node. */
+static Result expNodeVar(VariaryOperator const op) {}
+
+/* Try to parse an expression node. */
+static Result expNode(ux const lvl, ux const i) {
+  Operator const op = OP_ORDER[lvl][i];
+  switch (op.tag) {
+  case OP_NULL: return expNodeNull(op.null);
+  case OP_PRE: return expNodePre(op.pre, lvl);
+  case OP_POST: return expNodePost(op.post);
+  case OP_CIR: return expNodeCir(op.cir);
+  case OP_BIN: return expNodeBin(op.bin, lvl);
+  case OP_VAR: return expNodeVar(op.var);
+  default: dbgUnexpected("Unknown operator tag!");
+  }
+}
+
+/* Try to parse an expression. */
+static Result exp(ux const lvl) {
+  Result parsed = NO;
+  for (ux i = lvl; i < OP_ORDER_LEN; i++) {
+    for (ux j = 0; j < OP_LEVEL_LEN[i]; j++) {
+      switch (expNode(i, j)) {
+      case YES:
+        parsed = YES;
+        // Recurse in the lower precedence level.
+        i      = lvl - 1;
+        break;
+      case NO: continue;
+      case ERR: return ERR;
+      default: dbgUnexpected("Unknown parse result!");
+      }
+    }
+  }
+  return parsed;
 }
 
 /* Try to parse a let definition statement. */
 static Result let() {
-  if (!consume(LXM_LET)) return NO;
+  if (!check(LXM_LET)) return NO;
+  next();
   return YES;
 }
 
 /* Try to parse a var definition statement. */
 static Result var() {
-  if (!consume(LXM_VAR)) return NO;
+  if (!check(LXM_VAR)) return NO;
+  next();
   return YES;
 }
 
 /* Try to parse a assignment statement. */
 static Result ass() {
-  if (!consume(LXM_ID)) return NO;
+  if (!check(LXM_ID)) return NO;
+  next();
   return YES;
 }
 
