@@ -5,29 +5,40 @@
 #include "psr/api.h"
 #include "utl/api.h"
 
-#define dec \
-  { .null = {.op = LXM_DEC}, .tag = OP_NULL }
-#define acs \
-  { .null = {.op = LXM_DEC}, .tag = OP_NULL }
-#define grp \
-  { .cir = {.lop = LXM_OPAREN, .rop = LXM_CPAREN}, .tag = OP_CIR }
+/* Definition of a nullary operator with the given operator. */
+#define null(lxm) \
+  { .null = {.op = lxm}, .tag = OP_NULL }
+/* Definition of a prenary operator with the given operator. */
+#define pre(lxm) \
+  { .pre = {.op = lxm}, .tag = OP_PRE }
+/* Definition of a postary operator with the given operator. */
+#define post(lxm) \
+  { .post = {.op = lxm}, .tag = OP_POST }
+/* Definition of a cirnary operator with the given operators. */
+#define cir(llxm, rlxm) \
+  { .cir = {.lop = llxm, .rop = rlxm}, .tag = OP_CIR }
+/* Definition of a binary operator with the given operator. */
+#define bin(lxm) \
+  { .pre = {.op = lxm}, .tag = OP_BIN }
+/* Definition of a variary operator with the given operators. */
+#define var(llxm, slxm, rlxm) \
+  { .var = {.lop = llxm, .sep = slxm, .rop = rlxm}, .tag = OP_VAR }
 
-#define pos \
-  { .pre = {.op = LXM_PLUS}, .tag = OP_PRE }
-#define neg \
-  { .pre = {.op = LXM_MINUS}, .tag = OP_PRE }
+// Definitions are in macros because macros can be used inside array
+// initializers as well.
+#define dec null(LXM_DEC)
+#define acs null(LXM_ID)
+#define grp cir(LXM_OPAREN, LXM_CPAREN)
 
-#define mul \
-  { .pre = {.op = LXM_STAR}, .tag = OP_BIN }
-#define div \
-  { .pre = {.op = LXM_SLASH}, .tag = OP_BIN }
-#define rem \
-  { .pre = {.op = LXM_PERCENT}, .tag = OP_BIN }
+#define pos pre(LXM_PLUS)
+#define neg pre(LXM_MINUS)
 
-#define add \
-  { .pre = {.op = LXM_PLUS}, .tag = OP_BIN }
-#define sub \
-  { .pre = {.op = LXM_MINUS}, .tag = OP_BIN }
+#define mul bin(LXM_STAR)
+#define div bin(LXM_SLASH)
+#define rem bin(LXM_PERCENT)
+
+#define add bin(LXM_PLUS)
+#define sub bin(LXM_MINUS)
 
 Operator const OP_DEC = dec;
 Operator const OP_ACS = acs;
