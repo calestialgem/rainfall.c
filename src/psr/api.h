@@ -52,19 +52,39 @@ typedef struct {
 } VariaryOperator;
 
 /* Type of an opertor. */
-typedef enum { OP_NULL, OP_PRE, OP_POST, OP_CIR, OP_BIN, OP_VAR } OperatorTag;
+typedef enum {
+  /* Nullary operator. */
+  OP_NULL,
+  /* Prenary operator. */
+  OP_PRE,
+  /* Postary operator. */
+  OP_POST,
+  /* Cirnary operator. */
+  OP_CIR,
+  /* Binary operator. */
+  OP_BIN,
+  /* Variary operator. */
+  OP_VAR
+} OperatorTag;
 
 /* Rules of an operation that result in calculation of a value. */
 typedef struct {
   union {
+    /* Operator as nullary operator. */
     NullaryOperator null;
+    /* Operator as prenary operator. */
     PrenaryOperator pre;
+    /* Operator as postary operator. */
     PostaryOperator post;
+    /* Operator as cirnary operator. */
     CirnaryOperator cir;
+    /* Operator as binary operator. */
     BinaryOperator  bin;
+    /* Operator as variary operator. */
     VariaryOperator var;
   };
 
+  /* Type of the operator. */
   OperatorTag tag;
 } Operator;
 
@@ -118,16 +138,27 @@ typedef struct {
 } Assignment;
 
 /* Type of a statement. */
-typedef enum { STT_LET, STT_VAR, STT_ASS } StatementTag;
+typedef enum {
+  /* Let definition statement. */
+  STT_LET,
+  /* Var definition statement. */
+  STT_VAR,
+  /* Assignment statement. */
+  STT_ASS
+} StatementTag;
 
 /* Directives that are given for the computer to execute. */
 typedef struct {
   union {
+    /* Statement as let definition statement. */
     LetDefinition let;
+    /* Statement as var definition statement. */
     VarDefinition var;
+    /* Statement as assignment statement. */
     Assignment    ass;
   };
 
+  /* Type of the statement. */
   StatementTag tag;
 } Statement;
 
