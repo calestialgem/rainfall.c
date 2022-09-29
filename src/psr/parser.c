@@ -22,6 +22,8 @@ static struct {
   Lex           lex;
   /* Position of the currently parsed lexeme. */
   Lexeme const* cur;
+  /* Expression that is currently parsed. */
+  Expression    exp;
 } psr;
 
 /* Result of a parsing operation. */
@@ -151,6 +153,7 @@ void parserParse(Parse* const prs, Outcome* const otc, Lex const lex) {
   psr.otc = otc;
   psr.lex = lex;
   psr.cur = lexBgn(lex);
+  psr.exp = expOf(0);
 
   Lexeme const* unk = NULL;
 

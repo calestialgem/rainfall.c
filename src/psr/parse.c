@@ -33,6 +33,21 @@ Parse prsOf(Outcome* const otc, Lex const lex) {
 }
 
 void prsFree(Parse* const prs) {
+  for (ux i = 0; i < prsLen(*prs); i++) {
+    Statement stt = prsAt(*prs, i);
+    switch (stt.tag) {
+    case STT_LET:
+      expFree(&stt.let.type);
+      expFree(&stt.let.val);
+      break;
+    case STT_VAR:
+      expFree(&stt.var.type);
+      expFree(&stt.var.val);
+      break;
+    case STT_ASS: expFree(&stt.ass.val); break;
+    default: dbgUnexpected("Unknown statement tag!");
+    }
+  }
   free(prs->bgn);
   prs->bgn = NULL;
   prs->end = NULL;
