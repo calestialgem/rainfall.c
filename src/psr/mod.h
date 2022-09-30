@@ -8,6 +8,9 @@
 #include "psr/api.h"
 #include "utl/api.h"
 
+/* Name of the given operator. */
+char const* opName(Operator op);
+
 /* Expression with the given initial node capacity. */
 Expression     expOf(ux cap);
 /* Release the memory resources used by the given expression. */

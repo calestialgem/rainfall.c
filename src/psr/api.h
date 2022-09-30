@@ -236,6 +236,8 @@ Operator opOfCir(CirnaryOperator cir);
 Operator opOfBin(BinaryOperator bin);
 /* Flatten the given variary operator. */
 Operator opOfVar(VariaryOperator var);
+/* Whether the given operators are the same. */
+bool     opEq(Operator lhs, Operator rhs);
 
 /* Parse the given lex. Reports to the given outcome. */
 Parse     prsOf(Outcome* otc, Lex lex);

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "dbg/api.h"
 #include "lxr/api.h"
 #include "psr/api.h"
 #include "utl/api.h"
@@ -60,9 +61,9 @@ Operator const OP_FACTOR[OP_FACTOR_LEN]   = {mul, div, rem};
 Operator const OP_TERM[OP_TERM_LEN]       = {add, sub};
 
 ux const OP_LEVEL_LEN[OP_ORDER_LEN] = {
-  OP_PRIMARY_LEN, OP_UNARY_LEN, OP_FACTOR_LEN, OP_TERM_LEN};
+  OP_TERM_LEN, OP_FACTOR_LEN, OP_UNARY_LEN, OP_PRIMARY_LEN};
 Operator const* const OP_ORDER[OP_ORDER_LEN] = {
-  OP_PRIMARY, OP_UNARY, OP_FACTOR, OP_TERM};
+  OP_TERM, OP_FACTOR, OP_UNARY, OP_PRIMARY};
 
 Operator opOfNull(NullaryOperator const null) {
   return (Operator){.null = null, .tag = OP_NULL};
@@ -86,4 +87,31 @@ Operator opOfBin(BinaryOperator const bin) {
 
 Operator opOfVar(VariaryOperator const var) {
   return (Operator){.var = var, .tag = OP_VAR};
+}
+
+bool opEq(Operator const lhs, Operator const rhs) {
+  if (lhs.tag != rhs.tag) return false;
+  switch (lhs.tag) {
+  case OP_NULL: return lhs.null.op == rhs.null.op;
+  case OP_PRE: return lhs.pre.op == rhs.pre.op;
+  case OP_POST: return lhs.post.op == rhs.post.op;
+  case OP_CIR: return lhs.cir.lop == rhs.cir.lop;
+  case OP_BIN: return lhs.bin.op == rhs.bin.op;
+  case OP_VAR: return lhs.var.lop == rhs.var.lop;
+  default: dbgUnexpected("Unknown operator tag!");
+  }
+}
+
+char const* opName(Operator const op) {
+  if (opEq(op, OP_DEC)) return "decimal";
+  if (opEq(op, OP_ACS)) return "access";
+  if (opEq(op, OP_GRP)) return "group";
+  if (opEq(op, OP_POS)) return "posate";
+  if (opEq(op, OP_NEG)) return "negate";
+  if (opEq(op, OP_MUL)) return "multiply";
+  if (opEq(op, OP_DIV)) return "divide";
+  if (opEq(op, OP_REM)) return "reminder";
+  if (opEq(op, OP_ADD)) return "add";
+  if (opEq(op, OP_SUB)) return "subtract";
+  return "unknown";
 }
