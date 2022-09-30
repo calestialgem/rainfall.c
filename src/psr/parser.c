@@ -51,15 +51,15 @@ static Lexeme get() { return *psr.cur; }
 /* Go to the next lexeme. */
 static void next() { psr.cur++; }
 
-/* Return the current position and go to the next lexeme. */
-static Lexeme const* advance() {
-  Lexeme const* const old = psr.cur;
+/* Go to the previous lexeme. */
+static void prev() { psr.cur--; }
+
+/* Return the lexeme that was parsed and go to the next lexeme. */
+static Lexeme take() {
+  Lexeme const old = get();
   next();
   return old;
 }
-
-/* Return the lexeme that was parsed and go to the next lexeme. */
-static Lexeme take() { return *advance(); }
 
 /* Whether the current lexeme is of the given type. */
 static bool check(LexemeType const type) { return has() && get().type == type; }
@@ -117,15 +117,16 @@ static Result exp(ux lvl);
 
 /* Try to parse a nullary expression node. */
 static Result expNodeNull(NullaryOperator const null) {
-  if (!check(null.op)) return NO;
-  expNodeAdd(opOfNull(null), 0, take().val);
+  Lexeme const* const old = psr.cur;
+  if (!consume(null.op)) return NO;
+  expNodeAdd(opOfNull(null), 0, val(old));
   return YES;
 }
 
 /* Try to parse a prenary expression node. */
 static Result expNodePre(PrenaryOperator const pre, ux const lvl) {
-  if (!check(pre.op)) return NO;
-  Lexeme const* const old = advance();
+  Lexeme const* const old = psr.cur;
+  if (!consume(pre.op)) return NO;
   switch (exp(lvl)) {
   case YES: expNodeAdd(opOfPre(pre), 1, val(old)); return YES;
   case NO:
@@ -152,8 +153,8 @@ static Result expNodePost(PostaryOperator const post, ux const lvl) {
 
 /* Try to parse a cirnary expression node. */
 static Result expNodeCir(CirnaryOperator const cir) {
-  if (!check(cir.lop)) return NO;
-  Lexeme const* const old = advance();
+  Lexeme const* const old = psr.cur;
+  if (!consume(cir.lop)) return NO;
   switch (exp(0)) {
   case YES: break;
   case NO:
@@ -280,24 +281,137 @@ static Result exp(ux const lvl) {
   return parsed;
 }
 
+/* Get the last parsed expression. */
+static Expression expGet() {
+  Expression res = psr.exp;
+  psr.exp        = expOf(0);
+  return res;
+}
+
 /* Try to parse a let definition statement. */
 static Result let() {
-  if (!check(LXM_LET)) return NO;
-  next();
+  Lexeme const* const old = psr.cur;
+
+  if (!consume(LXM_LET)) return NO;
+
+  if (!check(LXM_ID)) {
+    err(val(old), "Expected a name in definition!");
+    return ERR;
+  }
+  Lexeme const name = take();
+
+  if (!consume(LXM_COLON)) {
+    err(val(old), "Expected a `:` in the definition!");
+    return ERR;
+  }
+
+  switch (exp(0)) {
+  case YES: break;
+  case NO: err(val(old), "Expected a type expression in the definition!");
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+  Expression const type = expGet();
+
+  if (!consume(LXM_EQUAL)) {
+    err(val(old), "Expected a `=` in the definition!");
+    return ERR;
+  }
+
+  switch (exp(0)) {
+  case YES: break;
+  case NO: err(val(old), "Expected a value expression in the definition!");
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+  Expression const val = expGet();
+
+  prsAdd(
+    psr.prs,
+    (Statement){
+      .let = {.name = name, .type = type, .val = val},
+        .tag = STT_LET
+  });
   return YES;
 }
 
 /* Try to parse a var definition statement. */
 static Result var() {
-  if (!check(LXM_VAR)) return NO;
-  next();
+  Lexeme const* const old = psr.cur;
+
+  if (!consume(LXM_VAR)) return NO;
+
+  if (!check(LXM_ID)) {
+    err(val(old), "Expected a name in definition!");
+    return ERR;
+  }
+  Lexeme const name = take();
+
+  if (!consume(LXM_COLON)) {
+    err(val(old), "Expected a `:` in the definition!");
+    return ERR;
+  }
+
+  switch (exp(0)) {
+  case YES: break;
+  case NO: err(val(old), "Expected a type expression in the definition!");
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+  Expression const type = expGet();
+
+  if (!consume(LXM_EQUAL)) {
+    prsAdd(
+      psr.prs,
+      (Statement){
+        .var = {.name = name, .type = type, .val = expOf(0)},
+          .tag = STT_VAR
+    });
+    return YES;
+  }
+
+  switch (exp(0)) {
+  case YES: break;
+  case NO: err(val(old), "Expected a value expression in the definition!");
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+  Expression const val = expGet();
+
+  prsAdd(
+    psr.prs,
+    (Statement){
+      .var = {.name = name, .type = type, .val = val},
+        .tag = STT_VAR
+  });
   return YES;
 }
 
 /* Try to parse a assignment statement. */
 static Result ass() {
+  Lexeme const* const old = psr.cur;
+
   if (!check(LXM_ID)) return NO;
-  next();
+  Lexeme const name = take();
+
+  if (!consume(LXM_EQUAL)) {
+    prev(); // Rollback name.
+    return NO;
+  }
+
+  switch (exp(0)) {
+  case YES: break;
+  case NO: err(val(old), "Expected a value expression in the assignment!");
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+  Expression const val = expGet();
+
+  prsAdd(
+    psr.prs, (Statement){
+               .ass = {.name = name, .val = val},
+                 .tag = STT_ASS
+  });
   return YES;
 }
 
@@ -353,6 +467,12 @@ void parserParse(Parse* const prs, Outcome* const otc, Lex const lex) {
       next(); // Consume the synchronization lexeme.
       String const skipped = val(old);
       info(skipped, "Skipped because of the previous error.");
+    } else {
+      // Remove the parsed statement if there is no semicolon after it.
+      if (!consume(LXM_SEMI)) {
+        err(val(end), "Expected a `;` after the statement!");
+        prsPop(psr.prs);
+      }
     }
     unknown(&unk, end);
   }

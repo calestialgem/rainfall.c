@@ -59,11 +59,6 @@ ux prsLen(Parse const prs) { return prs.end - prs.bgn; }
 
 Statement prsAt(Parse const prs, ux const i) { return prs.bgn[i]; }
 
-void prsAdd(Parse* const prs, Statement const stt) {
-  reserve(prs, 1);
-  *prs->end++ = stt;
-}
-
 void prsWrite(Parse const prs, FILE* const stream) {
   for (Statement const* i = prs.bgn; i < prs.end; i++) {
     switch (i->tag) {
@@ -81,8 +76,10 @@ void prsWrite(Parse const prs, FILE* const stream) {
       strWrite(i->var.name.val, stream);
       fprintf(stream, ": ");
       expWrite(i->var.type, stream);
-      fprintf(stream, " = ");
-      expWrite(i->var.val, stream);
+      if (expLen(i->var.val)) {
+        fprintf(stream, " = ");
+        expWrite(i->var.val, stream);
+      }
       fprintf(stream, ";");
       break;
     case STT_ASS:
@@ -96,3 +93,10 @@ void prsWrite(Parse const prs, FILE* const stream) {
     fprintf(stream, "\n");
   }
 }
+
+void prsAdd(Parse* const prs, Statement const stt) {
+  reserve(prs, 1);
+  *prs->end++ = stt;
+}
+
+void prsPop(Parse* const prs) { prs->end--; }

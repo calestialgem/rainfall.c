@@ -23,6 +23,8 @@ void           expWrite(Expression exp, FILE* stream);
 
 /* Add the given statement to the end of the given parse. */
 void prsAdd(Parse* prs, Statement stt);
+/* Remove the last added statement from the given parse. */
+void prsPop(Parse* prs);
 
 /* Parse the given lex into the given parse by reporting to the given outcome.
  */
