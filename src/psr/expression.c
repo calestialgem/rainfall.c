@@ -116,7 +116,7 @@ void expWrite(Expression const exp, FILE* const stream) {
  * the node. */
 static ExpressionNode const*
 nodeTree(ExpressionNode const* i, ux const depth, FILE* const stream) {
-  fprintf(stream, "%10s   ", opName(i->op));
+  fprintf(stream, "%20s   ", opName(i->op));
   for (ux j = 1; j < depth; j++) fprintf(stream, " |  ");
   if (depth > 0) fprintf(stream, " +- ");
   fprintf(stream, "`");

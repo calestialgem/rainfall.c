@@ -181,6 +181,14 @@ extern Operator const OP_ACS;
 extern Operator const OP_GRP;
 /* Call to a function. */
 extern Operator const OP_CLL;
+/* Increment after returning the value of a number. */
+extern Operator const OP_SIN;
+/* Decrement after returning the value of a number. */
+extern Operator const OP_SDE;
+/* Increment before returning the value of a number. */
+extern Operator const OP_PIN;
+/* Decrement before returning the value of a number. */
+extern Operator const OP_PDE;
 
 /* Posating a number. */
 extern Operator const OP_POS;
@@ -200,7 +208,7 @@ extern Operator const OP_ADD;
 extern Operator const OP_SUB;
 
 /* Amount of primary operators. */
-#define OP_PRIMARY_LEN 4
+#define OP_PRIMARY_LEN 8
 /* Operators that are the indivisible parts of an expression. */
 extern Operator const OP_PRIMARY[OP_PRIMARY_LEN];
 
