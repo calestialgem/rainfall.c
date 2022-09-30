@@ -411,9 +411,9 @@ static Result statement() {
 }
 
 /* Report the unknown lexemes in the given range. */
-static void unknown(Lexeme const unk, Lexeme const bgn) {
+static void unknown(Lexeme const unk, char const* const end) {
   if (!strLen(unk.val)) return;
-  String const val = {.bgn = unk.val.bgn, .end = bgn.val.bgn};
+  String const val = {.bgn = unk.val.bgn, .end = end};
   otcErr(
     psr.otc, val, "Expected a statement instead of %s!",
     strLen(val) > 1 ? "these characters" : "this character");
@@ -426,14 +426,14 @@ void parserParse(Parse* const prs, Outcome* const otc, Lex const lex) {
   psr.cur = lexBgn(lex);
   psr.exp = expOf(0);
 
-  Lexeme unk = {0};
+  Lexeme err = {0};
 
   while (has()) {
     // End of the last lexeme, stored for error reporting.
-    Lexeme const end = get();
-    Result const res = statement();
+    Lexeme const last = get();
+    Result const res  = statement();
     if (res == NO) {
-      if (strLen(unk.val)) unk = end;
+      if (!strLen(err.val)) err = last;
       next();
       continue;
     }
@@ -447,14 +447,16 @@ void parserParse(Parse* const prs, Outcome* const otc, Lex const lex) {
     } else {
       // Remove the parsed statement if there is no semicolon after it.
       if (!consume(LXM_SEMI)) {
-        otcErr(psr.otc, lxmJoin(end), "Expected a `;` after the statement!");
+        otcErr(psr.otc, lxmJoin(last), "Expected a `;` after the statement!");
         prsPop(psr.prs);
       }
     }
-    unknown(unk, end);
-    unk = (Lexeme){0};
+    // Show error and clear after a successful parse.
+    unknown(err, last.val.bgn);
+    err = (Lexeme){0};
   }
   dbgExpect(get().type == LXM_EOF, "Lex does not end with EOF!");
-  unknown(unk, get());
-  unk = (Lexeme){0};
+  // Show any error left if there was not a successful parse at the end.
+  // Subtract one to get rid of the last new line.
+  unknown(err, get().val.bgn - 1);
 }
