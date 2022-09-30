@@ -90,7 +90,7 @@ static void expNodeAdd(Operator const op, ux const ary, String const val) {
 }
 
 /* Whether there is a parsed expression node. */
-static bool expHas() { return expLen(psr.exp) > 1; }
+static bool expHas() { return expLen(psr.exp) > 0; }
 
 /* Last parsed expression node. */
 static ExpressionNode expNodeGet() {
@@ -222,9 +222,6 @@ static Result expNodeVar(VariaryOperator const var) {
 /* Try to parse an expression node. */
 static Result expNode(ux const lvl, ux const i) {
   Operator const op = OP_ORDER[lvl][i];
-  printf(
-    "%*s: %llu; %llu; %s\n", (int)expLen(psr.exp) + 3, "lvl", lvl, i,
-    opName(op));
   switch (op.tag) {
   case OP_NULL: return expNodeNull(op.null);
   case OP_PRE: return expNodePre(op.pre, lvl);
