@@ -149,6 +149,13 @@ typedef struct {
   Expression rhs;
 } CompoundAssignment;
 
+/* Expression whose resulting value is discarded. These are calculated for the
+ * side effects. */
+typedef struct {
+  /* Expression that is calculated, but discarded. */
+  Expression exp;
+} ExpressionStatement;
+
 /* Type of a statement. */
 typedef enum {
   /* Let definition statement. */
@@ -158,20 +165,24 @@ typedef enum {
   /* Assignment statement. */
   STT_ASS,
   /* Compound assignment statement. */
-  STT_CAS
+  STT_CAS,
+  /* Expression statement. */
+  STT_EXP
 } StatementTag;
 
 /* Directives that are given for the computer to execute. */
 typedef struct {
   union {
     /* Statement as let definition statement. */
-    LetDefinition      let;
+    LetDefinition       let;
     /* Statement as var definition statement. */
-    VarDefinition      var;
+    VarDefinition       var;
     /* Statement as assignment statement. */
-    Assignment         ass;
+    Assignment          ass;
     /* Statement as compound assignment statement. */
-    CompoundAssignment cas;
+    CompoundAssignment  cas;
+    /* Statement as expression statement. */
+    ExpressionStatement exp;
   };
 
   /* Type of the statement. */

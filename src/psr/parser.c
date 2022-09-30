@@ -453,7 +453,15 @@ static Result statement() {
 #undef OPERATIONS
 #undef OPERATIONS_LEN
 
-  return NO;
+  // If everything fails, try to parse it as an expression.
+  switch (exp(0)) {
+  case YES:
+    prsAdd(psr.prs, (Statement){.exp = {.exp = expGet()}, .tag = STT_EXP});
+    return YES;
+  case NO: return NO;
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
 }
 
 /* Report the unknown lexemes in the given range. */

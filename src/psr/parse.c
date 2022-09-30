@@ -48,6 +48,7 @@ void prsFree(Parse* const prs) {
       break;
     case STT_ASS: expFree(&i->ass.val); break;
     case STT_CAS: expFree(&i->cas.rhs); break;
+    case STT_EXP: expFree(&i->exp.exp); break;
     default: dbgUnexpected("Unknown statement tag!");
     }
   }
@@ -94,6 +95,10 @@ void prsWrite(Parse const prs, FILE* const stream) {
       strWrite(i->cas.name.val, stream);
       fprintf(stream, " %s= ", lxmName(i->cas.op.bin.op));
       expWrite(i->cas.rhs, stream);
+      fprintf(stream, ";");
+      break;
+    case STT_EXP:
+      expWrite(i->exp.exp, stream);
       fprintf(stream, ";");
       break;
     default: dbgUnexpected("Unknown statement tag!");
