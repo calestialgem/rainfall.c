@@ -179,6 +179,8 @@ extern Operator const OP_DEC;
 extern Operator const OP_ACS;
 /* Expression grouped with parentheses. */
 extern Operator const OP_GRP;
+/* Call to a function. */
+extern Operator const OP_CLL;
 
 /* Posating a number. */
 extern Operator const OP_POS;
@@ -198,7 +200,7 @@ extern Operator const OP_ADD;
 extern Operator const OP_SUB;
 
 /* Amount of primary operators. */
-#define OP_PRIMARY_LEN 3
+#define OP_PRIMARY_LEN 4
 /* Operators that are the indivisible parts of an expression. */
 extern Operator const OP_PRIMARY[OP_PRIMARY_LEN];
 

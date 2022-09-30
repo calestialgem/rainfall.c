@@ -98,8 +98,6 @@ static ExpressionNode expNodeGet() {
 static Expression expGet() {
   Expression res = psr.exp;
   psr.exp        = expOf(0);
-  printf("\n\nExpression Breakdown:\n\n");
-  expTree(res, stdout);
   return res;
 }
 

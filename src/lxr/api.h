@@ -30,6 +30,8 @@ typedef enum {
   LXM_SLASH,
   /* Mark "%". */
   LXM_PERCENT,
+  /* Mark ",". */
+  LXM_COMMA,
   /* Marks the end of the file. */
   LXM_EOF,
   /* Keyword "let". */

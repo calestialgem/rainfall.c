@@ -84,8 +84,8 @@ static bool comment() {
 static bool mark() {
   char const* const old = lxr.cur;
 
-#define MARKS  "=:;()+-*/%"
-#define LENGTH 11 // Null-terminator is lexed as EOF
+#define MARKS  "=:;()+-*/%,"
+#define LENGTH 12 // Null-terminator is lexed as EOF
 
   char const c = get();
 
@@ -205,7 +205,7 @@ void lexerLex(Lex* const lex, Outcome* const otc, Source const src) {
       err.end++;
     }
     otcErr(
-      lxr.otc, err, "Coult not recognize %s!",
+      lxr.otc, err, "Could not recognize %s!",
       strLen(err) > 1 ? "these characters" : "this character");
     lexAdd(lxr.lex, (Lexeme){.val = err, .type = LXM_ERR});
   }

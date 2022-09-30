@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-let a: i4 =  33;
+var a: i4 =  33;
 let b: i4 = 123;
 let c: i4 = a + a*b + b;
 let d: i4 = 1*2/(3+4)%5-6;
@@ -14,3 +14,7 @@ var someVariable      : i4 = 67;
 var someOtherVariable : i4;
 
 someOtherVariable = someVariable * 2 + 78;
+
+a = func(b, 3, someOtherVariable);
+a = func();
+a = func(3);

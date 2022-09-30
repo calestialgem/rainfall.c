@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "dbg/api.h"
 #include "lxr/api.h"
 #include "utl/api.h"
 
@@ -18,13 +19,14 @@ char const* lxmName(LexemeType const type) {
   case LXM_STAR: return "*";
   case LXM_SLASH: return "/";
   case LXM_PERCENT: return "%";
+  case LXM_COMMA: return ",";
   case LXM_EOF: return "eof";
   case LXM_LET: return "let";
   case LXM_VAR: return "var";
   case LXM_DEC: return "decimal";
   case LXM_ID: return "id";
   case LXM_ERR: return "error";
-  default: return "unknown";
+  default: dbgUnexpected("Unknown lexeme type!");
   }
 }
 

@@ -83,15 +83,22 @@ nodeWrite(ExpressionNode const* const i, FILE* const stream) {
     return lop;
   }
   case OP_VAR: {
+    if (i->ary == 1) {
+      ExpressionNode const* const st = nodeWrite(i - 1, stream);
+      lxmWrite(i->op.var.lop, stream);
+      lxmWrite(i->op.var.rop, stream);
+      return st;
+    }
     ExpressionNode const* ops[i->ary];
     ops[0] = nodeWrite(i - 1, NULL);
     for (ux j = 1; j < i->ary; j++) ops[j] = nodeWrite(ops[j - 1], NULL);
-    nodeWrite(ops[i->ary - 1], stream);
+    nodeWrite(ops[i->ary - 2], stream);
     lxmWrite(i->op.var.lop, stream);
-    for (ux j = i->ary - 1; j >= 0; j--) {
-      nodeWrite(ops[j], stream);
+    for (ux j = i->ary - 2; j > 0; j--) {
+      nodeWrite(ops[j - 1], stream);
       lxmWrite(i->op.var.sep, stream);
     }
+    nodeWrite(i - 1, stream);
     lxmWrite(i->op.var.rop, stream);
     return ops[i->ary - 1];
   }

@@ -30,6 +30,7 @@
 #define dec null(LXM_DEC)
 #define acs null(LXM_ID)
 #define grp cir(LXM_OPAREN, LXM_CPAREN)
+#define cll var(LXM_OPAREN, LXM_COMMA, LXM_CPAREN)
 
 #define pos pre(LXM_PLUS)
 #define neg pre(LXM_MINUS)
@@ -44,6 +45,7 @@
 Operator const OP_DEC = dec;
 Operator const OP_ACS = acs;
 Operator const OP_GRP = grp;
+Operator const OP_CLL = cll;
 
 Operator const OP_POS = pos;
 Operator const OP_NEG = neg;
@@ -55,7 +57,7 @@ Operator const OP_REM = rem;
 Operator const OP_ADD = add;
 Operator const OP_SUB = sub;
 
-Operator const OP_PRIMARY[OP_PRIMARY_LEN] = {dec, acs, grp};
+Operator const OP_PRIMARY[OP_PRIMARY_LEN] = {dec, acs, grp, cll};
 Operator const OP_UNARY[OP_UNARY_LEN]     = {pos, neg};
 Operator const OP_FACTOR[OP_FACTOR_LEN]   = {mul, div, rem};
 Operator const OP_TERM[OP_TERM_LEN]       = {add, sub};
@@ -106,6 +108,7 @@ char const* opName(Operator const op) {
   if (opEq(op, OP_DEC)) return "decimal";
   if (opEq(op, OP_ACS)) return "access";
   if (opEq(op, OP_GRP)) return "group";
+  if (opEq(op, OP_CLL)) return "call";
   if (opEq(op, OP_POS)) return "posate";
   if (opEq(op, OP_NEG)) return "negate";
   if (opEq(op, OP_MUL)) return "multiply";
@@ -113,5 +116,5 @@ char const* opName(Operator const op) {
   if (opEq(op, OP_REM)) return "reminder";
   if (opEq(op, OP_ADD)) return "add";
   if (opEq(op, OP_SUB)) return "subtract";
-  return "unknown";
+  dbgUnexpected("Unknown operator!");
 }
