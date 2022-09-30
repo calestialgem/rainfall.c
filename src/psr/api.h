@@ -138,6 +138,17 @@ typedef struct {
   Expression val;
 } Assignment;
 
+/* Changing the value of a mutable variable by applying a binary operator where
+ * its on the left. */
+typedef struct {
+  /* Identifier that is the name of the assigned variable. */
+  Lexeme     name;
+  /* Operator. */
+  Operator   op;
+  /* Expression that gives the right hand side of the binary expression. */
+  Expression rhs;
+} CompoundAssignment;
+
 /* Type of a statement. */
 typedef enum {
   /* Let definition statement. */
@@ -145,18 +156,22 @@ typedef enum {
   /* Var definition statement. */
   STT_VAR,
   /* Assignment statement. */
-  STT_ASS
+  STT_ASS,
+  /* Compound assignment statement. */
+  STT_CAS
 } StatementTag;
 
 /* Directives that are given for the computer to execute. */
 typedef struct {
   union {
     /* Statement as let definition statement. */
-    LetDefinition let;
+    LetDefinition      let;
     /* Statement as var definition statement. */
-    VarDefinition var;
+    VarDefinition      var;
     /* Statement as assignment statement. */
-    Assignment    ass;
+    Assignment         ass;
+    /* Statement as compound assignment statement. */
+    CompoundAssignment cas;
   };
 
   /* Type of the statement. */
@@ -233,6 +248,11 @@ extern Operator const OP_TERM[OP_TERM_LEN];
 extern ux const              OP_LEVEL_LEN[OP_ORDER_LEN];
 /* Precedence levels of operators from low to high. */
 extern Operator const* const OP_ORDER[OP_ORDER_LEN];
+
+/* Amount of binary operators. */
+#define OP_BINS_LEN 5
+/* Binary operators. */
+extern Operator const OP_BINS[OP_BINS_LEN];
 
 /* Flatten the given nullary operator. */
 Operator opOfNull(NullaryOperator null);

@@ -393,11 +393,57 @@ static Result ass() {
   return YES;
 }
 
+/* Try to parse a compound assignment statement. */
+static Result cas() {
+  Lexeme const old = get();
+
+  if (!check(LXM_ID)) return NO;
+  Lexeme const name = take();
+
+  Operator op = {0};
+
+  for (ux i = 0; i < OP_BINS_LEN; i++) {
+    Operator const test = OP_BINS[i];
+    if (test.tag != OP_BIN || !consume(test.bin.op)) continue;
+    op = test;
+    break;
+  }
+
+  if (op.tag != OP_BIN) {
+    prev(); // Rollback name.
+    return NO;
+  }
+
+  if (!consume(LXM_EQUAL)) {
+    prev(); // Rollback name.
+    prev(); // Rollback binary operator.
+    return NO;
+  }
+
+  switch (exp(0)) {
+  case YES: break;
+  case NO:
+    otcErr(
+      psr.otc, lxmJoin(old),
+      "Expected a value expression in the compound assignment!");
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+  Expression const rhs = expGet();
+
+  prsAdd(
+    psr.prs, (Statement){
+               .cas = {.name = name, .op = op, .rhs = rhs},
+                 .tag = STT_CAS
+  });
+  return YES;
+}
+
 /* Try to parse a statement. */
 static Result statement() {
-#define OPERATIONS_LEN 3
+#define OPERATIONS_LEN 4
 #define OPERATIONS \
-  (operation[OPERATIONS_LEN]) { &let, &var, &ass }
+  (operation[OPERATIONS_LEN]) { &let, &var, &ass, &cas }
 
   for (ux i = 0; i < OPERATIONS_LEN; i++) {
     Result const res = OPERATIONS[i]();

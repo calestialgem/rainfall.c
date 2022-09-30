@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "dbg/api.h"
+#include "lxr/api.h"
 #include "psr/api.h"
 #include "psr/mod.h"
 #include "utl/api.h"
@@ -46,6 +47,7 @@ void prsFree(Parse* const prs) {
       expFree(&i->var.val);
       break;
     case STT_ASS: expFree(&i->ass.val); break;
+    case STT_CAS: expFree(&i->cas.rhs); break;
     default: dbgUnexpected("Unknown statement tag!");
     }
   }
@@ -86,6 +88,12 @@ void prsWrite(Parse const prs, FILE* const stream) {
       strWrite(i->ass.name.val, stream);
       fprintf(stream, " = ");
       expWrite(i->ass.val, stream);
+      fprintf(stream, ";");
+      break;
+    case STT_CAS:
+      strWrite(i->cas.name.val, stream);
+      fprintf(stream, " %s= ", lxmName(i->cas.op.bin.op));
+      expWrite(i->cas.rhs, stream);
       fprintf(stream, ";");
       break;
     default: dbgUnexpected("Unknown statement tag!");
