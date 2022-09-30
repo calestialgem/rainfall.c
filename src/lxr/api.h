@@ -10,8 +10,6 @@
 
 /* Type of a lexeme. */
 typedef enum {
-  /* Mark "=". */
-  LXM_EQUAL,
   /* Mark ",". */
   LXM_COMMA,
   /* Mark ":". */
@@ -36,6 +34,36 @@ typedef enum {
   LXM_MINUSMINUS,
   /* Mark "-". */
   LXM_MINUS,
+  /* Mark "&&". */
+  LXM_AMPAMP,
+  /* Mark "&". */
+  LXM_AMP,
+  /* Mark "||". */
+  LXM_PIPEPIPE,
+  /* Mark "|". */
+  LXM_PIPE,
+  /* Mark "^". */
+  LXM_CARET,
+  /* Mark "<<". */
+  LXM_LARLAR,
+  /* Mark "<=". */
+  LXM_LAREQ,
+  /* Mark "<". */
+  LXM_LARROW,
+  /* Mark ">>". */
+  LXM_RARRAR,
+  /* Mark ">=". */
+  LXM_RAREQ,
+  /* Mark ">". */
+  LXM_RARROW,
+  /* Mark "==". */
+  LXM_EQEQ,
+  /* Mark "=". */
+  LXM_EQUAL,
+  /* Mark "!=". */
+  LXM_NOTEQ,
+  /* Mark "!". */
+  LXM_NOT,
   /* Marks the end of the file. */
   LXM_EOF,
   /* Keyword "let". */
