@@ -18,3 +18,5 @@ someOtherVariable = someVariable * 2 + 78;
 a = func(b, 3, someOtherVariable);
 a = func();
 a = func(3);
+
+someVariable = a++ * --someOtherVariable;

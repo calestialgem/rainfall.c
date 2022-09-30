@@ -12,6 +12,8 @@
 typedef enum {
   /* Mark "=". */
   LXM_EQUAL,
+  /* Mark ",". */
+  LXM_COMMA,
   /* Mark ":". */
   LXM_COLON,
   /* Mark ";". */
@@ -20,18 +22,20 @@ typedef enum {
   LXM_OPAREN,
   /* Mark ")". */
   LXM_CPAREN,
-  /* Mark "+". */
-  LXM_PLUS,
-  /* Mark "-". */
-  LXM_MINUS,
   /* Mark "*". */
   LXM_STAR,
   /* Mark "/". */
   LXM_SLASH,
   /* Mark "%". */
   LXM_PERCENT,
-  /* Mark ",". */
-  LXM_COMMA,
+  /* Mark "++". */
+  LXM_PLUSPLUS,
+  /* Mark "+". */
+  LXM_PLUS,
+  /* Mark "--". */
+  LXM_MINUSMINUS,
+  /* Mark "-". */
+  LXM_MINUS,
   /* Marks the end of the file. */
   LXM_EOF,
   /* Keyword "let". */

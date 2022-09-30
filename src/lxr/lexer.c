@@ -52,6 +52,15 @@ static bool consume(bool (*const init)(char), bool (*const rest)(char)) {
   return true;
 }
 
+/* Whether the next characters are the same as the given string. Consumes the
+ * characters if true. */
+static bool check(String const str) {
+  for (ux i = 0; i < strLen(str); i++)
+    if (!has() || lxr.cur[i] != strAt(str, i)) return false;
+  lxr.cur += strLen(str);
+  return true;
+}
+
 /* Whether the given character is in the English alphabet. */
 static bool alpha(char const c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
@@ -84,21 +93,27 @@ static bool comment() {
 static bool mark() {
   char const* const old = lxr.cur;
 
-#define MARKS  "=:;()+-*/%,"
-#define LENGTH 12 // Null-terminator is lexed as EOF
-
-  char const c = get();
+// Check whether there is a mark.
+#define LENGTH 13
+  String const MARKS[LENGTH] = {
+    strOf("="), strOf(","),  strOf(":"), strOf(";"), strOf("("),
+    strOf(")"), strOf("*"),  strOf("/"), strOf("%"), strOf("++"),
+    strOf("+"), strOf("--"), strOf("-")};
 
   for (ux i = 0; i < LENGTH; i++) {
-    if (c == MARKS[i]) {
-      next();
+    if (check(MARKS[i])) {
       add(val(old), LXM_EQUAL + i);
       return true;
     }
   }
-
-#undef MARKS
 #undef LENGTH
+
+  // EOF mark.
+  if (!get()) {
+    next();
+    add(val(old), LXM_EOF);
+    return true;
+  }
 
   return false;
 }
