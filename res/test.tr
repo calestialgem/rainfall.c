@@ -4,7 +4,7 @@
 let a: i4 =  33;
 let b: i4 = 123;
 let c: i4 = a + a*b + b;
-let d: i4 = a*c/(a+b)*a-b;
+let d: i4 = 1*2/(3+4)%5-6;
 
 let pi: f8 = 3.14;
 let e : f8 = 2.72;
