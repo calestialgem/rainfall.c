@@ -18,6 +18,8 @@ ux             expLen(Expression exp);
 ExpressionNode expAt(Expression exp, ux i);
 /* Add the given node to the end of the given expression. */
 void           expAdd(Expression* exp, ExpressionNode node);
+/* Stream out the given expression as string to the given stream. */
+void           expWrite(Expression exp, FILE* stream);
 
 /* Add the given statement to the end of the given parse. */
 void prsAdd(Parse* prs, Statement stt);

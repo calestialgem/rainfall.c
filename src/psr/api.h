@@ -7,6 +7,7 @@
 #include "utl/api.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 
 /* Operators without operands. */
 typedef struct {
@@ -244,3 +245,5 @@ void      prsFree(Parse* prs);
 ux        prsLen(Parse prs);
 /* Statement at the given index in the given parse. */
 Statement prsAt(Parse prs, ux i);
+/* Stream out the given parse as string to the given stream. */
+void      prsWrite(Parse prs, FILE* stream);

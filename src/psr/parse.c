@@ -4,7 +4,9 @@
 #include "dbg/api.h"
 #include "psr/api.h"
 #include "psr/mod.h"
+#include "utl/api.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 /* Make sure the given amount of space exists at the end of the given parse.
@@ -33,18 +35,17 @@ Parse prsOf(Outcome* const otc, Lex const lex) {
 }
 
 void prsFree(Parse* const prs) {
-  for (ux i = 0; i < prsLen(*prs); i++) {
-    Statement stt = prsAt(*prs, i);
-    switch (stt.tag) {
+  for (Statement* i = prs->bgn; i < prs->end; i++) {
+    switch (i->tag) {
     case STT_LET:
-      expFree(&stt.let.type);
-      expFree(&stt.let.val);
+      expFree(&i->let.type);
+      expFree(&i->let.val);
       break;
     case STT_VAR:
-      expFree(&stt.var.type);
-      expFree(&stt.var.val);
+      expFree(&i->var.type);
+      expFree(&i->var.val);
       break;
-    case STT_ASS: expFree(&stt.ass.val); break;
+    case STT_ASS: expFree(&i->ass.val); break;
     default: dbgUnexpected("Unknown statement tag!");
     }
   }
@@ -61,4 +62,37 @@ Statement prsAt(Parse const prs, ux const i) { return prs.bgn[i]; }
 void prsAdd(Parse* const prs, Statement const stt) {
   reserve(prs, 1);
   *prs->end++ = stt;
+}
+
+void prsWrite(Parse const prs, FILE* const stream) {
+  for (Statement const* i = prs.bgn; i < prs.end; i++) {
+    switch (i->tag) {
+    case STT_LET:
+      fprintf(stream, "let ");
+      strWrite(i->let.name.val, stream);
+      fprintf(stream, ": ");
+      expWrite(i->let.type, stream);
+      fprintf(stream, " = ");
+      expWrite(i->let.val, stream);
+      fprintf(stream, ";");
+      break;
+    case STT_VAR:
+      fprintf(stream, "var ");
+      strWrite(i->var.name.val, stream);
+      fprintf(stream, ": ");
+      expWrite(i->var.type, stream);
+      fprintf(stream, " = ");
+      expWrite(i->var.val, stream);
+      fprintf(stream, ";");
+      break;
+    case STT_ASS:
+      strWrite(i->ass.name.val, stream);
+      fprintf(stream, " = ");
+      expWrite(i->ass.val, stream);
+      fprintf(stream, ";");
+      break;
+    default: dbgUnexpected("Unknown statement tag!");
+    }
+    fprintf(stream, "\n");
+  }
 }

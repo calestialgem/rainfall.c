@@ -28,6 +28,10 @@ char const* lxmName(LexemeType const type) {
   }
 }
 
+void lxmWrite(LexemeType const type, FILE* const stream) {
+  if (stream) fprintf(stream, "%s", lxmName(type));
+}
+
 void lxmPrint(Lexeme const lxm) {
   printf("%s `", lxmName(lxm.type));
   strWrite(lxm.val, stdout);

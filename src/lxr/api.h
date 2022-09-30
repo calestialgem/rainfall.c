@@ -6,6 +6,8 @@
 #include "otc/api.h"
 #include "utl/api.h"
 
+#include <stdio.h>
+
 /* Type of a lexeme. */
 typedef enum {
   /* Mark "=". */
@@ -62,6 +64,9 @@ typedef struct {
 
 /* Name of the given lexeme type. */
 char const* lxmName(LexemeType type);
+/* Stream out the name of the given lexeme type as string to the given stream.
+ * Does not do anything if the stream is null. */
+void        lxmWrite(LexemeType type, FILE* stream);
 /* Print the given lexeme. */
 void        lxmPrint(Lexeme lxm);
 
