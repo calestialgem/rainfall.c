@@ -7,7 +7,6 @@
 #include "utl/api.h"
 
 #include <stdlib.h>
-#include <string.h>
 
 /* Make sure the given amount of space exists at the end of the given
  * expression. When necessary, grows by at least half of the current capacity.
@@ -50,12 +49,4 @@ ExpressionNode expAt(Expression const exp, ux const i) { return exp.bgn[i]; }
 void expAdd(Expression* const exp, ExpressionNode const node) {
   reserve(exp, 1);
   *exp->end++ = node;
-}
-
-void expPut(Expression* const exp, ux const i, ExpressionNode const node) {
-  reserve(exp, 1);
-  ExpressionNode* pos = exp->bgn + i;
-  memmove(pos + 1, pos, (exp->end - pos) * sizeof(ExpressionNode));
-  *pos = node;
-  exp->end++;
 }

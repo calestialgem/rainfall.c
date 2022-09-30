@@ -51,11 +51,25 @@ static Lexeme get() { return *psr.cur; }
 /* Go to the next lexeme. */
 static void next() { psr.cur++; }
 
-/* Return the lexeme that was parsed and go to the next lexeme. */
-static Lexeme consume() {
-  Lexeme const lxm = get();
+/* Return the current position and go to the next lexeme. */
+static Lexeme const* advance() {
+  Lexeme const* const old = psr.cur;
   next();
-  return lxm;
+  return old;
+}
+
+/* Return the lexeme that was parsed and go to the next lexeme. */
+static Lexeme take() { return *advance(); }
+
+/* Whether the current lexeme is of the given type. */
+static bool check(LexemeType const type) { return has() && get().type == type; }
+
+/* Return whether the current lexeme is of the given type. Goes to the next
+ * lexeme if true. */
+static bool consume(LexemeType const type) {
+  bool const res = check(type);
+  if (res) next();
+  return res;
 }
 
 /* String starting from the given position upto the current lexeme. */
@@ -87,40 +101,15 @@ static void err(String const part, char const* const fmt, ...) {
   logArgs(otcErr, psr.otc);
 }
 
-/* Report a warning at the given part of the source file with the given
- * formatted message. */
-static void wrn(String const part, char const* const fmt, ...) {
-  logArgs(otcWrn, psr.otc);
-}
-
 /* Report an information at the given part of the source file with the given
  * formatted message. */
 static void info(String const part, char const* const fmt, ...) {
   logArgs(otcInfo, *psr.otc);
 }
 
-/* Whether the current lexeme is of the given type. */
-static bool check(LexemeType const type) { return has() && get().type == type; }
-
 /* Add a new expression node with the given operator, arity and value. */
 static void expNodeAdd(Operator const op, ux const ary, String const val) {
   expAdd(&psr.exp, (ExpressionNode){.op = op, .ary = ary, .val = val});
-}
-
-/* Put a new expression node at the given index with the given operator, arity
- * and value. */
-static void
-expNodePut(ux const i, Operator const op, ux const ary, String const val) {
-  expPut(&psr.exp, i, (ExpressionNode){.op = op, .ary = ary, .val = val});
-}
-
-/* Whether there is a nodes in the expression. */
-static bool expNodeHas() { return expLen(psr.exp) >= 1; }
-
-/* Last expression node. */
-static ExpressionNode expNodeGet() {
-  // How to know which node to stop?
-  dbgUnexpected("Not implemented!");
 }
 
 // Prototype to recursivly parse expressions.
@@ -129,21 +118,19 @@ static Result exp(ux lvl);
 /* Try to parse a nullary expression node. */
 static Result expNodeNull(NullaryOperator const null) {
   if (!check(null.op)) return NO;
-  expNodeAdd(opOfNull(null), 0, consume().val);
+  expNodeAdd(opOfNull(null), 0, take().val);
   return YES;
 }
 
 /* Try to parse a prenary expression node. */
 static Result expNodePre(PrenaryOperator const pre, ux const lvl) {
   if (!check(pre.op)) return NO;
-  next();
-  Lexeme const* const old = psr.cur;
-  ux const            i   = expLen(psr.exp);
+  Lexeme const* const old = advance();
   switch (exp(lvl)) {
-  case YES: expNodePut(i, opOfPre(pre), 1, val(old)); return YES;
+  case YES: expNodeAdd(opOfPre(pre), 1, val(old)); return YES;
   case NO:
     err(
-      val(old), "Expected an operand after the `%s` in the prenary operation!",
+      val(old), "Expected an operand after the operator `%s`!",
       lxmName(pre.op));
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
@@ -151,29 +138,111 @@ static Result expNodePre(PrenaryOperator const pre, ux const lvl) {
 }
 
 /* Try to parse a postary expression node. */
-static Result expNodePost(PostaryOperator const post) {
-  if (!check(post.op)) return NO;
-  if (!expNodeHas()) return ERR;
+static Result expNodePost(PostaryOperator const post, ux const lvl) {
   Lexeme const* const old = psr.cur;
+  switch (exp(lvl + 1)) {
+  case YES: break;
+  case NO: return NO;
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+  if (consume(post.op)) expNodeAdd(opOfPost(post), 1, val(old));
+  return YES;
+}
+
+/* Try to parse a cirnary expression node. */
+static Result expNodeCir(CirnaryOperator const cir) {
+  if (!check(cir.lop)) return NO;
+  Lexeme const* const old = advance();
   switch (exp(0)) {
-  case YES: expNodeAdd(opOfPost(post), 1, val(old)); return YES;
+  case YES: break;
   case NO:
     err(
-      val(old), "Expected an operand after the `%s` in the postary operation!",
-      lxmName(post.op));
+      val(old), "Expected an operand after the opening `%s`!",
+      lxmName(cir.lop));
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+  if (!consume(cir.rop)) {
+    err(
+      val(old), "Expected a closing `%s` for the opening `%s`!",
+      lxmName(cir.rop), lxmName(cir.lop));
+    info(old->val, "Opened here.");
+    return ERR;
+  }
+  expNodeAdd(opOfCir(cir), 1, val(old));
+  return YES;
+}
+
+/* Try to parse a binary expression node. */
+static Result expNodeBin(BinaryOperator const bin, ux const lvl) {
+  Lexeme const* const old = psr.cur;
+  switch (exp(lvl + 1)) {
+  case YES: break;
+  case NO: return NO;
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+  if (!consume(bin.op)) return YES;
+  switch (exp(lvl + 1)) {
+  case YES: expNodeAdd(opOfBin(bin), 2, val(old)); return YES;
+  case NO:
+    err(
+      val(old), "Expected an operand after the operator `%s`!",
+      lxmName(bin.op));
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
 }
 
-/* Try to parse a cirnary expression node. */
-static Result expNodeCir(CirnaryOperator const op) {}
-
-/* Try to parse a binary expression node. */
-static Result expNodeBin(BinaryOperator const op, ux const lvl) {}
-
 /* Try to parse a variary expression node. */
-static Result expNodeVar(VariaryOperator const op) {}
+static Result expNodeVar(VariaryOperator const var, ux const lvl) {
+  Lexeme const* const old = psr.cur;
+  switch (exp(lvl + 1)) {
+  case YES: break;
+  case NO: return NO;
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+  Lexeme const* const open = psr.cur;
+  if (!consume(var.lop)) return YES;
+  switch (exp(0)) {
+  case YES: break;
+  case NO:
+    if (consume(var.rop)) {
+      expNodeAdd(opOfVar(var), 1, val(old));
+      return YES;
+    }
+    err(
+      val(old), "Expected a closing `%s` for the opening `%s`!",
+      lxmName(var.rop), lxmName(var.lop));
+    info(open->val, "Opened here.");
+  case ERR: return ERR;
+  default: dbgUnexpected("Unknown parse result!");
+  }
+  ux ary = 2;
+  while (true) {
+    if (consume(var.rop)) break;
+    if (!consume(var.sep)) {
+      err(
+        val(old), "Expected a closing `%s` for the opening `%s`!",
+        lxmName(var.rop), lxmName(var.lop));
+      info(open->val, "Opened here.");
+      return ERR;
+    }
+    switch (exp(0)) {
+    case YES: ary++; continue;
+    case NO:
+      err(
+        val(old), "Expected an operand after the separator `%s`!",
+        lxmName(var.sep));
+    case ERR: return ERR;
+    default: dbgUnexpected("Unknown parse result!");
+    }
+  }
+  expNodeAdd(opOfVar(var), ary, val(old));
+  return YES;
+}
 
 /* Try to parse an expression node. */
 static Result expNode(ux const lvl, ux const i) {
@@ -181,10 +250,10 @@ static Result expNode(ux const lvl, ux const i) {
   switch (op.tag) {
   case OP_NULL: return expNodeNull(op.null);
   case OP_PRE: return expNodePre(op.pre, lvl);
-  case OP_POST: return expNodePost(op.post);
+  case OP_POST: return expNodePost(op.post, lvl);
   case OP_CIR: return expNodeCir(op.cir);
   case OP_BIN: return expNodeBin(op.bin, lvl);
-  case OP_VAR: return expNodeVar(op.var);
+  case OP_VAR: return expNodeVar(op.var, lvl);
   default: dbgUnexpected("Unknown operator tag!");
   }
 }
@@ -197,7 +266,9 @@ static Result exp(ux const lvl) {
       switch (expNode(i, j)) {
       case YES:
         parsed = YES;
-        // Recurse in the lower precedence level.
+        // Recurse in the same precedence level. Since the loop variable is
+        // incremented at the end subtract one to get the correct target level
+        // in the next iteration of the outer loop.
         i      = lvl - 1;
         break;
       case NO: continue;

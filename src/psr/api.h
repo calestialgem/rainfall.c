@@ -92,7 +92,7 @@ typedef struct {
 typedef struct {
   /* Operator. */
   Operator op;
-  /* Amount of operands, which are the nodes that come after this one in the
+  /* Amount of operands, which are the nodes that come before this one in the
    * expression's array. */
   ux       ary;
   /* Combined value of all the lexemes of the expression. */
