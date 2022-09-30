@@ -60,7 +60,9 @@ void expAdd(Expression* const exp, ExpressionNode const node) {
 static ExpressionNode const*
 nodeWrite(ExpressionNode const* const i, FILE* const stream) {
   switch (i->op.tag) {
-  case OP_NULL: strWrite(i->val, stream); return i - 1;
+  case OP_NULL:
+    if (stream) strWrite(i->val, stream);
+    return i - 1;
   case OP_PRE: lxmWrite(i->op.pre.op, stream); return nodeWrite(i - 1, stream);
   case OP_POST: {
     ExpressionNode const* const op = nodeWrite(i - 1, stream);
