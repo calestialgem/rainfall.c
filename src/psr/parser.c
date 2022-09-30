@@ -75,7 +75,7 @@ static bool consume(LexemeType const type) {
 
 /* String starting from the given string upto the current lexeme. */
 static String strJoin(String const old) {
-  return (String){.bgn = old.bgn, .end = psr.cur->val.bgn};
+  return (String){.bgn = old.bgn, .end = (psr.cur - 1)->val.end};
 }
 
 /* String starting from the given lexeme upto the current lexeme. */
@@ -88,9 +88,6 @@ static String expJoin(ExpressionNode const node) { return strJoin(node.val); }
 static void expNodeAdd(Operator const op, ux const ary, String const val) {
   expAdd(&psr.exp, (ExpressionNode){.op = op, .ary = ary, .val = val});
 }
-
-/* Whether there is a parsed expression node. */
-static bool expHas() { return expLen(psr.exp) > 0; }
 
 /* Last parsed expression node. */
 static ExpressionNode expNodeGet() {
@@ -110,17 +107,18 @@ static Expression expGet() {
 static Result exp(ux lvl);
 
 /* Try to parse a nullary expression node. */
-static Result expNodeNull(NullaryOperator const null) {
+static Result expNodeNull(NullaryOperator const null, bool const has) {
   Lexeme const old = get();
-  if (!consume(null.op)) return NO;
+  if (has || !consume(null.op)) return NO;
   expNodeAdd(opOfNull(null), 0, lxmJoin(old));
   return YES;
 }
 
 /* Try to parse a prenary expression node. */
-static Result expNodePre(PrenaryOperator const pre, ux const lvl) {
+static Result
+expNodePre(PrenaryOperator const pre, ux const lvl, bool const has) {
   Lexeme const old = get();
-  if (!consume(pre.op)) return NO;
+  if (has || !consume(pre.op)) return NO;
   switch (exp(lvl)) {
   case YES: expNodeAdd(opOfPre(pre), 1, lxmJoin(old)); return YES;
   case NO:
@@ -133,16 +131,16 @@ static Result expNodePre(PrenaryOperator const pre, ux const lvl) {
 }
 
 /* Try to parse a postary expression node. */
-static Result expNodePost(PostaryOperator const post) {
-  if (!expHas() || !consume(post.op)) return NO;
+static Result expNodePost(PostaryOperator const post, bool const has) {
+  if (!has || !consume(post.op)) return NO;
   expNodeAdd(opOfPost(post), 1, expJoin(expNodeGet()));
   return YES;
 }
 
 /* Try to parse a cirnary expression node. */
-static Result expNodeCir(CirnaryOperator const cir) {
+static Result expNodeCir(CirnaryOperator const cir, bool const has) {
   Lexeme const old = get();
-  if (!consume(cir.lop)) return NO;
+  if (has || !consume(cir.lop)) return NO;
   switch (exp(0)) {
   case YES: break;
   case NO:
@@ -164,8 +162,9 @@ static Result expNodeCir(CirnaryOperator const cir) {
 }
 
 /* Try to parse a binary expression node. */
-static Result expNodeBin(BinaryOperator const bin, ux const lvl) {
-  if (!expHas() || !consume(bin.op)) return NO;
+static Result
+expNodeBin(BinaryOperator const bin, ux const lvl, bool const has) {
+  if (!has || !consume(bin.op)) return NO;
   ExpressionNode const old = expNodeGet();
   switch (exp(lvl + 1)) {
   case YES: expNodeAdd(opOfBin(bin), 2, expJoin(old)); return YES;
@@ -179,9 +178,9 @@ static Result expNodeBin(BinaryOperator const bin, ux const lvl) {
 }
 
 /* Try to parse a variary expression node. */
-static Result expNodeVar(VariaryOperator const var) {
+static Result expNodeVar(VariaryOperator const var, bool const has) {
   Lexeme const open = get();
-  if (!expHas() || !consume(var.lop)) return NO;
+  if (!has || !consume(var.lop)) return NO;
   ExpressionNode const old = expNodeGet();
   switch (exp(0)) {
   case YES: break;
@@ -222,15 +221,15 @@ static Result expNodeVar(VariaryOperator const var) {
 }
 
 /* Try to parse an expression node. */
-static Result expNode(ux const lvl, ux const i) {
+static Result expNode(ux const lvl, ux const i, bool const has) {
   Operator const op = OP_ORDER[lvl][i];
   switch (op.tag) {
-  case OP_NULL: return expNodeNull(op.null);
-  case OP_PRE: return expNodePre(op.pre, lvl);
-  case OP_POST: return expNodePost(op.post);
-  case OP_CIR: return expNodeCir(op.cir);
-  case OP_BIN: return expNodeBin(op.bin, lvl);
-  case OP_VAR: return expNodeVar(op.var);
+  case OP_NULL: return expNodeNull(op.null, has);
+  case OP_PRE: return expNodePre(op.pre, lvl, has);
+  case OP_POST: return expNodePost(op.post, has);
+  case OP_CIR: return expNodeCir(op.cir, has);
+  case OP_BIN: return expNodeBin(op.bin, lvl, has);
+  case OP_VAR: return expNodeVar(op.var, has);
   default: dbgUnexpected("Unknown operator tag!");
   }
 }
@@ -240,7 +239,7 @@ static Result exp(ux const lvl) {
   Result parsed = NO;
   for (ux i = lvl; i < OP_ORDER_LEN; i++) {
     for (ux j = 0; j < OP_LEVEL_LEN[i]; j++) {
-      switch (expNode(i, j)) {
+      switch (expNode(i, j, parsed == YES)) {
       case YES:
         parsed = YES;
         // Recurse in the same precedence level. Since the loop variable is
