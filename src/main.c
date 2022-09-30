@@ -24,7 +24,6 @@ int main(int const argumentCount, char const* const* const arguments) {
 
   Lex   lex = lexOf(&otc, src);
   Parse prs = prsOf(&otc, lex);
-  prsWrite(prs, stdout);
 
   if (otc.err > 0)
     otcInfoWhole(
@@ -34,6 +33,9 @@ int main(int const argumentCount, char const* const* const arguments) {
     otcInfoWhole(
       otc, otc.wrn > 1 ? "There were %u warnings." : "There was a warning.",
       otc.wrn);
+
+  printf("\n\nParse Result:\n\n");
+  prsWrite(prs, stdout);
 
   prsFree(&prs);
   lexFree(&lex);

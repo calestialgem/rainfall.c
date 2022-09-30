@@ -453,6 +453,6 @@ void parserParse(Parse* const prs, Outcome* const otc, Lex const lex) {
     }
     unknown(&unk, end);
   }
-  dbgExpect(check(LXM_EOF), "Lex does not end with EOF!");
+  dbgExpect(get().type == LXM_EOF, "Lex does not end with EOF!");
   unknown(&unk, psr.cur);
 }
