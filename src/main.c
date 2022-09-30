@@ -36,6 +36,7 @@ int main(int const argumentCount, char const* const* const arguments) {
 
   printf("\n\nParse Result:\n\n");
   prsWrite(prs, stdout);
+  printf("\n");
 
   prsFree(&prs);
   lexFree(&lex);

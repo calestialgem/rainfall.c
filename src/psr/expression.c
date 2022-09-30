@@ -103,3 +103,25 @@ void expWrite(Expression const exp, FILE* const stream) {
   for (ExpressionNode const* i = exp.end - 1; i >= exp.bgn;)
     i = nodeWrite(i, stream);
 }
+
+/* Stream out the expression node at the given position and its childeren as
+ * string to the given stream. Returns the position after all the childeren of
+ * the node. */
+static ExpressionNode const*
+nodeTree(ExpressionNode const* i, ux const depth, FILE* const stream) {
+  fprintf(stream, "%10s   ", opName(i->op));
+  for (ux j = 1; j < depth; j++) fprintf(stream, " |  ");
+  if (depth > 0) fprintf(stream, " +- ");
+  fprintf(stream, "`");
+  strWrite(i->val, stream);
+  fprintf(stream, "`\n");
+  ux const ary = i->ary;
+  i--;
+  for (ux j = 0; j < ary; j++) i = nodeTree(i, depth + 1, stream);
+  return i;
+}
+
+void expTree(Expression const exp, FILE* const stream) {
+  for (ExpressionNode const* i = exp.end - 1; i >= exp.bgn;)
+    i = nodeTree(i, 0, stream);
+}

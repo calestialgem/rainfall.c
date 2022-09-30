@@ -101,6 +101,8 @@ static ExpressionNode expNodeGet() {
 static Expression expGet() {
   Expression res = psr.exp;
   psr.exp        = expOf(0);
+  printf("\n\nExpression Breakdown:\n\n");
+  expTree(res, stdout);
   return res;
 }
 
@@ -164,12 +166,13 @@ static Result expNodeCir(CirnaryOperator const cir) {
 /* Try to parse a binary expression node. */
 static Result expNodeBin(BinaryOperator const bin, ux const lvl) {
   if (!expHas() || !consume(bin.op)) return NO;
+  ExpressionNode const old = expNodeGet();
   switch (exp(lvl + 1)) {
-  case YES: expNodeAdd(opOfBin(bin), 2, expJoin(expNodeGet())); return YES;
+  case YES: expNodeAdd(opOfBin(bin), 2, expJoin(old)); return YES;
   case NO:
     otcErr(
-      psr.otc, expJoin(expNodeGet()),
-      "Expected an operand after the operator `%s`!", lxmName(bin.op));
+      psr.otc, expJoin(old), "Expected an operand after the operator `%s`!",
+      lxmName(bin.op));
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
@@ -179,17 +182,17 @@ static Result expNodeBin(BinaryOperator const bin, ux const lvl) {
 static Result expNodeVar(VariaryOperator const var) {
   Lexeme const open = get();
   if (!expHas() || !consume(var.lop)) return NO;
+  ExpressionNode const old = expNodeGet();
   switch (exp(0)) {
   case YES: break;
   case NO:
     if (consume(var.rop)) {
-      expNodeAdd(opOfVar(var), 1, expJoin(expNodeGet()));
+      expNodeAdd(opOfVar(var), 1, expJoin(old));
       return YES;
     }
     otcErr(
-      psr.otc, expJoin(expNodeGet()),
-      "Expected a closing `%s` for the opening `%s`!", lxmName(var.rop),
-      lxmName(var.lop));
+      psr.otc, expJoin(old), "Expected a closing `%s` for the opening `%s`!",
+      lxmName(var.rop), lxmName(var.lop));
     otcInfo(*psr.otc, open.val, "Opened here.");
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
@@ -199,9 +202,8 @@ static Result expNodeVar(VariaryOperator const var) {
     if (consume(var.rop)) break;
     if (!consume(var.sep)) {
       otcErr(
-        psr.otc, expJoin(expNodeGet()),
-        "Expected a closing `%s` for the opening `%s`!", lxmName(var.rop),
-        lxmName(var.lop));
+        psr.otc, expJoin(old), "Expected a closing `%s` for the opening `%s`!",
+        lxmName(var.rop), lxmName(var.lop));
       otcInfo(*psr.otc, open.val, "Opened here.");
       return ERR;
     }
@@ -209,13 +211,13 @@ static Result expNodeVar(VariaryOperator const var) {
     case YES: ary++; continue;
     case NO:
       otcErr(
-        psr.otc, expJoin(expNodeGet()),
-        "Expected an operand after the separator `%s`!", lxmName(var.sep));
+        psr.otc, expJoin(old), "Expected an operand after the separator `%s`!",
+        lxmName(var.sep));
     case ERR: return ERR;
     default: dbgUnexpected("Unknown parse result!");
     }
   }
-  expNodeAdd(opOfVar(var), ary, expJoin(expNodeGet()));
+  expNodeAdd(opOfVar(var), ary, expJoin(old));
   return YES;
 }
 
