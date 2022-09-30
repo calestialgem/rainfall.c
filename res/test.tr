@@ -27,3 +27,13 @@ nice /= 2;    // 4
 nice %= 3;    // 1
 nice *= 4;    // 4
 nice -= -5*6; // 34
+
+nice++;
+nice--;
+
+nice += 4;
+
+++nice;
+--nice;
+
+func();

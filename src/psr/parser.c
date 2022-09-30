@@ -457,8 +457,10 @@ static Result statement() {
 }
 
 /* Report the unknown lexemes in the given range. */
-static void unknown(Lexeme const unk, char const* const end) {
+static void unknown(Lexeme const unk, char const* end) {
   if (!strLen(unk.val)) return;
+  // If the end is a new line, go back.
+  while (*(end - 1) == '\n') end--;
   String const val = {.bgn = unk.val.bgn, .end = end};
   otcErr(
     psr.otc, val, "Expected a statement instead of %s!",
@@ -479,7 +481,11 @@ void parserParse(Parse* const prs, Outcome* const otc, Lex const lex) {
     Lexeme const last = get();
     Result const res  = statement();
     if (res == NO) {
-      if (!strLen(err.val)) err = last;
+      if (last.type == LXM_SEMI) {
+        // Show error and clear after a semicolon.
+        unknown(err, last.val.end);
+        err = (Lexeme){0};
+      } else if (!strLen(err.val)) err = last;
       next();
       continue;
     }
