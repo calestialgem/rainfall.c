@@ -4,6 +4,7 @@
 #include "dbg/api.h"
 #include "lxr/api.h"
 #include "otc/api.h"
+#include "psr/api.h"
 #include "utl/api.h"
 
 #include <stdio.h>
@@ -21,8 +22,9 @@ int main(int const argumentCount, char const* const* const arguments) {
   Source  src = srcOf(arguments[1]);
   Outcome otc = otcOf(src);
 
-  Lex lex = lexOf(&otc, src);
-  for (ux i = 0; i < lexLen(lex); i++) lxmPrint(lexAt(lex, i));
+  Lex   lex = lexOf(&otc, src);
+  Parse prs = prsOf(&otc, lex);
+  prsWrite(prs, stdout);
 
   if (otc.err > 0)
     otcInfoWhole(
@@ -33,6 +35,7 @@ int main(int const argumentCount, char const* const* const arguments) {
       otc, otc.wrn > 1 ? "There were %u warnings." : "There was a warning.",
       otc.wrn);
 
+  prsFree(&prs);
   lexFree(&lex);
   srcFree(&src);
 }

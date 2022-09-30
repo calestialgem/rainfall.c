@@ -77,36 +77,6 @@ static String val(Lexeme const* old) {
   return (String){.bgn = old->val.bgn, .end = psr.cur->val.bgn};
 }
 
-/* Calls the given log function with the given outcome. */
-#define logArgs(log, otc)      \
-  do {                         \
-    va_list args = NULL;       \
-    va_start(args, fmt);       \
-    log(otc, part, fmt, args); \
-    va_end(args);              \
-  } while (false)
-
-/* Calls the given log function with the given outcome. */
-#define logWholeArgs(log, otc) \
-  do {                         \
-    va_list args = NULL;       \
-    va_start(args, fmt);       \
-    log(otc, fmt, args);       \
-    va_end(args);              \
-  } while (false)
-
-/* Report an error at the given part of the source file with the given
- * formatted message. */
-static void err(String const part, char const* const fmt, ...) {
-  logArgs(otcErr, psr.otc);
-}
-
-/* Report an information at the given part of the source file with the given
- * formatted message. */
-static void info(String const part, char const* const fmt, ...) {
-  logArgs(otcInfo, *psr.otc);
-}
-
 /* Add a new expression node with the given operator, arity and value. */
 static void expNodeAdd(Operator const op, ux const ary, String const val) {
   expAdd(&psr.exp, (ExpressionNode){.op = op, .ary = ary, .val = val});
@@ -130,8 +100,8 @@ static Result expNodePre(PrenaryOperator const pre, ux const lvl) {
   switch (exp(lvl)) {
   case YES: expNodeAdd(opOfPre(pre), 1, val(old)); return YES;
   case NO:
-    err(
-      val(old), "Expected an operand after the operator `%s`!",
+    otcErr(
+      psr.otc, val(old), "Expected an operand after the operator `%s`!",
       lxmName(pre.op));
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
@@ -158,17 +128,17 @@ static Result expNodeCir(CirnaryOperator const cir) {
   switch (exp(0)) {
   case YES: break;
   case NO:
-    err(
-      val(old), "Expected an operand after the opening `%s`!",
+    otcErr(
+      psr.otc, val(old), "Expected an operand after the opening `%s`!",
       lxmName(cir.lop));
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
   if (!consume(cir.rop)) {
-    err(
-      val(old), "Expected a closing `%s` for the opening `%s`!",
+    otcErr(
+      psr.otc, val(old), "Expected a closing `%s` for the opening `%s`!",
       lxmName(cir.rop), lxmName(cir.lop));
-    info(old->val, "Opened here.");
+    otcInfo(*psr.otc, old->val, "Opened here.");
     return ERR;
   }
   expNodeAdd(opOfCir(cir), 1, val(old));
@@ -188,8 +158,8 @@ static Result expNodeBin(BinaryOperator const bin, ux const lvl) {
   switch (exp(lvl + 1)) {
   case YES: expNodeAdd(opOfBin(bin), 2, val(old)); return YES;
   case NO:
-    err(
-      val(old), "Expected an operand after the operator `%s`!",
+    otcErr(
+      psr.otc, val(old), "Expected an operand after the operator `%s`!",
       lxmName(bin.op));
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
@@ -214,10 +184,10 @@ static Result expNodeVar(VariaryOperator const var, ux const lvl) {
       expNodeAdd(opOfVar(var), 1, val(old));
       return YES;
     }
-    err(
-      val(old), "Expected a closing `%s` for the opening `%s`!",
+    otcErr(
+      psr.otc, val(old), "Expected a closing `%s` for the opening `%s`!",
       lxmName(var.rop), lxmName(var.lop));
-    info(open->val, "Opened here.");
+    otcInfo(*psr.otc, open->val, "Opened here.");
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
@@ -225,17 +195,17 @@ static Result expNodeVar(VariaryOperator const var, ux const lvl) {
   while (true) {
     if (consume(var.rop)) break;
     if (!consume(var.sep)) {
-      err(
-        val(old), "Expected a closing `%s` for the opening `%s`!",
+      otcErr(
+        psr.otc, val(old), "Expected a closing `%s` for the opening `%s`!",
         lxmName(var.rop), lxmName(var.lop));
-      info(open->val, "Opened here.");
+      otcInfo(*psr.otc, open->val, "Opened here.");
       return ERR;
     }
     switch (exp(0)) {
     case YES: ary++; continue;
     case NO:
-      err(
-        val(old), "Expected an operand after the separator `%s`!",
+      otcErr(
+        psr.otc, val(old), "Expected an operand after the separator `%s`!",
         lxmName(var.sep));
     case ERR: return ERR;
     default: dbgUnexpected("Unknown parse result!");
@@ -276,6 +246,8 @@ static Result exp(ux const lvl) {
       case ERR: return ERR;
       default: dbgUnexpected("Unknown parse result!");
       }
+      // Break on case `YES` from the inner loop.
+      break;
     }
   }
   return parsed;
@@ -295,32 +267,34 @@ static Result let() {
   if (!consume(LXM_LET)) return NO;
 
   if (!check(LXM_ID)) {
-    err(val(old), "Expected a name in definition!");
+    otcErr(psr.otc, val(old), "Expected a name in definition!");
     return ERR;
   }
   Lexeme const name = take();
 
   if (!consume(LXM_COLON)) {
-    err(val(old), "Expected a `:` in the definition!");
+    otcErr(psr.otc, val(old), "Expected a `:` in the definition!");
     return ERR;
   }
 
   switch (exp(0)) {
   case YES: break;
-  case NO: err(val(old), "Expected a type expression in the definition!");
+  case NO:
+    otcErr(psr.otc, val(old), "Expected a type expression in the definition!");
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
   Expression const type = expGet();
 
   if (!consume(LXM_EQUAL)) {
-    err(val(old), "Expected a `=` in the definition!");
+    otcErr(psr.otc, val(old), "Expected a `=` in the definition!");
     return ERR;
   }
 
   switch (exp(0)) {
   case YES: break;
-  case NO: err(val(old), "Expected a value expression in the definition!");
+  case NO:
+    otcErr(psr.otc, val(old), "Expected a value expression in the definition!");
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
@@ -342,19 +316,20 @@ static Result var() {
   if (!consume(LXM_VAR)) return NO;
 
   if (!check(LXM_ID)) {
-    err(val(old), "Expected a name in definition!");
+    otcErr(psr.otc, val(old), "Expected a name in definition!");
     return ERR;
   }
   Lexeme const name = take();
 
   if (!consume(LXM_COLON)) {
-    err(val(old), "Expected a `:` in the definition!");
+    otcErr(psr.otc, val(old), "Expected a `:` in the definition!");
     return ERR;
   }
 
   switch (exp(0)) {
   case YES: break;
-  case NO: err(val(old), "Expected a type expression in the definition!");
+  case NO:
+    otcErr(psr.otc, val(old), "Expected a type expression in the definition!");
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
@@ -372,7 +347,8 @@ static Result var() {
 
   switch (exp(0)) {
   case YES: break;
-  case NO: err(val(old), "Expected a value expression in the definition!");
+  case NO:
+    otcErr(psr.otc, val(old), "Expected a value expression in the definition!");
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
@@ -401,7 +377,8 @@ static Result ass() {
 
   switch (exp(0)) {
   case YES: break;
-  case NO: err(val(old), "Expected a value expression in the assignment!");
+  case NO:
+    otcErr(psr.otc, val(old), "Expected a value expression in the assignment!");
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
@@ -436,8 +413,8 @@ static Result statement() {
 static void unknown(Lexeme const** const unk, Lexeme const* const bgn) {
   if (*unk == NULL) return;
   String const val = {.bgn = (*unk)->val.bgn, .end = bgn->val.bgn};
-  err(
-    val, "Expected a statement instead of %s!",
+  otcErr(
+    psr.otc, val, "Expected a statement instead of %s!",
     strLen(val) > 1 ? "these characters" : "this character");
   *unk = NULL;
 }
@@ -466,11 +443,11 @@ void parserParse(Parse* const prs, Outcome* const otc, Lex const lex) {
       while (has() && !check(LXM_SEMI)) next();
       next(); // Consume the synchronization lexeme.
       String const skipped = val(old);
-      info(skipped, "Skipped because of the previous error.");
+      otcInfo(*psr.otc, skipped, "Skipped because of the previous error.");
     } else {
       // Remove the parsed statement if there is no semicolon after it.
       if (!consume(LXM_SEMI)) {
-        err(val(end), "Expected a `;` after the statement!");
+        otcErr(psr.otc, val(end), "Expected a `;` after the statement!");
         prsPop(psr.prs);
       }
     }
