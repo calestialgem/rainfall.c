@@ -78,13 +78,14 @@ bool   strEq(String lhs, String rhs);
 void   strWrite(String str, FILE* stream);
 
 /* Set with the given initial capacity. */
-Set  setOf(ux cap);
+Set           setOf(ux cap);
 /* Release the memory resources used by the given set. */
-void setFree(Set* set);
+void          setFree(Set* set);
 /* Put the given string to the given set. */
-void setPut(Set* set, String str);
-/* Whether the given set contains the given string. */
-bool setHas(Set set, String str);
+void          setPut(Set* set, String str);
+/* Pointer to the string in the given set that is equal to the given string.
+ * Returns null if there is no string that is equal. */
+String const* setGet(Set set, String str);
 
 /* Buffer with the given initial capacity. */
 Buffer bfrOf(ux cap);

@@ -222,6 +222,11 @@ extern Type const TYPE_FNS_F4;
 /* Instance of f8 type. */
 extern Type const TYPE_FNS_F8;
 
+/* Amount of built-in types. */
+#define TYPE_BUILT_LEN 13
+/* Array of built-in types. */
+extern Type const TYPE_BUILT[TYPE_BUILT_LEN];
+
 /* Analyze the given parse. Reports to the given outcome. */
 Table tblOf(Outcome* otc, Parse prs);
 /* Release the memory resources used by the given table. */

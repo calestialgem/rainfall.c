@@ -11,37 +11,61 @@
 #define type(t) \
   { .tag = t }
 
-Type const TYPE_INS_META = type(TYPE_META);
-Type const TYPE_INS_I1   = type(TYPE_I1);
-Type const TYPE_INS_I2   = type(TYPE_I2);
-Type const TYPE_INS_I4   = type(TYPE_I4);
-Type const TYPE_INS_I8   = type(TYPE_I8);
-Type const TYPE_INS_IX   = type(TYPE_IX);
-Type const TYPE_UNS_U1   = type(TYPE_U1);
-Type const TYPE_UNS_U2   = type(TYPE_U2);
-Type const TYPE_UNS_U4   = type(TYPE_U4);
-Type const TYPE_UNS_U8   = type(TYPE_U8);
-Type const TYPE_UNS_UX   = type(TYPE_UX);
-Type const TYPE_FNS_F4   = type(TYPE_F4);
-Type const TYPE_FNS_F8   = type(TYPE_F8);
+// Definitions are in macros because macros can be used inside array
+// initializers as well.
 
-void typeWrite(Type const type, FILE* const stream) {
+#define tmeta type(TYPE_META)
+#define ti1   type(TYPE_I1)
+#define ti2   type(TYPE_I2)
+#define ti4   type(TYPE_I4)
+#define ti8   type(TYPE_I8)
+#define tix   type(TYPE_IX)
+#define tu1   type(TYPE_U1)
+#define tu2   type(TYPE_U2)
+#define tu4   type(TYPE_U4)
+#define tu8   type(TYPE_U8)
+#define tux   type(TYPE_UX)
+#define tf4   type(TYPE_F4)
+#define tf8   type(TYPE_F8)
+
+Type const TYPE_INS_META = tmeta;
+Type const TYPE_INS_I1   = ti1;
+Type const TYPE_INS_I2   = ti2;
+Type const TYPE_INS_I4   = ti4;
+Type const TYPE_INS_I8   = ti8;
+Type const TYPE_INS_IX   = tix;
+Type const TYPE_UNS_U1   = tu1;
+Type const TYPE_UNS_U2   = tu2;
+Type const TYPE_UNS_U4   = tu4;
+Type const TYPE_UNS_U8   = tu8;
+Type const TYPE_UNS_UX   = tux;
+Type const TYPE_FNS_F4   = tf4;
+Type const TYPE_FNS_F8   = tf8;
+
+Type const TYPE_BUILT[TYPE_BUILT_LEN] = {tmeta, ti1, ti2, ti4, ti8, tix, tu1,
+                                         tu2,   tu4, tu8, tux, tf4, tf8};
+
+char const* typeName(Type const type) {
   switch (type.tag) {
-  case TYPE_META: fprintf(stream, "type"); return;
-  case TYPE_I1: fprintf(stream, "i1"); return;
-  case TYPE_I2: fprintf(stream, "i2"); return;
-  case TYPE_I4: fprintf(stream, "i4"); return;
-  case TYPE_I8: fprintf(stream, "i8"); return;
-  case TYPE_IX: fprintf(stream, "ix"); return;
-  case TYPE_U1: fprintf(stream, "u1"); return;
-  case TYPE_U2: fprintf(stream, "u2"); return;
-  case TYPE_U4: fprintf(stream, "u4"); return;
-  case TYPE_U8: fprintf(stream, "u8"); return;
-  case TYPE_UX: fprintf(stream, "ux"); return;
-  case TYPE_F4: fprintf(stream, "f4"); return;
-  case TYPE_F8: fprintf(stream, "f8"); return;
+  case TYPE_META: return "type";
+  case TYPE_I1: return "i1";
+  case TYPE_I2: return "i2";
+  case TYPE_I4: return "i4";
+  case TYPE_I8: return "i8";
+  case TYPE_IX: return "ix";
+  case TYPE_U1: return "u1";
+  case TYPE_U2: return "u2";
+  case TYPE_U4: return "u4";
+  case TYPE_U8: return "u8";
+  case TYPE_UX: return "ux";
+  case TYPE_F4: return "f4";
+  case TYPE_F8: return "f8";
   default: dbgUnexpected("Unknown type!");
   }
+}
+
+void typeWrite(Type const type, FILE* const stream) {
+  fprintf(stream, "%s", typeName(type));
 }
 
 void valWrite(Type const type, Value const val, FILE* const stream) {

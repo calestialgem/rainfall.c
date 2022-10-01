@@ -10,11 +10,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+/* Name of the given type. */
+char const* typeName(Type type);
 /* Stream out the given type as string to the given stream. */
-void typeWrite(Type type, FILE* stream);
+void        typeWrite(Type type, FILE* stream);
 /* Stream out the given value of the given type as string to the given stream.
  */
-void valWrite(Type type, Value val, FILE* stream);
+void        valWrite(Type type, Value val, FILE* stream);
 
 /* Evaluation with the given initial node capacity. */
 Evaluation     evlOf(ux cap);
@@ -46,4 +48,4 @@ ux   tblLen(Table tbl);
 
 /* Analyze the given parse into the given table by reporting to the given
  * outcome. */
-void analyzerAnalyze(Table* table, Outcome* otc, Parse psr);
+void analyzerAnalyze(Table* tbl, Outcome* otc, Parse prs);
