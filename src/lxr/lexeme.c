@@ -34,8 +34,8 @@ char const* lxmName(LexemeType const type) {
   case LXM_RARROW: return ">";
   case LXM_EQEQ: return "==";
   case LXM_EQUAL: return "=";
-  case LXM_NOTEQ: return "!=";
-  case LXM_NOT: return "=";
+  case LXM_EXCEQ: return "!=";
+  case LXM_EXC: return "!";
   case LXM_EOF: return "eof";
   case LXM_LET: return "let";
   case LXM_VAR: return "var";

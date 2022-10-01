@@ -37,3 +37,6 @@ nice += 4;
 --nice;
 
 func();
+
+var b: bool = false;
+b = !b;

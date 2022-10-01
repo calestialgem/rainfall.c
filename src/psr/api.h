@@ -215,6 +215,8 @@ extern Operator const OP_SDE;
 extern Operator const OP_PIN;
 /* Decrement before returning the value of a number. */
 extern Operator const OP_PDE;
+/* Invert truthiness value. */
+extern Operator const OP_NOT;
 
 /* Posating a number. */
 extern Operator const OP_POS;
@@ -234,7 +236,7 @@ extern Operator const OP_ADD;
 extern Operator const OP_SUB;
 
 /* Amount of primary operators. */
-#define OP_PRIMARY_LEN 8
+#define OP_PRIMARY_LEN 9
 /* Operators that are the indivisible parts of an expression. */
 extern Operator const OP_PRIMARY[OP_PRIMARY_LEN];
 
