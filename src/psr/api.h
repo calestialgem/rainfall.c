@@ -244,15 +244,12 @@ extern Operator const OP_RSH;
 
 /* Bitwise AND. */
 extern Operator const OP_AND;
+
 /* Bitwise XOR */
 extern Operator const OP_XOR;
+
 /* Bitwise OR. */
 extern Operator const OP_ORR;
-
-/* Short circuit AND. */
-extern Operator const OP_SAN;
-/* Short circuit OR. */
-extern Operator const OP_SOR;
 
 /* Whether the left is smaller than the right. */
 extern Operator const OP_SMT;
@@ -267,6 +264,12 @@ extern Operator const OP_LTE;
 extern Operator const OP_EQU;
 /* Wherhet the left is not equal to right. */
 extern Operator const OP_NEQ;
+
+/* Logical AND. */
+extern Operator const OP_LAN;
+
+/* Logical OR. */
+extern Operator const OP_LOR;
 
 /* Amount of primary operators. */
 #define OP_PRIMARY_LEN 4
@@ -293,15 +296,20 @@ extern Operator const OP_TERM[OP_TERM_LEN];
 /* Operators that shift bits. */
 extern Operator const OP_SHIFT[OP_SHIFT_LEN];
 
-/* Amount of bitwise operators. */
-#define OP_BITWISE_LEN 3
-/* Operators that compare bits. */
-extern Operator const OP_BITWISE[OP_BITWISE_LEN];
+/* Amount of bitwise AND operators. */
+#define OP_BITAND_LEN 1
+/* Operators that AND bits. */
+extern Operator const OP_BITWISE_AND[OP_BITAND_LEN];
 
-/* Amount of short circuit operators. */
-#define OP_SHORT_LEN 2
-/* Operators that compare with short circuiting. */
-extern Operator const OP_SHORT[OP_SHORT_LEN];
+/* Amount of bitwise XOR operators. */
+#define OP_BITXOR_LEN 1
+/* Operators that XOR bits. */
+extern Operator const OP_BITWISE_XOR[OP_BITXOR_LEN];
+
+/* Amount of bitwise OR operators. */
+#define OP_BITOR_LEN 1
+/* Operators that OR bits. */
+extern Operator const OP_BITWISE_OR[OP_BITOR_LEN];
 
 /* Amount of comparison operators. */
 #define OP_COMPARISON_LEN 4
@@ -313,8 +321,18 @@ extern Operator const OP_COMPARISON[OP_COMPARISON_LEN];
 /* Operators that compare equality. */
 extern Operator const OP_EQUALITY[OP_EQUALITY_LEN];
 
+/* Amount of logical AND operators. */
+#define OP_LOGAND_LEN 1
+/* Operators that AND logically. */
+extern Operator const OP_LOGAND[OP_LOGAND_LEN];
+
+/* Amount of logical OR operators. */
+#define OP_LOGOR_LEN 1
+/* Operators that OR logically. */
+extern Operator const OP_SHORT_OR[OP_LOGOR_LEN];
+
 /* Amount of operator precedence levels. */
-#define OP_ORDER_LEN 9
+#define OP_ORDER_LEN 12
 /* Amounts of operators in precedence levels. */
 extern ux const              OP_LEVEL_LEN[OP_ORDER_LEN];
 /* Precedence levels of operators from low to high. */

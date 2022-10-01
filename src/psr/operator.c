@@ -52,11 +52,10 @@
 #define rsh bin(LXM_RARRAR)
 
 #define and bin(LXM_AMP)
-#define xor bin(LXM_CARET)
-#define orr bin(LXM_PIPE)
 
-#define san bin(LXM_AMPAMP)
-#define sor bin(LXM_PIPEPIPE)
+#define xor bin(LXM_CARET)
+
+#define orr bin(LXM_PIPE)
 
 #define smt bin(LXM_LARROW)
 #define ste bin(LXM_LAREQ)
@@ -65,6 +64,10 @@
 
 #define equ bin(LXM_EQEQ)
 #define neq bin(LXM_EXCEQ)
+
+#define lan bin(LXM_AMPAMP)
+
+#define lor bin(LXM_PIPEPIPE)
 
 Operator const OP_DEC = dec;
 Operator const OP_ACS = acs;
@@ -91,11 +94,10 @@ Operator const OP_LSH = lsh;
 Operator const OP_RSH = rsh;
 
 Operator const OP_AND = and;
-Operator const OP_XOR = xor;
-Operator const OP_ORR = orr;
 
-Operator const OP_SAN = san;
-Operator const OP_SOR = sor;
+Operator const OP_XOR = xor;
+
+Operator const OP_ORR = orr;
 
 Operator const OP_SMT = smt;
 Operator const OP_STE = ste;
@@ -105,24 +107,31 @@ Operator const OP_LTE = lte;
 Operator const OP_EQU = equ;
 Operator const OP_NEQ = neq;
 
+Operator const OP_LAN = lan;
+
+Operator const OP_LOR = lor;
+
 Operator const OP_PRIMARY[OP_PRIMARY_LEN]       = {dec, acs, grp, cll};
 Operator const OP_UNARY[OP_UNARY_LEN]           = {pos, neg, sin, sde,
                                                    pin, pde, not, bnt};
 Operator const OP_FACTOR[OP_FACTOR_LEN]         = {mul, div, rem};
 Operator const OP_TERM[OP_TERM_LEN]             = {add, sub};
 Operator const OP_SHIFT[OP_SHIFT_LEN]           = {lsh, rsh};
-Operator const OP_BITWISE[OP_BITWISE_LEN]       = {and, xor, orr};
-Operator const OP_SHORT[OP_SHORT_LEN]           = {san, sor};
+Operator const OP_BITAND[OP_BITAND_LEN]         = {and};
+Operator const OP_BITXOR[OP_BITXOR_LEN]         = {xor};
+Operator const OP_BITOR[OP_BITOR_LEN]           = {orr};
 Operator const OP_COMPARISON[OP_COMPARISON_LEN] = {smt, ste, lgt, lte};
 Operator const OP_EQUALITY[OP_EQUALITY_LEN]     = {equ, neq};
+Operator const OP_LOGAND[OP_LOGAND_LEN]         = {lan};
+Operator const OP_LOGOR[OP_LOGOR_LEN]           = {lor};
 
 ux const OP_LEVEL_LEN[OP_ORDER_LEN] = {
-  OP_EQUALITY_LEN, OP_COMPARISON_LEN, OP_SHORT_LEN,
-  OP_BITWISE_LEN,  OP_SHIFT_LEN,      OP_TERM_LEN,
-  OP_FACTOR_LEN,   OP_UNARY_LEN,      OP_PRIMARY_LEN};
+  OP_LOGOR_LEN, OP_LOGAND_LEN, OP_EQUALITY_LEN, OP_COMPARISON_LEN,
+  OP_BITOR_LEN, OP_BITXOR_LEN, OP_BITAND_LEN,   OP_SHIFT_LEN,
+  OP_TERM_LEN,  OP_FACTOR_LEN, OP_UNARY_LEN,    OP_PRIMARY_LEN};
 Operator const* const OP_ORDER[OP_ORDER_LEN] = {
-  OP_EQUALITY, OP_COMPARISON, OP_SHORT, OP_BITWISE, OP_SHIFT,
-  OP_TERM,     OP_FACTOR,     OP_UNARY, OP_PRIMARY};
+  OP_LOGOR,  OP_LOGAND, OP_EQUALITY, OP_COMPARISON, OP_BITOR, OP_BITXOR,
+  OP_BITAND, OP_SHIFT,  OP_TERM,     OP_FACTOR,     OP_UNARY, OP_PRIMARY};
 
 Operator const OP_COMPOUND[OP_COMPOUND_LEN] = {add, sub, mul, div, rem,
                                                lsh, rsh, and, xor, orr};
@@ -187,13 +196,13 @@ char const* opName(Operator const op) {
   if (opEq(op, OP_AND)) return "bitwise and";
   if (opEq(op, OP_XOR)) return "bitwise xor";
   if (opEq(op, OP_ORR)) return "bitwise or";
-  if (opEq(op, OP_SAN)) return "and";
-  if (opEq(op, OP_SOR)) return "or";
   if (opEq(op, OP_SMT)) return "smaller";
   if (opEq(op, OP_STE)) return "smaller or equal";
   if (opEq(op, OP_LGT)) return "larger";
   if (opEq(op, OP_LTE)) return "larger or equal";
   if (opEq(op, OP_EQU)) return "equal";
   if (opEq(op, OP_NEQ)) return "not equal";
+  if (opEq(op, OP_LAN)) return "and";
+  if (opEq(op, OP_LOR)) return "or";
   dbgUnexpected("Unknown operator!");
 }

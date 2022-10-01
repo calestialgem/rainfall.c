@@ -63,10 +63,18 @@ nodeWrite(ExpressionNode const* const i, FILE* const stream) {
   case OP_NULL:
     if (stream) strWrite(i->val, stream);
     return i - 1;
-  case OP_PRE: lxmWrite(i->op.pre.op, stream); return nodeWrite(i - 1, stream);
+  case OP_PRE: {
+    if (stream) fprintf(stream, "(");
+    lxmWrite(i->op.pre.op, stream);
+    ExpressionNode const* const op = nodeWrite(i - 1, stream);
+    if (stream) fprintf(stream, ")");
+    return op;
+  }
   case OP_POST: {
+    if (stream) fprintf(stream, "(");
     ExpressionNode const* const op = nodeWrite(i - 1, stream);
     lxmWrite(i->op.post.op, stream);
+    if (stream) fprintf(stream, ")");
     return op;
   }
   case OP_CIR: {
@@ -76,10 +84,12 @@ nodeWrite(ExpressionNode const* const i, FILE* const stream) {
     return op;
   }
   case OP_BIN: {
+    if (stream) fprintf(stream, "(");
     ExpressionNode const* const rop = nodeWrite(i - 1, NULL);
     ExpressionNode const* const lop = nodeWrite(rop, stream);
     lxmWrite(i->op.bin.op, stream);
     nodeWrite(i - 1, stream);
+    if (stream) fprintf(stream, ")");
     return lop;
   }
   case OP_VAR: {

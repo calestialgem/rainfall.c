@@ -61,3 +61,6 @@ var shortCircuit: bool = a < b && a > b;
 comp ^= shortCircuit;
 comp &= shortCircuit;
 comp |= shortCircuit;
+
+let MASK : i4 = 1 << 5;
+var res: bool = a & MASK != 1 << 2;
