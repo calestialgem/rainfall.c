@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "anr/api.h"
 #include "dbg/api.h"
 #include "lxr/api.h"
 #include "otc/api.h"
@@ -24,6 +25,7 @@ int main(int const argumentCount, char const* const* const arguments) {
 
   Lex   lex = lexOf(&otc, src);
   Parse prs = prsOf(&otc, lex);
+  Table tbl = tblOf(&otc, prs);
 
   if (otc.err > 0)
     otcInfoWhole(
@@ -34,10 +36,7 @@ int main(int const argumentCount, char const* const* const arguments) {
       otc, otc.wrn > 1 ? "There were %u warnings." : "There was a warning.",
       otc.wrn);
 
-  printf("\n\nParse Result:\n\n");
-  prsWrite(prs, stdout);
-  printf("\n");
-
+  tblFree(&tbl);
   prsFree(&prs);
   lexFree(&lex);
   srcFree(&src);

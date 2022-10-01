@@ -64,6 +64,7 @@ void setPut(Set* const set, String const str) {
     ux const index = (hash + i) % cap;
     if (!strLen(set->bgn[index])) {
       set->bgn[index] = str;
+      set->len++;
       return;
     }
   }
