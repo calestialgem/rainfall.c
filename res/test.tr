@@ -38,8 +38,8 @@ nice += 4;
 
 func();
 
-var b: bool = false;
-b = !b;
+var boolean: bool = false;
+boolean = !boolean;
 
 someOtherVariable = ~someVariable;
 
