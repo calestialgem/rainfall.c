@@ -52,15 +52,15 @@ Operator const OP_DEC = dec;
 Operator const OP_ACS = acs;
 Operator const OP_GRP = grp;
 Operator const OP_CLL = cll;
+
+Operator const OP_POS = pos;
+Operator const OP_NEG = neg;
 Operator const OP_SIN = sin;
 Operator const OP_SDE = sde;
 Operator const OP_PIN = pin;
 Operator const OP_PDE = pde;
 Operator const OP_NOT = not ;
 Operator const OP_BNT = bnt;
-
-Operator const OP_POS = pos;
-Operator const OP_NEG = neg;
 
 Operator const OP_MUL = mul;
 Operator const OP_DIV = div;
@@ -69,9 +69,9 @@ Operator const OP_REM = rem;
 Operator const OP_ADD = add;
 Operator const OP_SUB = sub;
 
-Operator const OP_PRIMARY[OP_PRIMARY_LEN] = {dec, acs, grp, cll, sin,
-                                             sde, pin, pde, not, bnt};
-Operator const OP_UNARY[OP_UNARY_LEN]     = {pos, neg};
+Operator const OP_PRIMARY[OP_PRIMARY_LEN] = {dec, acs, grp, cll};
+Operator const OP_UNARY[OP_UNARY_LEN]     = {pos, neg, sin, sde,
+                                             pin, pde, not, bnt};
 Operator const OP_FACTOR[OP_FACTOR_LEN]   = {mul, div, rem};
 Operator const OP_TERM[OP_TERM_LEN]       = {add, sub};
 

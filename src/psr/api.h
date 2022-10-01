@@ -207,6 +207,11 @@ extern Operator const OP_ACS;
 extern Operator const OP_GRP;
 /* Call to a function. */
 extern Operator const OP_CLL;
+
+/* Posating a number. */
+extern Operator const OP_POS;
+/* Negating a number. */
+extern Operator const OP_NEG;
 /* Increment after returning the value of a number. */
 extern Operator const OP_SIN;
 /* Decrement after returning the value of a number. */
@@ -219,11 +224,6 @@ extern Operator const OP_PDE;
 extern Operator const OP_NOT;
 /* Invert bits of a number. */
 extern Operator const OP_BNT;
-
-/* Posating a number. */
-extern Operator const OP_POS;
-/* Negating a number. */
-extern Operator const OP_NEG;
 
 /* Multiplying two numbers. */
 extern Operator const OP_MUL;
@@ -238,12 +238,12 @@ extern Operator const OP_ADD;
 extern Operator const OP_SUB;
 
 /* Amount of primary operators. */
-#define OP_PRIMARY_LEN 10
+#define OP_PRIMARY_LEN 4
 /* Operators that are the indivisible parts of an expression. */
 extern Operator const OP_PRIMARY[OP_PRIMARY_LEN];
 
 /* Amount of unary operators. */
-#define OP_UNARY_LEN 2
+#define OP_UNARY_LEN 8
 /* Operators that are bound strongly to a single operand. */
 extern Operator const OP_UNARY[OP_UNARY_LEN];
 
