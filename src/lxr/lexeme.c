@@ -9,7 +9,6 @@
 
 char const* lxmName(LexemeType const type) {
   switch (type) {
-  case LXM_EQUAL: return "=";
   case LXM_COMMA: return ",";
   case LXM_COLON: return ":";
   case LXM_SEMI: return ";";
@@ -22,6 +21,21 @@ char const* lxmName(LexemeType const type) {
   case LXM_PLUS: return "+";
   case LXM_MINUSMINUS: return "--";
   case LXM_MINUS: return "-";
+  case LXM_AMPAMP: return "&&";
+  case LXM_AMP: return "&";
+  case LXM_PIPEPIPE: return "||";
+  case LXM_PIPE: return "|";
+  case LXM_CARET: return "^";
+  case LXM_LARLAR: return "<<";
+  case LXM_LAREQ: return "<=";
+  case LXM_LARROW: return "<";
+  case LXM_RARRAR: return ">>";
+  case LXM_RAREQ: return ">=";
+  case LXM_RARROW: return ">";
+  case LXM_EQEQ: return "==";
+  case LXM_EQUAL: return "=";
+  case LXM_NOTEQ: return "!=";
+  case LXM_NOT: return "=";
   case LXM_EOF: return "eof";
   case LXM_LET: return "let";
   case LXM_VAR: return "var";
