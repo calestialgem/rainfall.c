@@ -76,7 +76,7 @@ ux const OP_LEVEL_LEN[OP_ORDER_LEN] = {
 Operator const* const OP_ORDER[OP_ORDER_LEN] = {
   OP_TERM, OP_FACTOR, OP_UNARY, OP_PRIMARY};
 
-Operator const OP_BINS[OP_BINS_LEN] = {add, sub, mul, div, rem};
+Operator const OP_COMPOUND[OP_COMPOUND_LEN] = {add, sub, mul, div, rem};
 
 Operator opOfNull(NullaryOperator const null) {
   return (Operator){.null = null, .tag = OP_NULL};

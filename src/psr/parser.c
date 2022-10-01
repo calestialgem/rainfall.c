@@ -402,8 +402,8 @@ static Result cas() {
 
   Operator op = {0};
 
-  for (ux i = 0; i < OP_BINS_LEN; i++) {
-    Operator const test = OP_BINS[i];
+  for (ux i = 0; i < OP_COMPOUND_LEN; i++) {
+    Operator const test = OP_COMPOUND[i];
     if (test.tag != OP_BIN || !consume(test.bin.op)) continue;
     op = test;
     break;

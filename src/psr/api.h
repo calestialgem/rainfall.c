@@ -260,10 +260,10 @@ extern ux const              OP_LEVEL_LEN[OP_ORDER_LEN];
 /* Precedence levels of operators from low to high. */
 extern Operator const* const OP_ORDER[OP_ORDER_LEN];
 
-/* Amount of binary operators. */
-#define OP_BINS_LEN 5
-/* Binary operators. */
-extern Operator const OP_BINS[OP_BINS_LEN];
+/* Amount of binary operators that could be used in compound assignments. */
+#define OP_COMPOUND_LEN 5
+/* Binary operators that could be used in compound assignments. */
+extern Operator const OP_COMPOUND[OP_COMPOUND_LEN];
 
 /* Flatten the given nullary operator. */
 Operator opOfNull(NullaryOperator null);
