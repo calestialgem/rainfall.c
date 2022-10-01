@@ -19,6 +19,8 @@ static struct {
   Set      bld;
   /* Set of user-defined symbols. */
   Set      usr;
+  /* Set of user-defined, resolved but not checked symbols. */
+  Set      res;
 } anr;
 
 /* Add the built-in symbols. */
@@ -39,13 +41,13 @@ static void firstPassDef(String const name) {
     otcErr(anr.otc, name, "Name clashes with a built-in symbol!");
     return;
   }
-  String const* const userDef = setGet(anr.usr, name);
+  String const* const userDef = setGet(anr.res, name);
   if (userDef) {
     otcErr(anr.otc, name, "Name clashes with a previously defined symbol!");
     otcInfo(*anr.otc, *userDef, "Previous definition was here.");
     return;
   }
-  setPut(&anr.usr, name);
+  setPut(&anr.res, name);
 }
 
 /* Resolve name clashes in the definitions. */
@@ -65,6 +67,7 @@ void analyzerAnalyze(Table* const tbl, Outcome* const otc, Parse const prs) {
   anr.prs = prs;
   anr.bld = setOf(0);
   anr.usr = setOf(0);
+  anr.res = setOf(0);
 
   zerothPass();
   firstPass();
