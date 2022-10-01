@@ -13,6 +13,7 @@
 static void print(Portion const por, FILE* const stream, bool const skip) {
   Portion const line = {.bgn = locStart(por.bgn), .end = locEnd(por.end)};
 
+  fprintf(stream, "%8s |\n", "");
   fprintf(stream, "%8i | ", line.bgn.ln);
 
   // `String` is exclusive, meaning it does not include the character pointed by
