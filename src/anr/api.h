@@ -183,8 +183,6 @@ typedef struct {
   String     name;
   /* Evaluation. */
   Evaluation evl;
-  /* Whether it is built-in. */
-  bool       bltn;
 } Symbol;
 
 /* List of symbols. */
