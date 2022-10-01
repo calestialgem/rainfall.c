@@ -42,6 +42,17 @@ typedef struct {
   char const* end;
 } String;
 
+/* Dynamicly allocated array of strings that uses hashcode for fast element
+ * existance checking. */
+typedef struct {
+  /* Pointer to the first string if it exists. */
+  String* bgn;
+  /* Pointer to one after the last string. */
+  String* end;
+  /* Amount of strings. */
+  ux      len;
+} Set;
+
 /* Dynamicly allocated array of characters. Allocation costs are amortized by
  * growing at least the half of the current capacity. */
 typedef struct {
@@ -65,6 +76,15 @@ ux     strLen(String str);
 bool   strEq(String lhs, String rhs);
 /* Stream out all the characters in the given string to the given stream. */
 void   strWrite(String str, FILE* stream);
+
+/* Set with the given initial capacity. */
+Set  setOf(ux cap);
+/* Release the memory resources used by the given set. */
+void setFree(Set* set);
+/* Put the given string to the given set. */
+void setPut(Set* set, String str);
+/* Whether the given set contains the given string. */
+bool setContains(Set set, String str);
 
 /* Buffer with the given initial capacity. */
 Buffer bfrOf(ux cap);
