@@ -42,3 +42,9 @@ var b: bool = false;
 b = !b;
 
 someOtherVariable = ~someVariable;
+
+let shifty0 : i4 = 1 << 4;
+let shifty1 : i4 = shifty0 >> 2;
+var shifty2 : i4 = ~shifty1;
+shifty2 <<= 4;
+shifty2 >>= 3;

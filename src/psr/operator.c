@@ -48,6 +48,9 @@
 #define add bin(LXM_PLUS)
 #define sub bin(LXM_MINUS)
 
+#define lsh bin(LXM_LARLAR)
+#define rsh bin(LXM_RARRAR)
+
 Operator const OP_DEC = dec;
 Operator const OP_ACS = acs;
 Operator const OP_GRP = grp;
@@ -69,18 +72,23 @@ Operator const OP_REM = rem;
 Operator const OP_ADD = add;
 Operator const OP_SUB = sub;
 
+Operator const OP_LSH = lsh;
+Operator const OP_RSH = rsh;
+
 Operator const OP_PRIMARY[OP_PRIMARY_LEN] = {dec, acs, grp, cll};
 Operator const OP_UNARY[OP_UNARY_LEN]     = {pos, neg, sin, sde,
                                              pin, pde, not, bnt};
 Operator const OP_FACTOR[OP_FACTOR_LEN]   = {mul, div, rem};
 Operator const OP_TERM[OP_TERM_LEN]       = {add, sub};
+Operator const OP_SHIFT[OP_SHIFT_LEN]     = {lsh, rsh};
 
 ux const OP_LEVEL_LEN[OP_ORDER_LEN] = {
-  OP_TERM_LEN, OP_FACTOR_LEN, OP_UNARY_LEN, OP_PRIMARY_LEN};
+  OP_SHIFT_LEN, OP_TERM_LEN, OP_FACTOR_LEN, OP_UNARY_LEN, OP_PRIMARY_LEN};
 Operator const* const OP_ORDER[OP_ORDER_LEN] = {
-  OP_TERM, OP_FACTOR, OP_UNARY, OP_PRIMARY};
+  OP_SHIFT, OP_TERM, OP_FACTOR, OP_UNARY, OP_PRIMARY};
 
-Operator const OP_COMPOUND[OP_COMPOUND_LEN] = {add, sub, mul, div, rem};
+Operator const OP_COMPOUND[OP_COMPOUND_LEN] = {add, sub, mul, div,
+                                               rem, lsh, rsh};
 
 Operator opOfNull(NullaryOperator const null) {
   return (Operator){.null = null, .tag = OP_NULL};
@@ -124,16 +132,20 @@ char const* opName(Operator const op) {
   if (opEq(op, OP_ACS)) return "symbol access";
   if (opEq(op, OP_GRP)) return "group";
   if (opEq(op, OP_CLL)) return "function call";
+  if (opEq(op, OP_POS)) return "posate";
+  if (opEq(op, OP_NEG)) return "negate";
   if (opEq(op, OP_SIN)) return "suffix increment";
   if (opEq(op, OP_SDE)) return "suffix decrement";
   if (opEq(op, OP_PIN)) return "prefix increment";
   if (opEq(op, OP_PDE)) return "prefix decrement";
-  if (opEq(op, OP_POS)) return "posate";
-  if (opEq(op, OP_NEG)) return "negate";
+  if (opEq(op, OP_NOT)) return "not";
+  if (opEq(op, OP_BNT)) return "bitwise not";
   if (opEq(op, OP_MUL)) return "multiply";
   if (opEq(op, OP_DIV)) return "divide";
   if (opEq(op, OP_REM)) return "reminder";
   if (opEq(op, OP_ADD)) return "add";
   if (opEq(op, OP_SUB)) return "subtract";
+  if (opEq(op, OP_LSH)) return "left shift";
+  if (opEq(op, OP_RSH)) return "right shift";
   dbgUnexpected("Unknown operator!");
 }

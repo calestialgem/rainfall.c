@@ -237,6 +237,11 @@ extern Operator const OP_ADD;
 /* Subtracting two numbers. */
 extern Operator const OP_SUB;
 
+/* Shifting bits of a number to left. */
+extern Operator const OP_LSH;
+/* Shifting bits of a number to right. */
+extern Operator const OP_RSH;
+
 /* Amount of primary operators. */
 #define OP_PRIMARY_LEN 4
 /* Operators that are the indivisible parts of an expression. */
@@ -257,15 +262,20 @@ extern Operator const OP_FACTOR[OP_FACTOR_LEN];
 /* Operators between the terms in calculations. */
 extern Operator const OP_TERM[OP_TERM_LEN];
 
+/* Amount of shift operators. */
+#define OP_SHIFT_LEN 2
+/* Operators that shift bits. */
+extern Operator const OP_SHIFT[OP_SHIFT_LEN];
+
 /* Amount of operator precedence levels. */
-#define OP_ORDER_LEN 4
+#define OP_ORDER_LEN 5
 /* Amounts of operators in precedence levels. */
 extern ux const              OP_LEVEL_LEN[OP_ORDER_LEN];
 /* Precedence levels of operators from low to high. */
 extern Operator const* const OP_ORDER[OP_ORDER_LEN];
 
 /* Amount of binary operators that could be used in compound assignments. */
-#define OP_COMPOUND_LEN 5
+#define OP_COMPOUND_LEN 7
 /* Binary operators that could be used in compound assignments. */
 extern Operator const OP_COMPOUND[OP_COMPOUND_LEN];
 
