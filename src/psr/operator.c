@@ -56,6 +56,9 @@
 #define lgt bin(LXM_RARROW)
 #define lte bin(LXM_RAREQ)
 
+#define equ bin(LXM_EQEQ)
+#define neq bin(LXM_EXCEQ)
+
 Operator const OP_DEC = dec;
 Operator const OP_ACS = acs;
 Operator const OP_GRP = grp;
@@ -85,6 +88,9 @@ Operator const OP_STE = ste;
 Operator const OP_LGT = lgt;
 Operator const OP_LTE = lte;
 
+Operator const OP_EQU = equ;
+Operator const OP_NEQ = neq;
+
 Operator const OP_PRIMARY[OP_PRIMARY_LEN]       = {dec, acs, grp, cll};
 Operator const OP_UNARY[OP_UNARY_LEN]           = {pos, neg, sin, sde,
                                                    pin, pde, not, bnt};
@@ -92,12 +98,14 @@ Operator const OP_FACTOR[OP_FACTOR_LEN]         = {mul, div, rem};
 Operator const OP_TERM[OP_TERM_LEN]             = {add, sub};
 Operator const OP_SHIFT[OP_SHIFT_LEN]           = {lsh, rsh};
 Operator const OP_COMPARISON[OP_COMPARISON_LEN] = {smt, ste, lgt, lte};
+Operator const OP_EQUALITY[OP_EQUALITY_LEN]     = {equ, neq};
 
-ux const OP_LEVEL_LEN[OP_ORDER_LEN]          = {OP_COMPARISON_LEN, OP_SHIFT_LEN,
-                                                OP_TERM_LEN,       OP_FACTOR_LEN,
-                                                OP_UNARY_LEN,      OP_PRIMARY_LEN};
+ux const OP_LEVEL_LEN[OP_ORDER_LEN] = {
+  OP_EQUALITY_LEN, OP_COMPARISON_LEN, OP_SHIFT_LEN,  OP_TERM_LEN,
+  OP_FACTOR_LEN,   OP_UNARY_LEN,      OP_PRIMARY_LEN};
 Operator const* const OP_ORDER[OP_ORDER_LEN] = {
-  OP_COMPARISON, OP_SHIFT, OP_TERM, OP_FACTOR, OP_UNARY, OP_PRIMARY};
+  OP_EQUALITY, OP_COMPARISON, OP_SHIFT,  OP_TERM,
+  OP_FACTOR,   OP_UNARY,      OP_PRIMARY};
 
 Operator const OP_COMPOUND[OP_COMPOUND_LEN] = {add, sub, mul, div,
                                                rem, lsh, rsh};

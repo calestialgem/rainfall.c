@@ -208,48 +208,53 @@ extern Operator const OP_GRP;
 /* Call to a function. */
 extern Operator const OP_CLL;
 
-/* Posating a number. */
+/* Posate. */
 extern Operator const OP_POS;
-/* Negating a number. */
+/* Negate. */
 extern Operator const OP_NEG;
-/* Increment after returning the value of a number. */
+/* Increment after returning. */
 extern Operator const OP_SIN;
-/* Decrement after returning the value of a number. */
+/* Decrement after returning. */
 extern Operator const OP_SDE;
-/* Increment before returning the value of a number. */
+/* Increment before returning. */
 extern Operator const OP_PIN;
-/* Decrement before returning the value of a number. */
+/* Decrement before returning. */
 extern Operator const OP_PDE;
 /* Invert truthiness value. */
 extern Operator const OP_NOT;
-/* Invert bits of a number. */
+/* Invert bits. */
 extern Operator const OP_BNT;
 
-/* Multiplying two numbers. */
+/* Multiply. */
 extern Operator const OP_MUL;
-/* Dividing two numbers. */
+/* Divide. */
 extern Operator const OP_DIV;
-/* Reminder from the division two numbers. */
+/* Reminder after division. */
 extern Operator const OP_REM;
 
-/* Adding two numbers. */
+/* Add. */
 extern Operator const OP_ADD;
-/* Subtracting two numbers. */
+/* Subtract. */
 extern Operator const OP_SUB;
 
-/* Shifting bits of a number to left. */
+/* Shift bits to left. */
 extern Operator const OP_LSH;
-/* Shifting bits of a number to right. */
+/* Shift bits to right. */
 extern Operator const OP_RSH;
 
-/* Whether the left number is smaller than the right number. */
+/* Whether the left is smaller than the right. */
 extern Operator const OP_SMT;
-/* Whether the left number is smaller than or equal to the right number. */
+/* Whether the left is smaller than or equal to the right. */
 extern Operator const OP_STE;
-/* Whether the left number is larger than the right number. */
+/* Whether the left is larger than the right. */
 extern Operator const OP_LGT;
-/* Whether the left number is larger than or equal to the right number. */
+/* Whether the left is larger than or equal to the right. */
 extern Operator const OP_LTE;
+
+/* Whether the left is equal to right. */
+extern Operator const OP_EQU;
+/* Wherhet the left is not equal to right. */
+extern Operator const OP_NEQ;
 
 /* Amount of primary operators. */
 #define OP_PRIMARY_LEN 4
@@ -278,11 +283,16 @@ extern Operator const OP_SHIFT[OP_SHIFT_LEN];
 
 /* Amount of comparison operators. */
 #define OP_COMPARISON_LEN 4
-/* Operators that compare numbers. */
+/* Operators that compare order. */
 extern Operator const OP_COMPARISON[OP_COMPARISON_LEN];
 
+/* Amount of equality operators. */
+#define OP_EQUALITY_LEN 4
+/* Operators that compare equality. */
+extern Operator const OP_EQUALITY[OP_EQUALITY_LEN];
+
 /* Amount of operator precedence levels. */
-#define OP_ORDER_LEN 6
+#define OP_ORDER_LEN 7
 /* Amounts of operators in precedence levels. */
 extern ux const              OP_LEVEL_LEN[OP_ORDER_LEN];
 /* Precedence levels of operators from low to high. */
