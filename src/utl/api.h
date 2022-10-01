@@ -29,6 +29,11 @@ typedef uint64_t  u8;
 /* Unsigned, pointer-size integer. */
 typedef uintptr_t ux;
 
+/* Floating-point, 4-byte real. */
+typedef float  f4;
+/* Floating-point, 8-byte real. */
+typedef double f8;
+
 /* Immutable view of a range of characters. */
 typedef struct {
   /* Pointer to the first character if it exists. */

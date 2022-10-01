@@ -344,19 +344,21 @@ extern Operator const* const OP_ORDER[OP_ORDER_LEN];
 extern Operator const OP_COMPOUND[OP_COMPOUND_LEN];
 
 /* Flatten the given nullary operator. */
-Operator opOfNull(NullaryOperator null);
+Operator    opOfNull(NullaryOperator null);
 /* Flatten the given prenary operator. */
-Operator opOfPre(PrenaryOperator pre);
+Operator    opOfPre(PrenaryOperator pre);
 /* Flatten the given postary operator. */
-Operator opOfPost(PostaryOperator post);
+Operator    opOfPost(PostaryOperator post);
 /* Flatten the given cirnary operator. */
-Operator opOfCir(CirnaryOperator cir);
+Operator    opOfCir(CirnaryOperator cir);
 /* Flatten the given binary operator. */
-Operator opOfBin(BinaryOperator bin);
+Operator    opOfBin(BinaryOperator bin);
 /* Flatten the given variary operator. */
-Operator opOfVar(VariaryOperator var);
+Operator    opOfVar(VariaryOperator var);
 /* Whether the given operators are the same. */
-bool     opEq(Operator lhs, Operator rhs);
+bool        opEq(Operator lhs, Operator rhs);
+/* Name of the given operator. */
+char const* opName(Operator op);
 
 /* Parse the given lex. Reports to the given outcome. */
 Parse     prsOf(Outcome* otc, Lex lex);

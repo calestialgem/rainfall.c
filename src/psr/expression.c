@@ -32,28 +32,6 @@ static void reserve(Expression* const exp, ux const amount) {
   exp->all = mem + newCap;
 }
 
-Expression expOf(ux const cap) {
-  Expression res = {0};
-  if (cap) reserve(&res, cap);
-  return res;
-}
-
-void expFree(Expression* const exp) {
-  free(exp->bgn);
-  exp->bgn = NULL;
-  exp->end = NULL;
-  exp->all = NULL;
-}
-
-ux expLen(Expression const exp) { return exp.end - exp.bgn; }
-
-ExpressionNode expAt(Expression const exp, ux const i) { return exp.bgn[i]; }
-
-void expAdd(Expression* const exp, ExpressionNode const node) {
-  reserve(exp, 1);
-  *exp->end++ = node;
-}
-
 /* Stream out the expression node at the given position and its childeren as
  * string to the given stream. Returns the position after all the childeren of
  * the node. */
@@ -116,11 +94,6 @@ nodeWrite(ExpressionNode const* const i, FILE* const stream) {
   }
 }
 
-void expWrite(Expression const exp, FILE* const stream) {
-  for (ExpressionNode const* i = exp.end - 1; i >= exp.bgn;)
-    i = nodeWrite(i, stream);
-}
-
 /* Stream out the expression node at the given position and its childeren as
  * string to the given stream. Returns the position after all the childeren of
  * the node. */
@@ -136,6 +109,33 @@ nodeTree(ExpressionNode const* i, ux const depth, FILE* const stream) {
   i--;
   for (ux j = 0; j < ary; j++) i = nodeTree(i, depth + 1, stream);
   return i;
+}
+
+Expression expOf(ux const cap) {
+  Expression res = {0};
+  if (cap) reserve(&res, cap);
+  return res;
+}
+
+void expFree(Expression* const exp) {
+  free(exp->bgn);
+  exp->bgn = NULL;
+  exp->end = NULL;
+  exp->all = NULL;
+}
+
+ux expLen(Expression const exp) { return exp.end - exp.bgn; }
+
+ExpressionNode expAt(Expression const exp, ux const i) { return exp.bgn[i]; }
+
+void expAdd(Expression* const exp, ExpressionNode const node) {
+  reserve(exp, 1);
+  *exp->end++ = node;
+}
+
+void expWrite(Expression const exp, FILE* const stream) {
+  for (ExpressionNode const* i = exp.end - 1; i >= exp.bgn;)
+    i = nodeWrite(i, stream);
 }
 
 void expTree(Expression const exp, FILE* const stream) {
