@@ -84,7 +84,7 @@ void setFree(Set* set);
 /* Put the given string to the given set. */
 void setPut(Set* set, String str);
 /* Whether the given set contains the given string. */
-bool setContains(Set set, String str);
+bool setHas(Set set, String str);
 
 /* Buffer with the given initial capacity. */
 Buffer bfrOf(ux cap);

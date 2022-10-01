@@ -70,7 +70,7 @@ void setPut(Set* const set, String const str) {
   dbgUnexpected("Could not find empty place in set!");
 }
 
-bool setContains(Set const set, String const str) {
+bool setHas(Set const set, String const str) {
   ux const cap  = setCap(set);
   ux const hash = hashcode(str);
   for (ux i = 0; i < cap; i++) {
