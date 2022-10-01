@@ -24,7 +24,7 @@ static struct {
 } anr;
 
 /* Add the built-in symbols. */
-static void zerothPass() {
+static void prepare() {
   for (ux i = 0; i < TYPE_BUILT_LEN; i++) {
     String const name = strOf(typeName(TYPE_BUILT[i]));
     Evaluation   evl  = evlOf(1);
@@ -36,7 +36,7 @@ static void zerothPass() {
 }
 
 /* Resolve the definition with the given name. */
-static void firstPassDef(String const name) {
+static void resolveDef(String const name) {
   if (setGet(anr.bld, name)) {
     otcErr(anr.otc, name, "Name clashes with a built-in symbol!");
     return;
@@ -51,11 +51,11 @@ static void firstPassDef(String const name) {
 }
 
 /* Resolve name clashes in the definitions. */
-static void firstPass() {
+static void resolve() {
   for (Statement const* i = anr.prs.bgn; i < anr.prs.end; i++) {
     switch (i->tag) {
-    case STT_LET: firstPassDef(i->let.name); break;
-    case STT_VAR: firstPassDef(i->var.name); break;
+    case STT_LET: resolveDef(i->let.name); break;
+    case STT_VAR: resolveDef(i->var.name); break;
     default: break;
     }
   }
@@ -69,6 +69,6 @@ void analyzerAnalyze(Table* const tbl, Outcome* const otc, Parse const prs) {
   anr.usr = setOf(0);
   anr.res = setOf(0);
 
-  zerothPass();
-  firstPass();
+  prepare();
+  resolve();
 }
