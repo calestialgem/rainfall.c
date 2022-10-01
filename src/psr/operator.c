@@ -51,6 +51,13 @@
 #define lsh bin(LXM_LARLAR)
 #define rsh bin(LXM_RARRAR)
 
+#define and bin(LXM_AMP)
+#define xor bin(LXM_CARET)
+#define orr bin(LXM_PIPE)
+
+#define san bin(LXM_AMPAMP)
+#define sor bin(LXM_PIPEPIPE)
+
 #define smt bin(LXM_LARROW)
 #define ste bin(LXM_LAREQ)
 #define lgt bin(LXM_RARROW)
@@ -83,6 +90,13 @@ Operator const OP_SUB = sub;
 Operator const OP_LSH = lsh;
 Operator const OP_RSH = rsh;
 
+Operator const OP_AND = and;
+Operator const OP_XOR = xor;
+Operator const OP_ORR = orr;
+
+Operator const OP_SAN = san;
+Operator const OP_SOR = sor;
+
 Operator const OP_SMT = smt;
 Operator const OP_STE = ste;
 Operator const OP_LGT = lgt;
@@ -97,18 +111,21 @@ Operator const OP_UNARY[OP_UNARY_LEN]           = {pos, neg, sin, sde,
 Operator const OP_FACTOR[OP_FACTOR_LEN]         = {mul, div, rem};
 Operator const OP_TERM[OP_TERM_LEN]             = {add, sub};
 Operator const OP_SHIFT[OP_SHIFT_LEN]           = {lsh, rsh};
+Operator const OP_BITWISE[OP_BITWISE_LEN]       = {and, xor, orr};
+Operator const OP_SHORT[OP_SHORT_LEN]           = {san, sor};
 Operator const OP_COMPARISON[OP_COMPARISON_LEN] = {smt, ste, lgt, lte};
 Operator const OP_EQUALITY[OP_EQUALITY_LEN]     = {equ, neq};
 
 ux const OP_LEVEL_LEN[OP_ORDER_LEN] = {
-  OP_EQUALITY_LEN, OP_COMPARISON_LEN, OP_SHIFT_LEN,  OP_TERM_LEN,
+  OP_EQUALITY_LEN, OP_COMPARISON_LEN, OP_SHORT_LEN,
+  OP_BITWISE_LEN,  OP_SHIFT_LEN,      OP_TERM_LEN,
   OP_FACTOR_LEN,   OP_UNARY_LEN,      OP_PRIMARY_LEN};
 Operator const* const OP_ORDER[OP_ORDER_LEN] = {
-  OP_EQUALITY, OP_COMPARISON, OP_SHIFT,  OP_TERM,
-  OP_FACTOR,   OP_UNARY,      OP_PRIMARY};
+  OP_EQUALITY, OP_COMPARISON, OP_SHORT, OP_BITWISE, OP_SHIFT,
+  OP_TERM,     OP_FACTOR,     OP_UNARY, OP_PRIMARY};
 
-Operator const OP_COMPOUND[OP_COMPOUND_LEN] = {add, sub, mul, div,
-                                               rem, lsh, rsh};
+Operator const OP_COMPOUND[OP_COMPOUND_LEN] = {add, sub, mul, div, rem,
+                                               lsh, rsh, and, xor, orr};
 
 Operator opOfNull(NullaryOperator const null) {
   return (Operator){.null = null, .tag = OP_NULL};
@@ -167,9 +184,16 @@ char const* opName(Operator const op) {
   if (opEq(op, OP_SUB)) return "subtract";
   if (opEq(op, OP_LSH)) return "left shift";
   if (opEq(op, OP_RSH)) return "right shift";
+  if (opEq(op, OP_AND)) return "bitwise and";
+  if (opEq(op, OP_XOR)) return "bitwise xor";
+  if (opEq(op, OP_ORR)) return "bitwise or";
+  if (opEq(op, OP_SAN)) return "and";
+  if (opEq(op, OP_SOR)) return "or";
   if (opEq(op, OP_SMT)) return "smaller";
   if (opEq(op, OP_STE)) return "smaller or equal";
   if (opEq(op, OP_LGT)) return "larger";
   if (opEq(op, OP_LTE)) return "larger or equal";
+  if (opEq(op, OP_EQU)) return "equal";
+  if (opEq(op, OP_NEQ)) return "not equal";
   dbgUnexpected("Unknown operator!");
 }

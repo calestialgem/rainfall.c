@@ -242,6 +242,18 @@ extern Operator const OP_LSH;
 /* Shift bits to right. */
 extern Operator const OP_RSH;
 
+/* Bitwise AND. */
+extern Operator const OP_AND;
+/* Bitwise XOR */
+extern Operator const OP_XOR;
+/* Bitwise OR. */
+extern Operator const OP_ORR;
+
+/* Short circuit AND. */
+extern Operator const OP_SAN;
+/* Short circuit OR. */
+extern Operator const OP_SOR;
+
 /* Whether the left is smaller than the right. */
 extern Operator const OP_SMT;
 /* Whether the left is smaller than or equal to the right. */
@@ -281,6 +293,16 @@ extern Operator const OP_TERM[OP_TERM_LEN];
 /* Operators that shift bits. */
 extern Operator const OP_SHIFT[OP_SHIFT_LEN];
 
+/* Amount of bitwise operators. */
+#define OP_BITWISE_LEN 3
+/* Operators that compare bits. */
+extern Operator const OP_BITWISE[OP_BITWISE_LEN];
+
+/* Amount of short circuit operators. */
+#define OP_SHORT_LEN 2
+/* Operators that compare with short circuiting. */
+extern Operator const OP_SHORT[OP_SHORT_LEN];
+
 /* Amount of comparison operators. */
 #define OP_COMPARISON_LEN 4
 /* Operators that compare order. */
@@ -292,14 +314,14 @@ extern Operator const OP_COMPARISON[OP_COMPARISON_LEN];
 extern Operator const OP_EQUALITY[OP_EQUALITY_LEN];
 
 /* Amount of operator precedence levels. */
-#define OP_ORDER_LEN 7
+#define OP_ORDER_LEN 9
 /* Amounts of operators in precedence levels. */
 extern ux const              OP_LEVEL_LEN[OP_ORDER_LEN];
 /* Precedence levels of operators from low to high. */
 extern Operator const* const OP_ORDER[OP_ORDER_LEN];
 
 /* Amount of binary operators that could be used in compound assignments. */
-#define OP_COMPOUND_LEN 7
+#define OP_COMPOUND_LEN 10
 /* Binary operators that could be used in compound assignments. */
 extern Operator const OP_COMPOUND[OP_COMPOUND_LEN];
 

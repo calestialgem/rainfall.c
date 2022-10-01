@@ -49,10 +49,15 @@ var shifty2 : i4 = ~shifty1;
 shifty2 <<= 4;
 shifty2 >>= 3;
 
-var comp : bool = a < b;
+var comp: bool = a < b;
 comp = a <= b;
 comp = a >= b;
 comp = a > b;
 
 comp = c == d;
 comp = a < b != a > b;
+
+var shortCircuit: bool = a < b && a > b;
+comp ^= shortCircuit;
+comp &= shortCircuit;
+comp |= shortCircuit;
