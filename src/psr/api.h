@@ -242,6 +242,15 @@ extern Operator const OP_LSH;
 /* Shifting bits of a number to right. */
 extern Operator const OP_RSH;
 
+/* Whether the left number is smaller than the right number. */
+extern Operator const OP_SMT;
+/* Whether the left number is smaller than or equal to the right number. */
+extern Operator const OP_STE;
+/* Whether the left number is larger than the right number. */
+extern Operator const OP_LGT;
+/* Whether the left number is larger than or equal to the right number. */
+extern Operator const OP_LTE;
+
 /* Amount of primary operators. */
 #define OP_PRIMARY_LEN 4
 /* Operators that are the indivisible parts of an expression. */
@@ -267,8 +276,13 @@ extern Operator const OP_TERM[OP_TERM_LEN];
 /* Operators that shift bits. */
 extern Operator const OP_SHIFT[OP_SHIFT_LEN];
 
+/* Amount of comparison operators. */
+#define OP_COMPARISON_LEN 4
+/* Operators that compare numbers. */
+extern Operator const OP_COMPARISON[OP_COMPARISON_LEN];
+
 /* Amount of operator precedence levels. */
-#define OP_ORDER_LEN 5
+#define OP_ORDER_LEN 6
 /* Amounts of operators in precedence levels. */
 extern ux const              OP_LEVEL_LEN[OP_ORDER_LEN];
 /* Precedence levels of operators from low to high. */

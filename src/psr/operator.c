@@ -51,6 +51,11 @@
 #define lsh bin(LXM_LARLAR)
 #define rsh bin(LXM_RARRAR)
 
+#define smt bin(LXM_LARROW)
+#define ste bin(LXM_LAREQ)
+#define lgt bin(LXM_RARROW)
+#define lte bin(LXM_RAREQ)
+
 Operator const OP_DEC = dec;
 Operator const OP_ACS = acs;
 Operator const OP_GRP = grp;
@@ -75,17 +80,24 @@ Operator const OP_SUB = sub;
 Operator const OP_LSH = lsh;
 Operator const OP_RSH = rsh;
 
-Operator const OP_PRIMARY[OP_PRIMARY_LEN] = {dec, acs, grp, cll};
-Operator const OP_UNARY[OP_UNARY_LEN]     = {pos, neg, sin, sde,
-                                             pin, pde, not, bnt};
-Operator const OP_FACTOR[OP_FACTOR_LEN]   = {mul, div, rem};
-Operator const OP_TERM[OP_TERM_LEN]       = {add, sub};
-Operator const OP_SHIFT[OP_SHIFT_LEN]     = {lsh, rsh};
+Operator const OP_SMT = smt;
+Operator const OP_STE = ste;
+Operator const OP_LGT = lgt;
+Operator const OP_LTE = lte;
 
-ux const OP_LEVEL_LEN[OP_ORDER_LEN] = {
-  OP_SHIFT_LEN, OP_TERM_LEN, OP_FACTOR_LEN, OP_UNARY_LEN, OP_PRIMARY_LEN};
+Operator const OP_PRIMARY[OP_PRIMARY_LEN]       = {dec, acs, grp, cll};
+Operator const OP_UNARY[OP_UNARY_LEN]           = {pos, neg, sin, sde,
+                                                   pin, pde, not, bnt};
+Operator const OP_FACTOR[OP_FACTOR_LEN]         = {mul, div, rem};
+Operator const OP_TERM[OP_TERM_LEN]             = {add, sub};
+Operator const OP_SHIFT[OP_SHIFT_LEN]           = {lsh, rsh};
+Operator const OP_COMPARISON[OP_COMPARISON_LEN] = {smt, ste, lgt, lte};
+
+ux const OP_LEVEL_LEN[OP_ORDER_LEN]          = {OP_COMPARISON_LEN, OP_SHIFT_LEN,
+                                                OP_TERM_LEN,       OP_FACTOR_LEN,
+                                                OP_UNARY_LEN,      OP_PRIMARY_LEN};
 Operator const* const OP_ORDER[OP_ORDER_LEN] = {
-  OP_SHIFT, OP_TERM, OP_FACTOR, OP_UNARY, OP_PRIMARY};
+  OP_COMPARISON, OP_SHIFT, OP_TERM, OP_FACTOR, OP_UNARY, OP_PRIMARY};
 
 Operator const OP_COMPOUND[OP_COMPOUND_LEN] = {add, sub, mul, div,
                                                rem, lsh, rsh};
@@ -147,5 +159,9 @@ char const* opName(Operator const op) {
   if (opEq(op, OP_SUB)) return "subtract";
   if (opEq(op, OP_LSH)) return "left shift";
   if (opEq(op, OP_RSH)) return "right shift";
+  if (opEq(op, OP_SMT)) return "smaller";
+  if (opEq(op, OP_STE)) return "smaller or equal";
+  if (opEq(op, OP_LGT)) return "larger";
+  if (opEq(op, OP_LTE)) return "larger or equal";
   dbgUnexpected("Unknown operator!");
 }
