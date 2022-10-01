@@ -64,6 +64,8 @@ typedef enum {
   LXM_EXCEQ,
   /* Mark "!". */
   LXM_EXC,
+  /* Mark "~". */
+  LXM_TILDE,
   /* Marks the end of the file. */
   LXM_EOF,
   /* Keyword "let". */

@@ -36,6 +36,7 @@
 #define pin pre(LXM_PLUSPLUS)
 #define pde pre(LXM_MINUSMINUS)
 #define not pre(LXM_EXC)
+#define bnt pre(LXM_TILDE)
 
 #define pos pre(LXM_PLUS)
 #define neg pre(LXM_MINUS)
@@ -56,6 +57,7 @@ Operator const OP_SDE = sde;
 Operator const OP_PIN = pin;
 Operator const OP_PDE = pde;
 Operator const OP_NOT = not ;
+Operator const OP_BNT = bnt;
 
 Operator const OP_POS = pos;
 Operator const OP_NEG = neg;
@@ -68,7 +70,7 @@ Operator const OP_ADD = add;
 Operator const OP_SUB = sub;
 
 Operator const OP_PRIMARY[OP_PRIMARY_LEN] = {dec, acs, grp, cll, sin,
-                                             sde, pin, pde, not };
+                                             sde, pin, pde, not, bnt};
 Operator const OP_UNARY[OP_UNARY_LEN]     = {pos, neg};
 Operator const OP_FACTOR[OP_FACTOR_LEN]   = {mul, div, rem};
 Operator const OP_TERM[OP_TERM_LEN]       = {add, sub};

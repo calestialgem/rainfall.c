@@ -94,14 +94,14 @@ static bool mark() {
   char const* const old = lxr.cur;
 
 // Check whether there is a mark.
-#define LENGTH 27
+#define LENGTH 28
   String const MARKS[LENGTH] = {
     strOf(","),  strOf(":"),  strOf(";"),  strOf("("),  strOf(")"),
     strOf("*"),  strOf("/"),  strOf("%"),  strOf("++"), strOf("+"),
     strOf("--"), strOf("-"),  strOf("&&"), strOf("&"),  strOf("||"),
     strOf("|"),  strOf("^"),  strOf("<<"), strOf("<="), strOf("<"),
     strOf(">>"), strOf(">="), strOf(">"),  strOf("=="), strOf("="),
-    strOf("!="), strOf("!")};
+    strOf("!="), strOf("!"),  strOf("~")};
 
   for (ux i = 0; i < LENGTH; i++) {
     if (check(MARKS[i])) {

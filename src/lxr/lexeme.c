@@ -36,6 +36,7 @@ char const* lxmName(LexemeType const type) {
   case LXM_EQUAL: return "=";
   case LXM_EXCEQ: return "!=";
   case LXM_EXC: return "!";
+  case LXM_TILDE: return "~";
   case LXM_EOF: return "eof";
   case LXM_LET: return "let";
   case LXM_VAR: return "var";

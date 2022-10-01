@@ -40,3 +40,5 @@ func();
 
 var b: bool = false;
 b = !b;
+
+someOtherVariable = ~someVariable;
