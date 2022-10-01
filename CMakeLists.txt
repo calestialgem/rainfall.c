@@ -15,6 +15,9 @@ add_executable(${PROJECT_NAME}
   src/main.c
 
   # Analyzer Module
+  src/anr/analyzer.c
+  src/anr/evaluation.c
+  src/anr/table.c
   src/anr/type.c
 
   # Debug Module

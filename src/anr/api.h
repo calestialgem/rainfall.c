@@ -177,6 +177,26 @@ typedef struct {
   EvaluationNode* all;
 } Evaluation;
 
+/* Semantic object with a name. */
+typedef struct {
+  /* Identifier. */
+  String     name;
+  /* Evaluation. */
+  Evaluation evl;
+  /* Whether it is built-in. */
+  bool       bltn;
+} Symbol;
+
+/* List of symbols. */
+typedef struct {
+  /* Pointer to the first symbol if it exists. */
+  Symbol* bgn;
+  /* Pointer to one after the last symbol. */
+  Symbol* end;
+  /* Pointer to one after the last allocated symbol. */
+  Symbol* all;
+} Table;
+
 /* Instance of meta type. */
 extern Type const TYPE_INS_META;
 /* Instance of i1 type. */
@@ -203,3 +223,8 @@ extern Type const TYPE_UNS_UX;
 extern Type const TYPE_FNS_F4;
 /* Instance of f8 type. */
 extern Type const TYPE_FNS_F8;
+
+/* Analyze the given parse. Reports to the given outcome. */
+Table tblOf(Outcome* otc, Parse prs);
+/* Release the memory resources used by the given table. */
+void  tblFree(Table* tbl);

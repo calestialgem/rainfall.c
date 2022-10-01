@@ -148,6 +148,11 @@ nodeTree(EvaluationNode const* i, ux const depth, FILE* const stream) {
   return i;
 }
 
+/* Root node of the given evaluation. */
+static EvaluationNode root(Evaluation const evl) {
+  return evlAt(evl, evlLen(evl) - 1);
+}
+
 Evaluation evlOf(ux const cap) {
   Evaluation res = {0};
   if (cap) reserve(&res, cap);
@@ -179,3 +184,9 @@ void evlTree(Evaluation const evl, FILE* const stream) {
   for (EvaluationNode const* i = evl.end - 1; i >= evl.bgn;)
     i = nodeTree(i, 0, stream);
 }
+
+Type evlType(Evaluation const evl) { return root(evl).type; }
+
+Value evlVal(Evaluation const evl) { return root(evl).val; }
+
+bool evlHas(Evaluation const evl) { return root(evl).has; }

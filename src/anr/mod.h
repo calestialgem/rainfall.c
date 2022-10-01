@@ -4,8 +4,10 @@
 #pragma once
 
 #include "anr/api.h"
+#include "psr/api.h"
 #include "utl/api.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 
 /* Stream out the given type as string to the given stream. */
@@ -28,3 +30,20 @@ void           evlAdd(Evaluation* evl, EvaluationNode node);
 void           evlWrite(Evaluation evl, FILE* stream);
 /* Stream out the given evaluation tree as string to the given stream. */
 void           evlTree(Evaluation evl, FILE* stream);
+/* Type of the given evaluation. */
+Type           evlType(Evaluation evl);
+/* Value of the given evaluation. */
+Value          evlVal(Evaluation evl);
+/* Whether the value of the given evaluation is known at compile-time. */
+bool           evlHas(Evaluation evl);
+
+/* Add the given symbol to the end of the given table. */
+void tblAdd(Table* tbl, Symbol sym);
+/* Remove the last added symbol from the given table. */
+void tblPop(Table* tbl);
+/* Amount of symbols in the given table. */
+ux   tblLen(Table tbl);
+
+/* Analyze the given parse into the given table by reporting to the given
+ * outcome. */
+void analyzerAnalyze(Table* table, Outcome* otc, Parse psr);
