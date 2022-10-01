@@ -301,7 +301,7 @@ static Result let() {
   prsAdd(
     psr.prs,
     (Statement){
-      .let = {.name = name, .type = type, .val = val},
+      .let = {.name = name.val, .type = type, .val = val},
         .tag = STT_LET
   });
   return YES;
@@ -336,10 +336,9 @@ static Result var() {
 
   if (!consume(LXM_EQUAL)) {
     prsAdd(
-      psr.prs,
-      (Statement){
-        .var = {.name = name, .type = type, .val = expOf(0)},
-          .tag = STT_VAR
+      psr.prs, (Statement){
+                 .var = {.name = name.val, .type = type, .val = expOf(0)},
+                 .tag = STT_VAR
     });
     return YES;
   }
@@ -357,7 +356,7 @@ static Result var() {
   prsAdd(
     psr.prs,
     (Statement){
-      .var = {.name = name, .type = type, .val = val},
+      .var = {.name = name.val, .type = type, .val = val},
         .tag = STT_VAR
   });
   return YES;
@@ -387,7 +386,7 @@ static Result ass() {
 
   prsAdd(
     psr.prs, (Statement){
-               .ass = {.name = name, .val = val},
+               .ass = {.name = name.val, .val = val},
                  .tag = STT_ASS
   });
   return YES;
@@ -432,9 +431,10 @@ static Result cas() {
   Expression const rhs = expGet();
 
   prsAdd(
-    psr.prs, (Statement){
-               .cas = {.name = name, .op = op, .rhs = rhs},
-                 .tag = STT_CAS
+    psr.prs,
+    (Statement){
+      .cas = {.name = name.val, .op = op, .rhs = rhs},
+        .tag = STT_CAS
   });
   return YES;
 }

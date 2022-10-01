@@ -67,7 +67,7 @@ void prsWrite(Parse const prs, FILE* const stream) {
     switch (i->tag) {
     case STT_LET:
       fprintf(stream, "let ");
-      strWrite(i->let.name.val, stream);
+      strWrite(i->let.name, stream);
       fprintf(stream, ": ");
       expWrite(i->let.type, stream);
       fprintf(stream, " = ");
@@ -76,7 +76,7 @@ void prsWrite(Parse const prs, FILE* const stream) {
       break;
     case STT_VAR:
       fprintf(stream, "var ");
-      strWrite(i->var.name.val, stream);
+      strWrite(i->var.name, stream);
       fprintf(stream, ": ");
       expWrite(i->var.type, stream);
       if (expLen(i->var.val)) {
@@ -86,13 +86,13 @@ void prsWrite(Parse const prs, FILE* const stream) {
       fprintf(stream, ";");
       break;
     case STT_ASS:
-      strWrite(i->ass.name.val, stream);
+      strWrite(i->ass.name, stream);
       fprintf(stream, " = ");
       expWrite(i->ass.val, stream);
       fprintf(stream, ";");
       break;
     case STT_CAS:
-      strWrite(i->cas.name.val, stream);
+      strWrite(i->cas.name, stream);
       fprintf(stream, " %s= ", lxmName(i->cas.op.bin.op));
       expWrite(i->cas.rhs, stream);
       fprintf(stream, ";");

@@ -112,8 +112,8 @@ typedef struct {
 
 /* Creation of an immutable variable with its type and value. */
 typedef struct {
-  /* Identifier that is the name of the defined variable. */
-  Lexeme     name;
+  /* Identifier of the defined variable. */
+  String     name;
   /* Expression that gives the type of the defined variable. */
   Expression type;
   /* Expression that gives the value of the defined variable. */
@@ -122,8 +122,8 @@ typedef struct {
 
 /* Creation of a mutable vairable with its type and initial value. */
 typedef struct {
-  /* Identifier that is the name of the defined variable. */
-  Lexeme     name;
+  /* Identifier of the defined variable. */
+  String     name;
   /* Expression that gives the type of the defined variable. */
   Expression type;
   /* Expression that gives the initial value of the defined variable. */
@@ -132,8 +132,8 @@ typedef struct {
 
 /* Changing the value of a mutable variable. */
 typedef struct {
-  /* Identifier that is the name of the assigned variable. */
-  Lexeme     name;
+  /* Identifier of the defined variable. */
+  String     name;
   /* Expression that gives the assigned value. */
   Expression val;
 } Assignment;
@@ -141,8 +141,8 @@ typedef struct {
 /* Changing the value of a mutable variable by applying a binary operator where
  * its on the left. */
 typedef struct {
-  /* Identifier that is the name of the assigned variable. */
-  Lexeme     name;
+  /* Identifier of the assigned variable. */
+  String     name;
   /* Operator. */
   Operator   op;
   /* Expression that gives the right hand side of the binary expression. */
