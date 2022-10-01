@@ -105,7 +105,7 @@ static bool mark() {
 
   for (ux i = 0; i < LENGTH; i++) {
     if (check(MARKS[i])) {
-      add(val(old), LXM_EQUAL + i);
+      add(val(old), LXM_COMMA + i);
       return true;
     }
   }
