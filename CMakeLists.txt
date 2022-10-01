@@ -14,6 +14,9 @@ add_executable(${PROJECT_NAME}
   # Launcher
   src/main.c
 
+  # Analyzer Module
+  src/anr/type.c
+
   # Debug Module
   src/dbg/mod.c
 
@@ -51,5 +54,6 @@ else(MSVC)
     -Wextra
     -Wpedantic
     -Wno-deprecated-declarations
+    -Wno-gnu-empty-struct
   )
 endif(MSVC)
