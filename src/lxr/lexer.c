@@ -38,18 +38,20 @@ static void next() { lxr.cur++; }
 /* Go to the previous character. */
 static void prev() { lxr.cur--; }
 
+/* Go back to the given position. */
+static void back(char const* const old) { lxr.cur = old; }
+
 /* String starting from the given position upto the current character. */
 static String val(char const* const old) {
   return (String){.bgn = old, .end = lxr.cur};
 }
 
-/* Consume the character if the first one fits the given initial predicate and
- * the remaining fit the given rest predicate. */
-static bool consume(bool (*const init)(char), bool (*const rest)(char)) {
-  if (!init(get())) return false;
-  next();
-  while (has() && rest(get())) next();
-  return true;
+/* Whether the current character exists and it equals to the given one. Consumes
+ * the character if true. */
+static bool take(char const c) {
+  bool const res = has() && get() == c;
+  if (res) next();
+  return res;
 }
 
 /* Whether the next characters are the same as the given string. Consumes the
@@ -58,6 +60,15 @@ static bool check(String const str) {
   for (ux i = 0; i < strLen(str); i++)
     if (!has() || lxr.cur[i] != strAt(str, i)) return false;
   lxr.cur += strLen(str);
+  return true;
+}
+
+/* Consume the character if the first one fits the given initial predicate and
+ * the remaining fit the given rest predicate. */
+static bool consume(bool (*const init)(char), bool (*const rest)(char)) {
+  if (!has() || !init(get())) return false;
+  next();
+  while (has() && rest(get())) next();
   return true;
 }
 
@@ -77,15 +88,13 @@ static bool whitespace() { return consume(&space, &space); }
 
 /* Try to skip a comment. */
 static bool comment() {
-  if (get() != '/') return false;
-  next();
-  if (!(has() && get() == '/')) {
+  if (!take('/')) return false;
+  if (!take('/')) {
     prev(); // Roll back the first '/'.
     return false;
   }
-
-  while (has() && get() != '\n') next();
-  next(); // Consume the new line as well.
+  // Consume until a new line.
+  while (!take('\n')) next();
   return true;
 }
 
@@ -112,8 +121,7 @@ static bool mark() {
 #undef LENGTH
 
   // EOF mark.
-  if (!get()) {
-    next();
+  if (take(0)) {
     add(val(old), LXM_EOF);
     return true;
   }
@@ -162,31 +170,23 @@ static bool decimal() {
   char const* const old = lxr.cur;
 
   // Whole part.
-  if (!consume(&decimalInit, &decimalRest)) return false;
-
-  // Fraction.
-  if (has() && get() == '.') {
-    next();
-    // Roll back '.' if cannot consume the fraction.
-    if (!(has() && consume(&decimalInit, &decimalRest))) prev();
+  // Optional sign.
+  take('+') || take('-');
+  if (!consume(&decimalInit, &decimalRest)) {
+    back(old);
+    return false;
   }
 
+  // Fraction.
+  char const* const frac = lxr.cur;
+  if (take('.') && !consume(&decimalInit, &decimalRest)) back(frac);
+
   // Exponent.
-  if (has() && (get() == 'e' || get() == 'E')) {
-    next();
-    if (!has()) {
-      prev(); // Roll back 'e' or 'E'.
-    } else {
-      if (get() == '+' || get() == '-') {
-        next();
-        if (!(has() && consume(&decimalInit, &decimalRest))) {
-          prev(); // Roll back 'e' or 'E'.
-          prev(); // Roll back '+' or '-'.
-        }
-      } else if (!consume(&decimalInit, &decimalRest)) {
-        prev(); // Roll back 'e' or 'E'.
-      }
-    }
+  char const* const exp = lxr.cur;
+  if (take('e') || take('E')) {
+    // Optional sign.
+    take('+') || take('-');
+    if (!consume(&decimalInit, &decimalRest)) back(exp);
   }
 
   add(val(old), LXM_DEC);
@@ -205,8 +205,6 @@ void lexerLex(Lex* const lex, Outcome* const otc, Source const src) {
   while (has()) {
     char const* const old = lxr.cur;
 
-    if (separator()) continue;
-
     if (word() || decimal()) {
       if (separator()) continue;
       // Roll back the word or decimal that was lexed because it is not
@@ -214,6 +212,8 @@ void lexerLex(Lex* const lex, Outcome* const otc, Source const src) {
       lxr.cur = old;
       lexPop(lxr.lex);
     }
+
+    if (separator()) continue;
 
     // Unknown character! Mark all characters until a separator is found.
     next();
