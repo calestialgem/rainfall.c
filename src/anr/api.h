@@ -208,19 +208,19 @@ extern Type const TYPE_INS_I8;
 /* Instance of ix type. */
 extern Type const TYPE_INS_IX;
 /* Instance of u1 type. */
-extern Type const TYPE_UNS_U1;
+extern Type const TYPE_INS_U1;
 /* Instance of u2 type. */
-extern Type const TYPE_UNS_U2;
+extern Type const TYPE_INS_U2;
 /* Instance of u4 type. */
-extern Type const TYPE_UNS_U4;
+extern Type const TYPE_INS_U4;
 /* Instance of u8 type. */
-extern Type const TYPE_UNS_U8;
+extern Type const TYPE_INS_U8;
 /* Instance of ux type. */
-extern Type const TYPE_UNS_UX;
+extern Type const TYPE_INS_UX;
 /* Instance of f4 type. */
-extern Type const TYPE_FNS_F4;
+extern Type const TYPE_INS_F4;
 /* Instance of f8 type. */
-extern Type const TYPE_FNS_F8;
+extern Type const TYPE_INS_F8;
 
 /* Amount of built-in types. */
 #define TYPE_BUILT_LEN 13

@@ -10,6 +10,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+/* Whether the given types are equal. */
+bool        typeEq(Type lhs, Type rhs);
 /* Name of the given type. */
 char const* typeName(Type type);
 /* Stream out the given type as string to the given stream. */

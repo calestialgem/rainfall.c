@@ -34,16 +34,18 @@ Type const TYPE_INS_I2   = ti2;
 Type const TYPE_INS_I4   = ti4;
 Type const TYPE_INS_I8   = ti8;
 Type const TYPE_INS_IX   = tix;
-Type const TYPE_UNS_U1   = tu1;
-Type const TYPE_UNS_U2   = tu2;
-Type const TYPE_UNS_U4   = tu4;
-Type const TYPE_UNS_U8   = tu8;
-Type const TYPE_UNS_UX   = tux;
-Type const TYPE_FNS_F4   = tf4;
-Type const TYPE_FNS_F8   = tf8;
+Type const TYPE_INS_U1   = tu1;
+Type const TYPE_INS_U2   = tu2;
+Type const TYPE_INS_U4   = tu4;
+Type const TYPE_INS_U8   = tu8;
+Type const TYPE_INS_UX   = tux;
+Type const TYPE_INS_F4   = tf4;
+Type const TYPE_INS_F8   = tf8;
 
 Type const TYPE_BUILT[TYPE_BUILT_LEN] = {tmeta, ti1, ti2, ti4, ti8, tix, tu1,
                                          tu2,   tu4, tu8, tux, tf4, tf8};
+
+bool typeEq(Type const lhs, Type const rhs) { return lhs.tag == rhs.tag; }
 
 char const* typeName(Type const type) {
   switch (type.tag) {
