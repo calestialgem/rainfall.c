@@ -33,6 +33,14 @@ Buffer bfrOf(ux const cap) {
   return res;
 }
 
+Buffer bfrOfCopy(Buffer const bfr) {
+  ux const len = bfrLen(bfr);
+  Buffer   res = bfrOf(len);
+  memcpy(res.bgn, bfr.bgn, len);
+  res.end += len;
+  return res;
+}
+
 void bfrFree(Buffer* const bfr) {
   free(bfr->bgn);
   bfr->bgn = NULL;

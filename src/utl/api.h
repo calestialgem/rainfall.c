@@ -89,6 +89,8 @@ String const* setGet(Set set, String str);
 
 /* Buffer with the given initial capacity. */
 Buffer bfrOf(ux cap);
+/* Copy of the given buffer. */
+Buffer bfrOfCopy(Buffer bfr);
 /* Release the memory resources used by the given buffer. */
 void   bfrFree(Buffer* bfr);
 /* Amount of characters in the given buffer. */

@@ -17,6 +17,7 @@ add_executable(${PROJECT_NAME}
   # Analyzer Module
   src/anr/analyzer.c
   src/anr/evaluation.c
+  src/anr/number.c
   src/anr/table.c
   src/anr/type.c
 
