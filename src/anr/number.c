@@ -2,6 +2,7 @@
 // License-Identifier: GPL-3.0-or-later
 
 #include "anr/mod.h"
+#include "dbg/api.h"
 #include "utl/api.h"
 
 #include <limits.h>
@@ -42,19 +43,13 @@ static ux numBitMost(Number const num) {
   return bit;
 }
 
-Number numOfZero() {
-  Number res = {.sig = bfrOf(1)};
-  bfrPut(&res.sig, 0);
-  return res;
-}
-
-Number numOfCopy(Number const num) {
+/* Copy of the given number. */
+static Number numOfCopy(Number const num) {
   return (Number){.sig = bfrOfCopy(num.sig), .exp = num.exp};
 }
 
-void numFree(Number* const num) { bfrFree(&num->sig); }
-
-void numAdd(Number* const num, u1 const val) {
+/* Add the given value to the given number. */
+static void numAdd(Number* const num, u1 const val) {
   u8 const MAX = UINT8_MAX + 1;
   u8       rem = val;
   for (char* i = num->sig.bgn; i < num->sig.end; i++) {
@@ -71,7 +66,8 @@ void numAdd(Number* const num, u1 const val) {
   if (rem) bfrPut(&num->sig, (char)rem);
 }
 
-void numMul(Number* const num, u1 const val) {
+/* Multiply the given number with the given value. */
+static void numMul(Number* const num, u1 const val) {
   u8 const MAX = UINT8_MAX + 1;
   u8       rem = 0;
   for (char* i = num->sig.bgn; i < num->sig.end; i++) {
@@ -84,7 +80,8 @@ void numMul(Number* const num, u1 const val) {
   if (rem) bfrPut(&num->sig, (char)rem);
 }
 
-void numDiv(Number* const num, u1 const val) {
+/* Divide the given number as integer to the given value. */
+static void numDiv(Number* const num, u1 const val) {
   u8 const MAX = UINT8_MAX + 1;
   u8       rem = 0;
   for (char* i = num->sig.end - 1; i >= num->sig.bgn; i--) {
@@ -95,7 +92,8 @@ void numDiv(Number* const num, u1 const val) {
   }
 }
 
-u1 numRem(Number const num, u1 const val) {
+/* Reminder after integer division of the given number with the given value. */
+static u1 numRem(Number const num, u1 const val) {
   u8 const MAX = UINT8_MAX + 1;
   u8       res = 0;
   for (char const* i = num.sig.end - 1; i >= num.sig.bgn; i--) {
@@ -106,32 +104,18 @@ u1 numRem(Number const num, u1 const val) {
   return res;
 }
 
-i8 numCmp(Number const num, u8 const val) {
-  Converter const con    = {.u8 = val};
-  ux              valLen = sizeof(u8);
-  while (valLen > 1 && !con.data[valLen - 1]) valLen--;
-  ux const len = bfrLen(num.sig);
-
-  if (len != valLen) return (i8)len - (i8)valLen;
-
-  for (char const* i = num.sig.end - 1; i >= num.sig.bgn; i--) {
-    u1 const byte = con.data[i - num.sig.bgn];
-    if ((u1)*i != byte) return *i - (i1)byte;
-  }
-
-  return 0;
-}
-
-void numTrim(Number* const num, u1 const base) {
+/* Remove the trailing zeros from the given number and add those to the
+ * exponent. */
+static void numTrim(Number* const num, u1 const base) {
   while (!numRem(*num, base)) {
     numDiv(num, base);
     num->exp++;
   }
 }
 
-void numScale(Number* const num, i8 const exp) { num->exp += exp; }
-
-void numBase(Number* const num, u1 const base, u1 const target) {
+/* Change the base of the given number from the given current base to the given
+ * target base. */
+static void numBase(Number* const num, u1 const base, u1 const target) {
   numTrim(num, base);
   if (num->exp >= 0) {
     while (num->exp) {
@@ -149,6 +133,78 @@ void numBase(Number* const num, u1 const base, u1 const target) {
   }
   numTrim(num, base);
   num->exp -= (ix)scaledUp;
+}
+
+/* Decimal integer from the given string. */
+static bool decOf(i8* const res, String str) {
+  i8 const BASE = 10;
+  i8 const MAX  = INT64_MAX / BASE;
+
+  // Consume the sign character.
+  bool negative = strAt(str, 0) == '-';
+  if (negative || strAt(str, 0) == '+') str.bgn++;
+
+  *res = 0;
+  for (char const* i = str.bgn; i < str.end; i++) {
+    if (*i == '_') continue;
+    if (*res > MAX || (*res == MAX && *i != '0')) return true;
+    *res *= BASE;
+    *res += *i - '0';
+  }
+
+  if (negative) *res *= -1;
+  return false;
+}
+
+Number numOfZero() {
+  Number res = {.sig = bfrOf(1)};
+  bfrPut(&res.sig, 0);
+  return res;
+}
+
+void numFree(Number* const num) { bfrFree(&num->sig); }
+
+bool numSetDec(Number* const num, String const str) {
+  u1 const BASE   = 10;
+  num->exp        = 0;
+  char const* i   = str.bgn;
+  bool        dot = false;
+
+  for (; i < str.end; i++) {
+    switch (*i) {
+    case '.': dot = true;
+    case '_': continue;
+    case 'e':
+    case 'E':
+      i8 exp = 0;
+      // Skip 'e' or 'E' before parsing the exponent.
+      if (decOf(&exp, (String){.bgn = i + 1, .end = str.end})) return true;
+      num->exp += exp;
+      goto success;
+    }
+    if (dot) num->exp--;
+    numMul(num, BASE);
+    numAdd(num, *i - '0');
+  }
+success:
+  numBase(num, BASE, 2);
+  return false;
+}
+
+i8 numCmp(Number const num, u8 const val) {
+  Converter const con    = {.u8 = val};
+  ux              valLen = sizeof(u8);
+  while (valLen > 1 && !con.data[valLen - 1]) valLen--;
+  ux const len = bfrLen(num.sig);
+
+  if (len != valLen) return (i8)len - (i8)valLen;
+
+  for (char const* i = num.sig.end - 1; i >= num.sig.bgn; i--) {
+    u1 const byte = con.data[i - num.sig.bgn];
+    if ((u1)*i != byte) return *i - (i1)byte;
+  }
+
+  return 0;
 }
 
 bool numInt(Number const num) { return num.exp >= 0; }

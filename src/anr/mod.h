@@ -58,30 +58,15 @@ ux   tblLen(Table tbl);
 
 /* Zero number. */
 Number numOfZero();
-/* Copy of the given number. */
-Number numOfCopy(Number num);
 /* Release the memory resources used by the given number. */
 void   numFree(Number* num);
-/* Add the given value to the given number. */
-void   numAdd(Number* num, u1 val);
-/* Multiply the given number with the given value. */
-void   numMul(Number* num, u1 val);
-/* Divide the given number as integer to the given value. */
-void   numDiv(Number* num, u1 val);
-/* Reminder after integer division of the given number with the given value. */
-u1     numRem(Number num, u1 val);
+/* Parse the given decimal string into the given number. Returns true signaling
+ * error, when the exponent has too many digits. */
+bool   numSetDec(Number* num, String str);
 /* Comparison of the given number with the given value. Returns positive, zero,
  * or negative depending on whether the number is greater than, equals to, or
  * less than the given value, respectively. */
 i8     numCmp(Number num, u8 val);
-/* Remove the trailing zeros from the given number and add those to the
- * exponent. */
-void   numTrim(Number* num, u1 base);
-/* Add the given value to the exponent of the given number. */
-void   numScale(Number* num, i8 exp);
-/* Change the base of the given number from the given current base to the given
- * target base. */
-void   numBase(Number* num, u1 base, u1 target);
 /* Whether the given number is an integer. */
 bool   numInt(Number num);
 /* Value of the given number as integer. */

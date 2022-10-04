@@ -9,6 +9,7 @@
 #include "utl/api.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 
 /* Context of the analysis process. */
 static struct {
@@ -97,23 +98,6 @@ checkExpNodeNullaryAccess(ExpressionNode const* const node, Type const type) {
   return NULL;
 }
 
-/* Convert the given decimal digit string with optional underscore separators
- * into the given number. Returns true if it owerflows. */
-static bool checkDecimal(String const str, ux* const res) {
-  u8 const BASE = 10;
-  *res          = 0;
-  for (char const* i = str.bgn; i < str.end; i++) {
-    if (*i == '_') continue;
-    ux pre = *res;
-    *res *= BASE;
-    if (pre > *res) return true;
-    pre = *res;
-    *res += *i - '0';
-    if (pre > *res) return true;
-  }
-  return false;
-}
-
 /* Check whether the type of the given decimal nullary expression node is the
  * same as the given type. Returns the node that comes after all the childeren
  * of the given one, or null if the type does not match. */
@@ -130,43 +114,101 @@ checkExpNodeNullaryDecimal(ExpressionNode const* const node, Type const type) {
     return NULL;
   }
 
-  String whole    = node->val;
-  String fraction = {.bgn = node->val.end, .end = node->val.end};
-  String exponent = {.bgn = node->val.end, .end = node->val.end};
-
-  for (char const* i = node->val.end - 1; i >= node->val.bgn; i--) {
-    switch (*i) {
-    case '.':
-      whole.end    = i;
-      fraction.bgn = i + 1;
-      break;
-    case 'e':
-    case 'E':
-      whole.end    = i;
-      fraction.bgn = i;
-      fraction.end = i;
-      exponent.bgn = i + 1;
-      break;
-    default: break;
-    }
-  }
-
-  // Consume the sign character.
-  bool negative = strAt(whole, 0) == '-';
-  if (negative || strAt(whole, 0) == '+') whole.bgn++;
-
-  // TODO: Handle negative zero.
-  if (
-    negative && typeEq(type, TYPE_INS_U1) && typeEq(type, TYPE_INS_U2) &&
-    typeEq(type, TYPE_INS_U4) && typeEq(type, TYPE_INS_U8) &&
-    typeEq(type, TYPE_INS_UX)) {
-    otcErr(
-      anr.otc, node->val,
-      "Expected a `%s`, which is unsigned, but the number is negative!",
-      typeName(type));
+  bool const neg = strAt(node->val, 0) == '-';
+  Number     num = numOfZero();
+  if (numSetDec(
+        &num, (String){
+                .bgn = (neg || strAt(node->val, 0) == '+') + node->val.bgn,
+                .end = node->val.end})) {
+    otcErr(anr.otc, node->val, "Exponent is too long!");
     return NULL;
   }
 
+#define parseSigned(TYPE, TYPE_INS, MAX)                                    \
+  if (typeEq(type, TYPE_INS)) {                                             \
+    if (!numInt(num)) {                                                     \
+      otcErr(                                                               \
+        anr.otc, node->val, "Not an integer for integer type `%s`!",        \
+        typeName(type));                                                    \
+      return NULL;                                                          \
+    }                                                                       \
+    i8 const cmp = numCmp(num, (u8)(MAX) + 1);                              \
+    if (cmp == 1 || (cmp == 0 && !neg)) {                                   \
+      otcErr(anr.otc, node->val, "Out of bounds of `%s`!", typeName(type)); \
+      return NULL;                                                          \
+    }                                                                       \
+    EvaluationNode evl = {                                                  \
+      .exp  = *node,                                                        \
+      .type = type,                                                         \
+      .val  = {.TYPE = (TYPE)numU8(num)},                                   \
+      .has  = true};                                                         \
+    if (neg) evl.val.TYPE = (TYPE)-evl.val.TYPE;                            \
+    evlAdd(&anr.evl, evl);                                                  \
+    goto success;                                                           \
+  }
+
+#define parseUnsigned(TYPE, TYPE_INS, MAX)                                    \
+  if (typeEq(type, TYPE_INS)) {                                               \
+    if (!numInt(num)) {                                                       \
+      otcErr(                                                                 \
+        anr.otc, node->val, "Not an integer for integer type `%s`!",          \
+        typeName(type));                                                      \
+      return NULL;                                                            \
+    }                                                                         \
+    i8 const cmp = numCmp(num, MAX);                                          \
+    if (cmp == 1) {                                                           \
+      otcErr(anr.otc, node->val, "Out of bounds of `%s`!", typeName(type));   \
+      return NULL;                                                            \
+    }                                                                         \
+    EvaluationNode evl = {                                                    \
+      .exp  = *node,                                                          \
+      .type = type,                                                           \
+      .val  = {.TYPE = (TYPE)numU8(num)},                                     \
+      .has  = true};                                                           \
+    if (neg && evl.val.TYPE != 0) {                                           \
+      otcErr(                                                                 \
+        anr.otc, node->val, "Negative value for unsigned integer type `%s`!", \
+        typeName(type));                                                      \
+      return NULL;                                                            \
+    }                                                                         \
+    evlAdd(&anr.evl, evl);                                                    \
+    goto success;                                                             \
+  }
+
+#define parseFloat(TYPE, TYPE_INS)         \
+  if (typeEq(type, TYPE_INS)) {            \
+    EvaluationNode evl = {                 \
+      .exp  = *node,                       \
+      .type = type,                        \
+      .val  = {.TYPE = (TYPE)numF8(num)},  \
+      .has  = true};                        \
+    if (neg) evl.val.TYPE = -evl.val.TYPE; \
+    evlAdd(&anr.evl, evl);                 \
+    goto success;                          \
+  }
+
+  parseSigned(i1, TYPE_INS_I1, INT8_MAX);
+  parseSigned(i2, TYPE_INS_I2, INT16_MAX);
+  parseSigned(i4, TYPE_INS_I4, INT32_MAX);
+  parseSigned(i8, TYPE_INS_I8, INT64_MAX);
+  parseSigned(ix, TYPE_INS_IX, INTPTR_MAX);
+
+  parseUnsigned(u1, TYPE_INS_U1, UINT8_MAX);
+  parseUnsigned(u2, TYPE_INS_U2, UINT16_MAX);
+  parseUnsigned(u4, TYPE_INS_U4, UINT32_MAX);
+  parseUnsigned(u8, TYPE_INS_U8, UINT64_MAX);
+  parseUnsigned(ux, TYPE_INS_UX, UINTPTR_MAX);
+
+  parseFloat(f4, TYPE_INS_F4);
+  parseFloat(f8, TYPE_INS_F8);
+
+#undef parseSigned
+#undef parseUnsigned
+#undef parseFloat
+
+success:
+
+  numFree(&num);
   return node - 1;
 }
 
