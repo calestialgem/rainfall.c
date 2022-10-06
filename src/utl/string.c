@@ -25,6 +25,16 @@ bool strEq(String const lhs, String const rhs) {
   return true;
 }
 
+ux strHash(String const str) {
+  ux const PRIME = 53;
+  ux       hash  = 0;
+  for (char const* i = str.bgn; i < str.end; i++) {
+    hash *= PRIME;
+    hash += *i;
+  }
+  return hash;
+}
+
 void strWrite(String const str, FILE* const stream) {
   fwrite(str.bgn, sizeof(char), strLen(str), stream);
 }

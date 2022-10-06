@@ -10,7 +10,7 @@
 /* Amount of allocated strings in the given set. */
 static ux setCap(Set const set) { return set.end - set.bgn; }
 
-/* Whether the given should grow before adding a new string. */
+/* Whether the given set should grow before adding a new string. */
 static bool shouldGrow(Set const set) {
   f8 const MIN_RATIO = 0.5;
   ux const cap       = setCap(set);
@@ -26,17 +26,6 @@ static void grow(Set* const set) {
     if (strLen(*i)) setPut(&new, *i);
   setFree(set);
   *set = new;
-}
-
-/* Hashcode of the given string. */
-static ux hashcode(String const str) {
-  ux const PRIME = 53;
-  ux       hash  = 0;
-  for (char const* i = str.bgn; i < str.end; i++) {
-    hash *= PRIME;
-    hash += *i;
-  }
-  return hash;
 }
 
 Set setOf(ux const cap) {
@@ -59,7 +48,7 @@ void setFree(Set* const set) {
 void setPut(Set* const set, String const str) {
   if (shouldGrow(*set)) grow(set);
   ux const cap  = setCap(*set);
-  ux const hash = hashcode(str);
+  ux const hash = strHash(str);
   for (ux i = 0; i < cap; i++) {
     ux const index = (hash + i) % cap;
     if (!strLen(set->bgn[index])) {
@@ -73,7 +62,7 @@ void setPut(Set* const set, String const str) {
 
 String const* setGet(Set const set, String const str) {
   ux const cap  = setCap(set);
-  ux const hash = hashcode(str);
+  ux const hash = strHash(str);
   for (ux i = 0; i < cap; i++) {
     ux const index = (hash + i) % cap;
     if (strEq(set.bgn[index], str)) return set.bgn + index;

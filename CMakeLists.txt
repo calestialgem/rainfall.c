@@ -45,6 +45,7 @@ add_executable(${PROJECT_NAME}
 
   # Utility Module
   src/utl/buffer.c
+  src/utl/map.c
   src/utl/set.c
   src/utl/string.c
 )
