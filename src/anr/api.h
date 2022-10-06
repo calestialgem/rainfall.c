@@ -7,6 +7,7 @@
 #include "utl/api.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 
 /* Type of a type symbol. */
 typedef struct {
@@ -231,3 +232,5 @@ extern Type const TYPE_BUILT[TYPE_BUILT_LEN];
 Table tblOf(Outcome* otc, Parse prs);
 /* Release the memory resources used by the given table. */
 void  tblFree(Table* tbl);
+/* Stream out the given table as string to the given stream. */
+void  tblWrite(Table tbl, FILE* stream);

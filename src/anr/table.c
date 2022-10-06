@@ -30,7 +30,7 @@ static void reserve(Table* const tbl, ux const amount) {
 
 Table tblOf(Outcome* const otc, Parse const prs) {
   Table res = {0};
-  analyzerAnalyze(&res, otc, prs);
+  analyze(&res, otc, prs);
   return res;
 }
 
@@ -44,8 +44,11 @@ void tblFree(Table* const tbl) {
 
 ux tblLen(Table const tbl) { return tbl.end - tbl.bgn; }
 
+Symbol tblAt(Table const tbl, ux const i) { return tbl.bgn[i]; }
+
 void tblWrite(Table const tbl, FILE* const stream) {
   for (Symbol const* i = tbl.bgn; i < tbl.end; i++) {
+    if (!symUsr(*i)) continue;
     strWrite(i->name, stream);
     fprintf(stream, ": ");
     typeWrite(evlType(i->evl), stream);

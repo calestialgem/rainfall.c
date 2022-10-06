@@ -10,24 +10,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-/* Context of the analysis process. */
-typedef struct {
-  /* Table to add the symbols into. */
-  Table*     tbl;
-  /* Outcome to report to. */
-  Outcome*   otc;
-  /* Analyzed parse. */
-  Parse      prs;
-  /* Set of built-in symbols. */
-  Set        bld;
-  /* Set of user-defined symbols. */
-  Set        usr;
-  /* Set of user-defined, resolved but not checked symbols. */
-  Set        res;
-  /* Evaluation that is currently analyzed. */
-  Evaluation evl;
-} Analyzer;
-
 /* Dynamicly allocated, infinite precision, signed real. */
 typedef struct {
   /* Significand that is an integer. */
@@ -35,9 +17,6 @@ typedef struct {
   /* Exponent whose base can vary. */
   i8     exp;
 } Number;
-
-/* Context of the current analysis process. */
-extern Analyzer anr;
 
 /* Whether the given types are equal. */
 bool        typeEq(Type lhs, Type rhs);
@@ -72,12 +51,17 @@ Value          evlVal(Evaluation evl);
 /* Whether the value of the given evaluation is known at compile-time. */
 bool           evlHas(Evaluation evl);
 
-/* Add the given symbol to the end of the given table. */
-void tblAdd(Table* tbl, Symbol sym);
-/* Remove the last added symbol from the given table. */
-void tblPop(Table* tbl);
+/* Whether the given symbol is user-defined. */
+bool symUsr(Symbol sym);
+
 /* Amount of symbols in the given table. */
-ux   tblLen(Table tbl);
+ux     tblLen(Table tbl);
+/* Symbol at the given index in the given table. */
+Symbol tblAt(Table tbl, ux i);
+/* Add the given symbol to the end of the given table. */
+void   tblAdd(Table* tbl, Symbol sym);
+/* Remove the last added symbol from the given table. */
+void   tblPop(Table* tbl);
 
 /* Zero number. */
 Number numOfZero();
@@ -103,8 +87,4 @@ void   numWrite(Number num, u1 base, char exp, FILE* stream);
 
 /* Analyze the given parse into the given table by reporting to the given
  * outcome. */
-void anrAnalyze(Table* tbl, Outcome* otc, Parse prs);
-/* Resolve name clashes in the definitions of the given analyzer. */
-void anrResolve();
-/* Check the types of the expressions in the given analyzer. */
-void anrCheck();
+void analyze(Table* tbl, Outcome* otc, Parse prs);
