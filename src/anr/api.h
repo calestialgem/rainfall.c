@@ -126,6 +126,14 @@ typedef struct {
   TypeTag tag;
 } Type;
 
+/* Semantic rule of converting a type to another one. */
+typedef struct {
+  /* Source type. */
+  Type to;
+  /* Destination type. */
+  Type from;
+} TypeConvertion;
+
 /* Value. */
 typedef union {
   /* Value of a meta type. */
@@ -186,14 +194,94 @@ typedef struct {
   Evaluation evl;
 } Symbol;
 
+/* `Operation` with `NullaryOperator`. */
+typedef struct {
+} NullaryOperation;
+
+/* `Operation` with `PrenaryOperator`. */
+typedef struct {
+  /* Type of the operand that comes after the operator. */
+  Type in;
+} PrenaryOperation;
+
+/* `Operation` with `PostaryOperator`. */
+typedef struct {
+  /* Type of the operand that comes before the operator. */
+  Type in;
+} PostaryOperation;
+
+/* `Operation` with `CirnaryOperator`. */
+typedef struct {
+  /* Type of the operand that comes between the operators. */
+  Type in;
+} CirnaryOperation;
+
+/* `Operation` with `BinaryOperator`. */
+typedef struct {
+  /* Type of the operand that comes before the operator. */
+  Type lin;
+  /* Type of the operand that comes after the operator. */
+  Type rin;
+} BinaryOperation;
+
+/* `Operation` with `VariaryOperator`. */
+typedef struct {
+  /* Type of the first operand. */
+  Type  fin;
+  /* Types of the remaining operands. */
+  Type* rin;
+  /* Amound of operands. */
+  ux    ary;
+} VariaryOperation;
+
+/* Semantic rule of using an operator on types. */
+typedef struct {
+  union {
+    /* Operation as nullary operation. */
+    NullaryOperation null;
+    /* Operation as prenary operation. */
+    PrenaryOperation pre;
+    /* Operation as postary operation. */
+    PostaryOperation post;
+    /* Operation as cirnary operation. */
+    CirnaryOperation cir;
+    /* Operation as binary operation. */
+    BinaryOperation  bin;
+    /* Operation as variary operation. */
+    VariaryOperation var;
+  };
+
+  /* Operator. */
+  Operator op;
+  /* Type of the output of the operation. */
+  Type     out;
+} Operation;
+
 /* List of symbols. */
 typedef struct {
-  /* Pointer to the first symbol if it exists. */
-  Symbol* bgn;
-  /* Pointer to one after the last symbol. */
-  Symbol* end;
-  /* Pointer to one after the last allocated symbol. */
-  Symbol* all;
+  /* Dynamicly allocated array of symbols. */
+  struct {
+    /* Pointer to the first symbol if it exists. */
+    Symbol* bgn;
+    /* Pointer to one after the last symbol. */
+    Symbol* end;
+    /* Pointer to one after the last allocated symbol. */
+    Symbol* all;
+  } sym;
+
+  /* Dynamicly allocated array of operations. */
+  struct {
+    /* Pointer to the first symbol if it exists. */
+    Operation* bgn;
+    /* Pointer to one after the last symbol. */
+    Operation* end;
+    /* Pointer to one after the last allocated symbol. */
+    Operation* all;
+  } opn;
+
+#define MAX_TYPE_CONVERSION 1024
+  /* Dynamicly allocated array of type convertions. */
+  TypeConvertion conversions[MAX_TYPE_CONVERSION]; // Map<Type, List<Type>>
 } Table;
 
 /* Instance of meta type. */

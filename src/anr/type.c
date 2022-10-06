@@ -47,6 +47,26 @@ Type const TYPE_BUILT[TYPE_BUILT_LEN] = {tmeta, ti1, ti2, ti4, ti8, tix, tu1,
 
 bool typeEq(Type const lhs, Type const rhs) { return lhs.tag == rhs.tag; }
 
+bool typeSigned(Type const type) {
+  return typeEq(type, TYPE_INS_I1) || typeEq(type, TYPE_INS_I2) ||
+         typeEq(type, TYPE_INS_I4) || typeEq(type, TYPE_INS_I8) ||
+         typeEq(type, TYPE_INS_IX);
+}
+
+bool typeUnsigned(Type const type) {
+  return typeEq(type, TYPE_INS_U1) || typeEq(type, TYPE_INS_U2) ||
+         typeEq(type, TYPE_INS_U4) || typeEq(type, TYPE_INS_U8) ||
+         typeEq(type, TYPE_INS_UX);
+}
+
+bool typeFloat(Type const type) {
+  return typeEq(type, TYPE_INS_F4) || typeEq(type, TYPE_INS_F8);
+}
+
+bool typeScalar(Type const type) {
+  return typeSigned(type) || typeUnsigned(type) || typeFloat(type);
+}
+
 char const* typeName(Type const type) {
   switch (type.tag) {
   case TYPE_META: return "type";

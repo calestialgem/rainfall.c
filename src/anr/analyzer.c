@@ -28,8 +28,8 @@ struct {
 /* Last analyzed evaluation. Clears the currently analyzed evaluation before
  * returning. */
 static Evaluation evlGet() {
-  Evaluation res = anr.evl;
-  anr.evl        = evlOf(0);
+  Evaluation const res = anr.evl;
+  anr.evl              = evlOf(0);
   return res;
 }
 
@@ -60,12 +60,12 @@ static ExpressionNode const* checkNode(ExpressionNode const* node, Type type);
 /* Version of `checkNull` that takes `OP_ACS`s. */
 static ExpressionNode const*
 checkAcs(ExpressionNode const* const node, Type const type) {
-  MapEntry const* entry = mapGet(anr.map, node->val);
-  if (!entry) {
+  MapEntry const* const e = mapGet(anr.map, node->val);
+  if (!e) {
     otcErr(anr.otc, node->val, "Unknown symbol!");
     return NULL;
   }
-  EvaluationNode const acs = evlRoot(tblAt(*anr.tbl, entry->val).evl);
+  EvaluationNode const acs = evlRoot(tblAt(*anr.tbl, e->val).evl);
   if (!typeEq(acs.type, type)) {
     otcErr(
       anr.otc, node->val, "Expected a `%s`, but `%.*s` is a `%s`!",
@@ -82,14 +82,9 @@ checkAcs(ExpressionNode const* const node, Type const type) {
 /* Version of `checkNull` that takes `OP_DEC`s. */
 static ExpressionNode const*
 checkDec(ExpressionNode const* const node, Type const type) {
-  if (!(typeEq(type, TYPE_INS_I1) && typeEq(type, TYPE_INS_I2) &&
-        typeEq(type, TYPE_INS_I4) && typeEq(type, TYPE_INS_I8) &&
-        typeEq(type, TYPE_INS_IX) && typeEq(type, TYPE_INS_U1) &&
-        typeEq(type, TYPE_INS_U2) && typeEq(type, TYPE_INS_U4) &&
-        typeEq(type, TYPE_INS_U8) && typeEq(type, TYPE_INS_UX) &&
-        typeEq(type, TYPE_INS_F4) && typeEq(type, TYPE_INS_F8))) {
+  if (!typeScalar(type)) {
     otcErr(
-      anr.otc, node->val, "Expected a `%s`, not a number!", typeName(type));
+      anr.otc, node->val, "Expected a `%s`, not a scalar!", typeName(type));
     return NULL;
   }
 
@@ -200,18 +195,24 @@ checkNull(ExpressionNode const* const node, Type const type) {
   return NULL;
 }
 
+/* Version of `checkPre` that takes `OP_POS`s. */
+static ExpressionNode const* checkPos(
+  ExpressionNode const* const node, ExpressionNode const* const operand,
+  Type const type) {
+  EvaluationNode evl = root();
+  evl.exp            = *node;
+  evlAdd(&anr.evl, evl);
+  return operand;
+}
+
 /* Version of `checkNode` that takes `PrenaryOperator`s. */
 static ExpressionNode const*
 checkPre(ExpressionNode const* const node, Type const type) {
   ExpressionNode const* const operand = checkNode(node - 1, type);
   if (operand == NULL) return NULL;
-  if (opEq(node->op, OP_POS)) {
-    EvaluationNode evl = root();
-    evl.exp            = *node;
-    evlAdd(&anr.evl, evl);
-    return node - 1;
-  }
-  return operand;
+  if (opEq(node->op, OP_POS)) return checkPos(node, operand, type);
+  dbgUnexpected("Unknown prenary operator!");
+  return NULL;
 }
 
 /* Version of `checkNode` that takes `PostaryOperator`s. */
