@@ -10,6 +10,24 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+/* Context of the analysis process. */
+typedef struct {
+  /* Table to add the symbols into. */
+  Table*     tbl;
+  /* Outcome to report to. */
+  Outcome*   otc;
+  /* Analyzed parse. */
+  Parse      prs;
+  /* Set of built-in symbols. */
+  Set        bld;
+  /* Set of user-defined symbols. */
+  Set        usr;
+  /* Set of user-defined, resolved but not checked symbols. */
+  Set        res;
+  /* Evaluation that is currently analyzed. */
+  Evaluation evl;
+} Analyzer;
+
 /* Dynamicly allocated, infinite precision, signed real. */
 typedef struct {
   /* Significand that is an integer. */
@@ -17,6 +35,9 @@ typedef struct {
   /* Exponent whose base can vary. */
   i8     exp;
 } Number;
+
+/* Context of the current analysis process. */
+extern Analyzer anr;
 
 /* Whether the given types are equal. */
 bool        typeEq(Type lhs, Type rhs);
@@ -42,6 +63,8 @@ void           evlAdd(Evaluation* evl, EvaluationNode node);
 void           evlWrite(Evaluation evl, FILE* stream);
 /* Stream out the given evaluation tree as string to the given stream. */
 void           evlTree(Evaluation evl, FILE* stream);
+/* Root node of the given evaluation. */
+EvaluationNode evlRoot(Evaluation evl);
 /* Type of the given evaluation. */
 Type           evlType(Evaluation evl);
 /* Value of the given evaluation. */
@@ -80,4 +103,8 @@ void   numWrite(Number num, u1 base, char exp, FILE* stream);
 
 /* Analyze the given parse into the given table by reporting to the given
  * outcome. */
-void analyzerAnalyze(Table* tbl, Outcome* otc, Parse prs);
+void anrAnalyze(Table* tbl, Outcome* otc, Parse prs);
+/* Resolve name clashes in the definitions of the given analyzer. */
+void anrResolve();
+/* Check the types of the expressions in the given analyzer. */
+void anrCheck();
