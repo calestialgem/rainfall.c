@@ -18,18 +18,6 @@ typedef struct {
   i8     exp;
 } Number;
 
-/* Result of type comparison. */
-typedef enum {
-  /* Types are the same. */
-  TYPE_CMP_SAME,
-  /* Types cannot be converted to each other. */
-  TYPE_CMP_DISTINCT,
-  /* Left type can be converted to the right type. */
-  TYPE_CMP_TO,
-  /* Left type can be converted from the right type. */
-  TYPE_CMP_FROM
-} TypeComparison;
-
 /* Whether the given types are equal. */
 bool        typeEq(Type lhs, Type rhs);
 /*  */
@@ -77,18 +65,21 @@ bool           evlHas(Evaluation evl);
 bool symUsr(Symbol sym);
 
 /* Amount of symbols in the given table. */
-ux               tblLen(Table tbl);
+ux     tblLen(Table tbl);
 /* Symbol at the given index in the given table. */
-Symbol           tblAt(Table tbl, ux i);
+Symbol tblAt(Table tbl, ux i);
 /* Add the given symbol to the end of the given table. */
-void             tblAdd(Table* tbl, Symbol sym);
+void   tblAdd(Table* tbl, Symbol sym);
 /* Remove the last added symbol from the given table. */
-void             tblPop(Table* tbl);
+void   tblPop(Table* tbl);
 /* Add the given operation to the end of the given table. */
-void             tblOpnAdd(Table* tbl, Operation opn);
-/* Pointer to the operation with the given operator from the given table.
- * Returns null if no operation is registered for the operator. */
-Operation const* tblOpnGet(Table tbl, Operator op);
+void   tblOpnAdd(Table* tbl, Operation opn);
+/* Add the given conversion to the end of the given table. */
+void   tblCnvAdd(Table* tbl, TypeConversion cnv);
+/* Operation from the given  */
+/* Whether the given source type can be converted to the given destination type
+ * using the conversions in the given table. */
+bool   tblCnv(Table tbl, Type src, Type des);
 
 /* Zero number. */
 Number numOfZero();

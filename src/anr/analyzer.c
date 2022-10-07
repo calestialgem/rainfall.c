@@ -42,20 +42,152 @@ static void add(String const name) {
   tblAdd(anr.tbl, (Symbol){.name = name, .evl = evlGet()});
 }
 
+/* Add the given type as a built-in. */
+static void prepareType(Type const type) {
+  String const name = strOf(typeName(type));
+  evlAdd(
+    &anr.evl, (EvaluationNode){
+                .type = TYPE_INS_META, .val = {.meta = type}, .has = true});
+  add(name);
+}
+
+/* Add an operation for the given prenary operator with the given output type
+ * and the given input type. */
+static void preparePre(Operator const op, Type const out, Type const in) {
+  tblOpnAdd(anr.tbl, (Operation){.pre = {.in = in}, .op = op, .out = out});
+}
+
+/* Add an operation for the given postary operator with the given output type
+ * and the given input type. */
+static void preparePost(Operator const op, Type const out, Type const in) {
+  tblOpnAdd(anr.tbl, (Operation){.post = {.in = in}, .op = op, .out = out});
+}
+
+/* Add an operation for the given cirnary operator with the given output type
+ * and the given input type. */
+static void prepareCir(Operator const op, Type const out, Type const in) {
+  tblOpnAdd(anr.tbl, (Operation){.cir = {.in = in}, .op = op, .out = out});
+}
+
+/* Add an operation for the given binary operator with the given output type and
+ * the given input types. */
+static void
+prepareBin(Operator const op, Type const out, Type const lin, Type const rin) {
+  tblOpnAdd(
+    anr.tbl, (Operation){
+               .bin = {.lin = lin, .rin = rin},
+                 .op = op, .out = out
+  });
+}
+
+/* Add an operation for the given variary operator with the given output type
+ * and the given input types. */
+static void prepareVar(
+  Operator const op, Type const out, Type const fin, Type* const rin,
+  ux const ary) {
+  tblOpnAdd(
+    anr.tbl,
+    (Operation){
+      .var = {.fin = fin, .rin = rin, .ary = ary},
+        .op = op, .out = out
+  });
+}
+
+/* Add a conversion from the given source type to the given destination type.
+ */
+static void prepareCnv(Type const src, Type const des) {
+  tblCnvAdd(anr.tbl, (TypeConversion){.from = src, .to = des});
+}
+
 /* Add the built-in symbols. */
 static void prepare() {
-  for (ux i = 0; i < TYPE_BUILT_LEN; i++) {
-    String const name = strOf(typeName(TYPE_BUILT[i]));
-    evlAdd(
-      &anr.evl,
-      (EvaluationNode){
-        .type = TYPE_INS_META, .val = {.meta = TYPE_BUILT[i]}, .has = true});
-    add(name);
-  }
+  for (ux i = 0; i < TYPE_BUILT_LEN; i++) prepareType(TYPE_BUILT[i]);
+
+  // Skips meta and void, for all scalars.
+  for (ux i = 2; i < TYPE_BUILT_LEN; i++)
+    prepareCir(OP_GRP, TYPE_BUILT[i], TYPE_BUILT[i]);
+
+  Type const ARITHMETIC[] = {
+    TYPE_INS_I4, TYPE_INS_I8, TYPE_INS_IX,
+    TYPE_INS_U4, TYPE_INS_U8, TYPE_INS_UX,
+  };
+
+  // Skips meta and void, for all scalars.
+  for (ux i = 2; i < TYPE_BUILT_LEN; i++)
+    prepareCnv(TYPE_BUILT[i], TYPE_INS_VOID);
+
+  prepareCnv(TYPE_INS_I1, TYPE_INS_I2);
+  prepareCnv(TYPE_INS_I1, TYPE_INS_I4);
+  prepareCnv(TYPE_INS_I1, TYPE_INS_I8);
+  prepareCnv(TYPE_INS_I1, TYPE_INS_IX);
+  prepareCnv(TYPE_INS_I1, TYPE_INS_F4);
+  prepareCnv(TYPE_INS_I1, TYPE_INS_F8);
+
+  prepareCnv(TYPE_INS_I2, TYPE_INS_I4);
+  prepareCnv(TYPE_INS_I2, TYPE_INS_I8);
+  prepareCnv(TYPE_INS_I2, TYPE_INS_IX);
+  prepareCnv(TYPE_INS_I2, TYPE_INS_F4);
+  prepareCnv(TYPE_INS_I2, TYPE_INS_F8);
+
+  prepareCnv(TYPE_INS_I4, TYPE_INS_I8);
+  prepareCnv(TYPE_INS_I4, TYPE_INS_IX);
+  prepareCnv(TYPE_INS_I4, TYPE_INS_F4);
+  prepareCnv(TYPE_INS_I4, TYPE_INS_F8);
+
+  prepareCnv(TYPE_INS_I8, TYPE_INS_IX);
+  prepareCnv(TYPE_INS_I8, TYPE_INS_F4);
+  prepareCnv(TYPE_INS_I8, TYPE_INS_F8);
+
+  prepareCnv(TYPE_INS_IX, TYPE_INS_I8);
+  prepareCnv(TYPE_INS_IX, TYPE_INS_F4);
+  prepareCnv(TYPE_INS_IX, TYPE_INS_F8);
+
+  prepareCnv(TYPE_INS_U1, TYPE_INS_I2);
+  prepareCnv(TYPE_INS_U1, TYPE_INS_I4);
+  prepareCnv(TYPE_INS_U1, TYPE_INS_I8);
+  prepareCnv(TYPE_INS_U1, TYPE_INS_IX);
+  prepareCnv(TYPE_INS_U1, TYPE_INS_U2);
+  prepareCnv(TYPE_INS_U1, TYPE_INS_U4);
+  prepareCnv(TYPE_INS_U1, TYPE_INS_U8);
+  prepareCnv(TYPE_INS_U1, TYPE_INS_UX);
+  prepareCnv(TYPE_INS_U1, TYPE_INS_F4);
+  prepareCnv(TYPE_INS_U1, TYPE_INS_F8);
+
+  prepareCnv(TYPE_INS_U2, TYPE_INS_I4);
+  prepareCnv(TYPE_INS_U2, TYPE_INS_I8);
+  prepareCnv(TYPE_INS_U2, TYPE_INS_IX);
+  prepareCnv(TYPE_INS_U2, TYPE_INS_U4);
+  prepareCnv(TYPE_INS_U2, TYPE_INS_U8);
+  prepareCnv(TYPE_INS_U2, TYPE_INS_UX);
+  prepareCnv(TYPE_INS_U2, TYPE_INS_F4);
+  prepareCnv(TYPE_INS_U2, TYPE_INS_F8);
+
+  prepareCnv(TYPE_INS_U4, TYPE_INS_I8);
+  prepareCnv(TYPE_INS_U4, TYPE_INS_IX);
+  prepareCnv(TYPE_INS_U4, TYPE_INS_U8);
+  prepareCnv(TYPE_INS_U4, TYPE_INS_UX);
+  prepareCnv(TYPE_INS_U4, TYPE_INS_F4);
+  prepareCnv(TYPE_INS_U4, TYPE_INS_F8);
+
+  prepareCnv(TYPE_INS_U8, TYPE_INS_UX);
+  prepareCnv(TYPE_INS_U8, TYPE_INS_F4);
+  prepareCnv(TYPE_INS_U8, TYPE_INS_F8);
+
+  prepareCnv(TYPE_INS_UX, TYPE_INS_U8);
+  prepareCnv(TYPE_INS_UX, TYPE_INS_F4);
+  prepareCnv(TYPE_INS_UX, TYPE_INS_F8);
+
+  prepareCnv(TYPE_INS_F4, TYPE_INS_F8);
 }
 
 // Prototype for recursive check of expressions.
 static ExpressionNode const* checkNode(ExpressionNode const* node, Type type);
+
+/* Whether the given source type can be converted to the given destination type.
+ */
+static bool checkType(Type const src, Type const des) {
+  return tblCnv(*anr.tbl, src, des);
+}
 
 /* Version of `checkNull` that takes `OP_ACS`s. */
 static ExpressionNode const*
@@ -66,7 +198,7 @@ checkAcs(ExpressionNode const* const node, Type const type) {
     return NULL;
   }
   EvaluationNode const acs = evlRoot(tblAt(*anr.tbl, e->val).evl);
-  if (!typeEq(acs.type, type)) {
+  if (!checkType(acs.type, type)) {
     otcErr(
       anr.otc, node->val, "Expected a `%s`, but `%.*s` is a `%s`!",
       typeName(type), (int)strLen(node->val), node->val.bgn,

@@ -47,6 +47,26 @@ static void opnReserve(Table* const tbl, ux const amount) {
   tbl->opn.all = mem + newCap;
 }
 
+/* Make sure the given amount of conversion space exists at the end of the given
+ * table. When necessary, grows by at least half of the current capacity. */
+static void cnvReserve(Table* const tbl, ux const amount) {
+  ux const cap   = tbl->cnv.all - tbl->cnv.bgn;
+  ux const len   = tbl->cnv.end - tbl->cnv.bgn;
+  ux const space = cap - len;
+  if (space >= amount) return;
+
+  ux const growth    = amount - space;
+  ux const minGrowth = cap / 2;
+  ux const newCap    = cap + (growth < minGrowth ? minGrowth : growth);
+  TypeConversion* const mem =
+    realloc(tbl->cnv.bgn, newCap * sizeof(TypeConversion));
+  dbgExpect(mem, "Could not reallocate!");
+
+  tbl->cnv.bgn = mem;
+  tbl->cnv.end = mem + len;
+  tbl->cnv.all = mem + newCap;
+}
+
 Table tblOf(Outcome* const otc, Parse const prs) {
   Table res = {0};
   analyze(&res, otc, prs);
@@ -93,8 +113,14 @@ void tblOpnAdd(Table* const tbl, Operation const opn) {
   *tbl->opn.end++ = opn;
 }
 
-Operation const* tblOpnGet(Table const tbl, Operator const op) {
-  for (Operation const* i = tbl.opn.bgn; i < tbl.opn.end; i++)
-    if (opEq(i->op, op)) return i;
-  return NULL;
+void tblCnvAdd(Table* const tbl, TypeConversion const cnv) {
+  cnvReserve(tbl, 1);
+  *tbl->cnv.end++ = cnv;
+}
+
+bool tblCnv(Table const tbl, Type const src, Type const des) {
+  if (typeEq(src, des)) return true;
+  for (TypeConversion const* i = tbl.cnv.bgn; i < tbl.cnv.end; i++)
+    if (typeEq(i->from, src) && typeEq(i->to, des)) return true;
+  return false;
 }

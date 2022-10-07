@@ -9,62 +9,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-/* Type of a type symbol. */
-typedef struct {
-} Meta;
-
-/* Signed, 1-byte integer. */
-typedef struct {
-} I1;
-
-/* Signed, 2-byte integer. */
-typedef struct {
-} I2;
-
-/* Signed, 4-byte integer. */
-typedef struct {
-} I4;
-
-/* Signed, 8-byte integer. */
-typedef struct {
-} I8;
-
-/* Signed, pointer-size integer. */
-typedef struct {
-} Ix;
-
-/* Unsigned, 1-byte integer. */
-typedef struct {
-} U1;
-
-/* Unsigned, 2-byte integer. */
-typedef struct {
-} U2;
-
-/* Unsigned, 4-byte integer. */
-typedef struct {
-} U4;
-
-/* Unsigned, 8-byte integer. */
-typedef struct {
-} U8;
-
-/* Unsigned, pointer-size integer. */
-typedef struct {
-} Ux;
-
-/* Floating-point, 4-byte real. */
-typedef struct {
-} F4;
-
-/* Floating-point, 8-byte real. */
-typedef struct {
-} F8;
-
 /* Variant of type. */
 typedef enum {
   /* Meta type. */
   TYPE_META,
+  /* Void type. */
+  TYPE_VOID,
   /* I1 type. */
   TYPE_I1,
   /* I2 type. */
@@ -93,34 +43,7 @@ typedef enum {
 
 /* Meaning of a value. */
 typedef struct {
-  union {
-    /* Type as a meta. */
-    Meta meta;
-    /* Type as a i1. */
-    I1   i1;
-    /* Type as a i2. */
-    I2   i2;
-    /* Type as a i4. */
-    I4   i4;
-    /* Type as a i8. */
-    I8   i8;
-    /* Type as a ix. */
-    Ix   ix;
-    /* Type as a u1. */
-    U1   u1;
-    /* Type as a u2. */
-    U2   u2;
-    /* Type as a u4. */
-    U4   u4;
-    /* Type as a u8. */
-    U8   u8;
-    /* Type as a ux. */
-    Ux   ux;
-    /* Type as a f4. */
-    F4   f4;
-    /* Type as a f8. */
-    F8   f8;
-  };
+  union {};
 
   /* Variant of the type. */
   TypeTag tag;
@@ -132,7 +55,7 @@ typedef struct {
   Type to;
   /* Destination type. */
   Type from;
-} TypeConvertion;
+} TypeConversion;
 
 /* Value. */
 typedef union {
@@ -271,21 +194,29 @@ typedef struct {
 
   /* Dynamicly allocated array of operations. */
   struct {
-    /* Pointer to the first symbol if it exists. */
+    /* Pointer to the first operation if it exists. */
     Operation* bgn;
-    /* Pointer to one after the last symbol. */
+    /* Pointer to one after the last operation. */
     Operation* end;
-    /* Pointer to one after the last allocated symbol. */
+    /* Pointer to one after the last allocated operation. */
     Operation* all;
   } opn;
 
-#define MAX_TYPE_CONVERSION 1024
-  /* Dynamicly allocated array of type convertions. */
-  TypeConvertion conversions[MAX_TYPE_CONVERSION]; // Map<Type, List<Type>>
+  /* Dynamicly allocated array of type conversions. */
+  struct {
+    /* Pointer to the first conversion if it exists. */
+    TypeConversion* bgn;
+    /* Pointer to one after the last conversion. */
+    TypeConversion* end;
+    /* Pointer to one after the last allocated conversion. */
+    TypeConversion* all;
+  } cnv;
 } Table;
 
 /* Instance of meta type. */
 extern Type const TYPE_INS_META;
+/* Instance of void type. */
+extern Type const TYPE_INS_VOID;
 /* Instance of i1 type. */
 extern Type const TYPE_INS_I1;
 /* Instance of i2 type. */
@@ -312,7 +243,7 @@ extern Type const TYPE_INS_F4;
 extern Type const TYPE_INS_F8;
 
 /* Amount of built-in types. */
-#define TYPE_BUILT_LEN 13
+#define TYPE_BUILT_LEN 14
 /* Array of built-in types. */
 extern Type const TYPE_BUILT[TYPE_BUILT_LEN];
 

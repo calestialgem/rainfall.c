@@ -13,8 +13,8 @@
 
 // Definitions are in macros because macros can be used inside array
 // initializers as well.
-
 #define tmeta type(TYPE_META)
+#define tvoid type(TYPE_VOID)
 #define ti1   type(TYPE_I1)
 #define ti2   type(TYPE_I2)
 #define ti4   type(TYPE_I4)
@@ -29,6 +29,7 @@
 #define tf8   type(TYPE_F8)
 
 Type const TYPE_INS_META = tmeta;
+Type const TYPE_INS_VOID = tvoid;
 Type const TYPE_INS_I1   = ti1;
 Type const TYPE_INS_I2   = ti2;
 Type const TYPE_INS_I4   = ti4;
@@ -42,8 +43,8 @@ Type const TYPE_INS_UX   = tux;
 Type const TYPE_INS_F4   = tf4;
 Type const TYPE_INS_F8   = tf8;
 
-Type const TYPE_BUILT[TYPE_BUILT_LEN] = {tmeta, ti1, ti2, ti4, ti8, tix, tu1,
-                                         tu2,   tu4, tu8, tux, tf4, tf8};
+Type const TYPE_BUILT[TYPE_BUILT_LEN] = {tmeta, tvoid, ti1, ti2, ti4, ti8, tix,
+                                         tu1,   tu2,   tu4, tu8, tux, tf4, tf8};
 
 bool typeEq(Type const lhs, Type const rhs) { return lhs.tag == rhs.tag; }
 
@@ -70,6 +71,7 @@ bool typeScalar(Type const type) {
 char const* typeName(Type const type) {
   switch (type.tag) {
   case TYPE_META: return "type";
+  case TYPE_VOID: return "void";
   case TYPE_I1: return "i1";
   case TYPE_I2: return "i2";
   case TYPE_I4: return "i4";
@@ -93,6 +95,7 @@ void typeWrite(Type const type, FILE* const stream) {
 void valWrite(Type const type, Value const val, FILE* const stream) {
   switch (type.tag) {
   case TYPE_META: typeWrite(val.meta, stream); return;
+  case TYPE_VOID: return;
   case TYPE_I1: fprintf(stream, "%hhi", val.i1); return;
   case TYPE_I2: fprintf(stream, "%hi", val.i2); return;
   case TYPE_I4: fprintf(stream, "%i", val.i4); return;
