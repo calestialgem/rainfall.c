@@ -25,21 +25,21 @@ struct {
   Evaluation evl;
 } anr;
 
+/* Root of the current evaluation. */
+static EvaluationNode root() { return evlRoot(anr.evl); }
+
 /* Last analyzed evaluation. Clears the currently analyzed evaluation before
  * returning. */
-static Evaluation evlGet() {
+static Evaluation get() {
   Evaluation const res = anr.evl;
   anr.evl              = evlOf(0);
   return res;
 }
 
-/* Root of the current evaluation. */
-static EvaluationNode root() { return evlRoot(anr.evl); }
-
 /* Add a new symbol with the given name with the current evaluation. */
 static void add(String const name) {
   mapPut(&anr.map, name, tblLen(*anr.tbl));
-  tblAdd(anr.tbl, (Symbol){.name = name, .evl = evlGet()});
+  tblAdd(anr.tbl, (Symbol){.name = name, .evl = get()});
 }
 
 /* Add the given type as a built-in. */
@@ -51,106 +51,25 @@ static void prepareType(Type const type) {
   add(name);
 }
 
-/* Add an operation for the given prenary operator with the given output type
- * and the given input type. */
-static void preparePre(Operator const op, Type const out, Type const in) {
-  tblOpnAdd(anr.tbl, (Operation){.pre = {.in = in}, .op = op, .out = out});
-}
-
-/* Add an operation for the given postary operator with the given output type
- * and the given input type. */
-static void preparePost(Operator const op, Type const out, Type const in) {
-  tblOpnAdd(anr.tbl, (Operation){.post = {.in = in}, .op = op, .out = out});
-}
-
-/* Add an operation for the given cirnary operator with the given output type
- * and the given input type. */
-static void prepareCir(Operator const op, Type const out, Type const in) {
-  tblOpnAdd(anr.tbl, (Operation){.cir = {.in = in}, .op = op, .out = out});
-}
-
-/* Add an operation for the given binary operator with the given output type and
- * the given input types. */
-static void
-prepareBin(Operator const op, Type const out, Type const lin, Type const rin) {
-  tblOpnAdd(
-    anr.tbl, (Operation){
-               .bin = {.lin = lin, .rin = rin},
-                 .op = op, .out = out
-  });
-}
-
-/* Add an operation for the given variary operator with the given output type
- * and the given input types. */
-static void prepareVar(
-  Operator const op, Type const out, Type const fin, Type* const rin,
-  iptr const ary) {
-  tblOpnAdd(
-    anr.tbl,
-    (Operation){
-      .var = {.fin = fin, .rin = rin, .ary = ary},
-        .op = op, .out = out
-  });
-}
-
-/* Add a conversion from the given source type to the given destination type.
- */
-static void prepareCnv(Type const src, Type const des) {
-  tblCnvAdd(anr.tbl, (TypeConversion){.from = src, .to = des});
-}
-
 /* Add the built-in symbols. */
 static void prepare() {
   for (iptr i = 0; i < TYPE_BUILT_LEN; i++) prepareType(TYPE_BUILT[i]);
-
-  // Skips meta and void, for all scalars.
-  for (iptr i = 2; i < TYPE_BUILT_LEN; i++)
-    prepareCir(OP_GRP, TYPE_BUILT[i], TYPE_BUILT[i]);
-
-  // Skips meta and void, for all scalars.
-  for (iptr i = 2; i < TYPE_BUILT_LEN; i++)
-    prepareCnv(TYPE_BUILT[i], TYPE_INS_VOID);
-
-  prepareCnv(TYPE_INS_BOOL, TYPE_INS_BYTE);
-  prepareCnv(TYPE_INS_BOOL, TYPE_INS_INT);
-  prepareCnv(TYPE_INS_BOOL, TYPE_INS_IPTR);
-  prepareCnv(TYPE_INS_BOOL, TYPE_INS_FLOAT);
-  prepareCnv(TYPE_INS_BOOL, TYPE_INS_DOUBLE);
-
-  prepareCnv(TYPE_INS_BYTE, TYPE_INS_INT);
-  prepareCnv(TYPE_INS_BYTE, TYPE_INS_IPTR);
-  prepareCnv(TYPE_INS_BYTE, TYPE_INS_FLOAT);
-  prepareCnv(TYPE_INS_BYTE, TYPE_INS_DOUBLE);
-
-  prepareCnv(TYPE_INS_INT, TYPE_INS_IPTR);
-  prepareCnv(TYPE_INS_INT, TYPE_INS_FLOAT);
-  prepareCnv(TYPE_INS_INT, TYPE_INS_DOUBLE);
-
-  prepareCnv(TYPE_INS_IPTR, TYPE_INS_FLOAT);
-  prepareCnv(TYPE_INS_IPTR, TYPE_INS_DOUBLE);
-
-  prepareCnv(TYPE_INS_FLOAT, TYPE_INS_DOUBLE);
 }
 
-// Prototype for recursive check of expressions.
-static ExpressionNode const* checkNode(ExpressionNode const* node, Type type);
-
-/* Whether the given source type can be converted to the given destination type.
- */
-static bool checkType(Type const src, Type const des) {
-  return tblCnv(*anr.tbl, src, des);
-}
-
-/* Version of `checkNull` that takes `OP_ACS`s. */
+// Prototype for recursive evaluation of expressions.
 static ExpressionNode const*
-checkAcs(ExpressionNode const* const node, Type const type) {
+evaluateNode(ExpressionNode const* node, Type type, bool expect);
+
+/* Version of `evaluateNull` that takes `OP_ACS`s. */
+static ExpressionNode const* evaluateAcs(
+  ExpressionNode const* const node, Type const type, bool const expect) {
   MapEntry const* const e = mapGet(anr.map, node->val);
   if (!e) {
     otcErr(anr.otc, node->val, "Unknown symbol!");
     return NULL;
   }
   EvaluationNode const acs = evlRoot(tblAt(*anr.tbl, e->val).evl);
-  if (!checkType(acs.type, type)) {
+  if (expect && !typeEq(acs.type, type)) {
     otcErr(
       anr.otc, node->val, "Expected a `%s`, but `%.*s` is a `%s`!",
       typeName(type), (int)strLen(node->val), node->val.bgn,
@@ -163,24 +82,47 @@ checkAcs(ExpressionNode const* const node, Type const type) {
   return node - 1;
 }
 
-/* Version of `checkNull` that takes `OP_DEC`s. */
-static ExpressionNode const*
-checkDec(ExpressionNode const* const node, Type const type) {
+/* Version of `evaluateNull` that takes `OP_DEC`s. */
+static ExpressionNode const* evaluateDec(
+  ExpressionNode const* const node, Type const type, bool const expect) {
   bool const neg = strAt(node->val, 0) == '-';
-  Number     num = numOfZero();
-  if (numSetDec(
-        &num, (String){
-                .bgn = (neg || strAt(node->val, 0) == '+') + node->val.bgn,
-                .end = node->val.end})) {
-    otcErr(anr.otc, node->val, "Exponent is too long!");
+  Number     num = numOfDec((String){
+        .bgn = (neg || strAt(node->val, 0) == '+') + node->val.bgn,
+        .end = node->val.end});
+  if (num.flag == NUM_TOO_PRECISE) {
+    otcErr(anr.otc, node->val, "The number is too long!");
     return NULL;
+  }
+  if (!expect) {
+    if (numIsInt(num)) {
+      int const cmp = numCmp(num, (uint64_t)INT_MAX + 1);
+      if (cmp != 1 && (cmp != 0 || neg)) {
+        EvaluationNode evl = {
+          .exp  = *node,
+          .type = TYPE_INS_INT,
+          .val  = {.vint = (int)numAsInt(num)},
+          .has  = true};
+        if (neg) evl.val.vint = -evl.val.vint;
+        evlAdd(&anr.evl, evl);
+        goto success;
+      }
+    }
+    EvaluationNode evl = {
+      .exp  = *node,
+      .type = TYPE_INS_DOUBLE,
+      .val  = {.vdouble = numAsDouble(num)},
+      .has  = true};
+    if (neg) evl.val.vdouble = -evl.val.vdouble;
+    evlAdd(&anr.evl, evl);
+    goto success;
   }
 
 #define parseSigned(TYPE, TYPE_VAL, TYPE_INS, MAX)                          \
   if (typeEq(type, TYPE_INS)) {                                             \
     if (!numIsInt(num)) {                                                   \
       otcErr(                                                               \
-        anr.otc, node->val, "Not an integer for integer type `%s`!",        \
+        anr.otc, node->val,                                                 \
+        "Expected integer type `%s`, but the value is not an integer!",     \
         typeName(type));                                                    \
       return NULL;                                                          \
     }                                                                       \
@@ -199,32 +141,34 @@ checkDec(ExpressionNode const* const node, Type const type) {
     goto success;                                                           \
   }
 
-#define parseUnsigned(TYPE, TYPE_VAL, TYPE_INS, MAX)                          \
-  if (typeEq(type, TYPE_INS)) {                                               \
-    if (!numInt(num)) {                                                       \
-      otcErr(                                                                 \
-        anr.otc, node->val, "Not an integer for integer type `%s`!",          \
-        typeName(type));                                                      \
-      return NULL;                                                            \
-    }                                                                         \
-    int const cmp = numCmp(num, MAX);                                         \
-    if (cmp == 1) {                                                           \
-      otcErr(anr.otc, node->val, "Out of bounds of `%s`!", typeName(type));   \
-      return NULL;                                                            \
-    }                                                                         \
-    EvaluationNode evl = {                                                    \
-      .exp  = *node,                                                          \
-      .type = type,                                                           \
-      .val  = {.TYPE_VAL = (TYPE)numU8(num)},                                 \
-      .has  = true};                                                           \
-    if (neg && evl.val.TYPE_VAL != 0) {                                       \
-      otcErr(                                                                 \
-        anr.otc, node->val, "Negative value for unsigned integer type `%s`!", \
-        typeName(type));                                                      \
-      return NULL;                                                            \
-    }                                                                         \
-    evlAdd(&anr.evl, evl);                                                    \
-    goto success;                                                             \
+#define parseUnsigned(TYPE, TYPE_VAL, TYPE_INS, MAX)                        \
+  if (typeEq(type, TYPE_INS)) {                                             \
+    if (!numInt(num)) {                                                     \
+      otcErr(                                                               \
+        anr.otc, node->val,                                                 \
+        "Expected integer type `%s`, but the value is not an integer!",     \
+        typeName(type));                                                    \
+      return NULL;                                                          \
+    }                                                                       \
+    int const cmp = numCmp(num, MAX);                                       \
+    if (cmp == 1) {                                                         \
+      otcErr(anr.otc, node->val, "Out of bounds of `%s`!", typeName(type)); \
+      return NULL;                                                          \
+    }                                                                       \
+    EvaluationNode evl = {                                                  \
+      .exp  = *node,                                                        \
+      .type = type,                                                         \
+      .val  = {.TYPE_VAL = (TYPE)numU8(num)},                               \
+      .has  = true};                                                         \
+    if (neg && evl.val.TYPE_VAL != 0) {                                     \
+      otcErr(                                                               \
+        anr.otc, node->val,                                                 \
+        "Expected unsigned integer type `%s`, but the value is negative!",  \
+        typeName(type));                                                    \
+      return NULL;                                                          \
+    }                                                                       \
+    evlAdd(&anr.evl, evl);                                                  \
+    goto success;                                                           \
   }
 
 #define parseFloat(TYPE, TYPE_VAL, TYPE_INS, NUM_PARSE) \
@@ -265,69 +209,71 @@ success:
   return node - 1;
 }
 
-/* Version of `checkNode` that takes `NullaryOperator`s. */
-static ExpressionNode const*
-checkNull(ExpressionNode const* const node, Type const type) {
-  if (opEq(node->op, OP_ACS)) return checkAcs(node, type);
-  if (opEq(node->op, OP_DEC)) return checkDec(node, type);
+/* Version of `evaluateNode` that takes `NullaryOperator`s. */
+static ExpressionNode const* evaluateNull(
+  ExpressionNode const* const node, Type const type, bool const expect) {
+  if (opEq(node->op, OP_ACS)) return evaluateAcs(node, type, expect);
+  if (opEq(node->op, OP_DEC)) return evaluateDec(node, type, expect);
   dbgUnexpected("Unknown nullary operator!");
   return NULL;
 }
 
-/* Version of `checkPre` that takes `OP_POS`s. */
+/* Version of `evaluatePre` that takes `OP_POS`s. */
 static ExpressionNode const* checkPos(
   ExpressionNode const* const node, ExpressionNode const* const operand,
-  Type const type) {
+  Type const type, bool const expect) {
   EvaluationNode evl = root();
   evl.exp            = *node;
   evlAdd(&anr.evl, evl);
   return operand;
 }
 
-/* Version of `checkNode` that takes `PrenaryOperator`s. */
-static ExpressionNode const*
-checkPre(ExpressionNode const* const node, Type const type) {
-  ExpressionNode const* const operand = checkNode(node - 1, type);
+/* Version of `evaluateNode` that takes `PrenaryOperator`s. */
+static ExpressionNode const* evaluatePre(
+  ExpressionNode const* const node, Type const type, bool const expect) {
+  ExpressionNode const* const operand = evaluateNode(node - 1, type, expect);
   if (operand == NULL) return NULL;
-  if (opEq(node->op, OP_POS)) return checkPos(node, operand, type);
+  if (opEq(node->op, OP_POS)) return checkPos(node, operand, type, expect);
   dbgUnexpected("Unknown prenary operator!");
   return NULL;
 }
 
-/* Version of `checkNode` that takes `PostaryOperator`s. */
-static ExpressionNode const*
-checkPost(ExpressionNode const* const node, Type const type) {}
+/* Version of `evaluateNode` that takes `PostaryOperator`s. */
+static ExpressionNode const* evaluatePost(
+  ExpressionNode const* const node, Type const type, bool const expect) {}
 
-/* Version of `checkNode` that takes `CirnaryOperator`s. */
-static ExpressionNode const*
-checkCir(ExpressionNode const* const node, Type const type) {}
+/* Version of `evaluateNode` that takes `CirnaryOperator`s. */
+static ExpressionNode const* evaluateCir(
+  ExpressionNode const* const node, Type const type, bool const expect) {}
 
-/* Version of `checkNode` that takes `BinaryOperator`s. */
-static ExpressionNode const*
-checkBin(ExpressionNode const* const node, Type const type) {}
+/* Version of `evaluateNode` that takes `BinaryOperator`s. */
+static ExpressionNode const* evaluateBin(
+  ExpressionNode const* const node, Type const type, bool const expect) {}
 
-/* Version of `checkNode` that takes `VariaryOperator`s. */
-static ExpressionNode const*
-checkVar(ExpressionNode const* const node, Type const type) {}
+/* Version of `evaluateNode` that takes `VariaryOperator`s. */
+static ExpressionNode const* evaluateVar(
+  ExpressionNode const* const node, Type const type, bool const expect) {}
 
-/* Check the given node agains the given type. Returns the node that comes
- * after the given one and its childeren or null if the type does not match. */
-static ExpressionNode const*
-checkNode(ExpressionNode const* const node, Type const type) {
+/* Evaluate the given node. Returns the node that comes after the given one and
+ * its childeren or null if the type does not match. */
+static ExpressionNode const* evaluateNode(
+  ExpressionNode const* const node, Type const type, bool const expect) {
   switch (node->op.tag) {
-  case OP_NULL: return checkNull(node, type);
-  case OP_PRE: return checkPre(node, type);
-  case OP_POST: return checkPost(node, type);
-  case OP_CIR: return checkCir(node, type);
-  case OP_BIN: return checkBin(node, type);
-  case OP_VAR: return checkVar(node, type);
+  case OP_NULL: return evaluateNull(node, type, expect);
+  case OP_PRE: return evaluatePre(node, type, expect);
+  case OP_POST: return evaluatePost(node, type, expect);
+  case OP_CIR: return evaluateCir(node, type, expect);
+  case OP_BIN: return evaluateBin(node, type, expect);
+  case OP_VAR: return evaluateVar(node, type, expect);
   default: dbgUnexpected("Unknown operator tag!");
   }
 }
 
-/* Whether the type of the given expression is the same as the given type. */
-static bool checkExp(Expression const exp, Type const type) {
-  return checkNode(exp.end - 1, type);
+/* Evaluate the given expression. Returns whether the type of the given
+ * expression is the same as the given type if it is expected to be. */
+static bool
+evaluateExp(Expression const exp, Type const type, bool const expect) {
+  return evaluateNode(exp.end - 1, type, expect);
 }
 
 /* Whether the definition of the symbol with the given name is valid. */

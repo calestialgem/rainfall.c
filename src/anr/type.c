@@ -31,10 +31,18 @@ Type const TYPE_INS_IPTR   = tptr;
 Type const TYPE_INS_FLOAT  = tfloat;
 Type const TYPE_INS_DOUBLE = tdouble;
 
-Type const TYPE_BUILT[TYPE_BUILT_LEN] = {tmeta, tvoid, tbool,  tbyte,
-                                         tint,  tptr,  tfloat, tdouble};
+Type const TYPE_BUILT[TYPE_BUILT_LEN]           = {tmeta, tvoid, tbool,  tbyte,
+                                                   tint,  tptr,  tfloat, tdouble};
+Type const TYPE_ARITHMETIC[TYPE_ARITHMETIC_LEN] = {tbool, tbyte,  tint,
+                                                   tptr,  tfloat, tdouble};
 
 bool typeEq(Type const lhs, Type const rhs) { return lhs.tag == rhs.tag; }
+
+iptr typeRank(Type const type) {
+  for (iptr i = 0; i < TYPE_ARITHMETIC_LEN; i++)
+    if (typeEq(type, TYPE_ARITHMETIC[i])) return i;
+  return -1;
+}
 
 char const* typeName(Type const type) {
   switch (type.tag) {

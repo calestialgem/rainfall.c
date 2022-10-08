@@ -18,8 +18,14 @@ typedef union {
   char     data[sizeof(uint64_t)];
 } Converter;
 
-iptr const BITS = CHAR_BIT;
-int const  MAX  = UINT8_MAX + 1;
+/* Amount of bits in a digit of the significand. */
+iptr const SIGBITS  = CHAR_BIT;
+/* Amount of base of the significand. */
+int const  SIGBASE  = UINT8_MAX + 1;
+/* Maximum amount of digits of any base to consider too precise when parsing. */
+int const  DIGITMAX = 1 << 16;
+/* Maximum value of exponent before considering it too big. */
+int const  EXPMAX   = 1 << 16;
 
 /* Bit of the given value at the given index. */
 static int bitGet(uint64_t const val, iptr const i) { return val >> i & 1; }
@@ -32,12 +38,12 @@ static uint64_t bitSet(uint64_t const val, iptr const i, int const bit) {
 
 /* Bit of the given number at the given index. */
 static int numBitGet(Number const num, iptr const i) {
-  return bitGet((char)bfrAt(num.sig, i / BITS), i % BITS);
+  return bitGet((char)bfrAt(num.sig, i / SIGBITS), i % SIGBITS);
 }
 
 /* Index of the most significant bit of the given number. */
 static iptr numBitMost(Number const num) {
-  iptr bit = bfrLen(num.sig) * BITS - 1;
+  iptr bit = bfrLen(num.sig) * SIGBITS - 1;
   while (bit > 1 && !numBitGet(num, bit)) bit--;
   return bit;
 }
@@ -52,14 +58,14 @@ static void numAdd(Number* const num, int const val) {
   int rem = val;
   for (char* i = num->sig.bgn; i < num->sig.end; i++) {
     rem += *i;
-    if (rem < MAX) {
+    if (rem < SIGBASE) {
       *i = rem;
       return;
     }
-    int const byte = rem % MAX;
+    int const byte = rem % SIGBASE;
     *i             = byte;
     rem -= byte;
-    rem /= MAX;
+    rem /= SIGBASE;
   }
   if (rem) bfrPut(&num->sig, rem);
 }
@@ -69,10 +75,10 @@ static void numMul(Number* const num, int const val) {
   int rem = 0;
   for (char* i = num->sig.bgn; i < num->sig.end; i++) {
     rem += *i * val;
-    int const byte = rem % MAX;
+    int const byte = rem % SIGBASE;
     *i             = byte;
     rem -= byte;
-    rem /= MAX;
+    rem /= SIGBASE;
   }
   if (rem) bfrPut(&num->sig, rem);
 }
@@ -81,7 +87,7 @@ static void numMul(Number* const num, int const val) {
 static void numDiv(Number* const num, int const val) {
   int rem = 0;
   for (char* i = num->sig.end - 1; i >= num->sig.bgn; i--) {
-    rem *= MAX;
+    rem *= SIGBASE;
     rem += *i;
     *i = rem / val;
     rem %= val;
@@ -92,7 +98,7 @@ static void numDiv(Number* const num, int const val) {
 static char numRem(Number const num, int const val) {
   int res = 0;
   for (char const* i = num.sig.end - 1; i >= num.sig.bgn; i--) {
-    res *= MAX;
+    res *= SIGBASE;
     res += *i;
     res %= val;
   }
@@ -130,28 +136,29 @@ static void numBase(Number* const num, int const base, int const target) {
   num->exp -= scaledUp;
 }
 
-/* Decimal integer from the given string. */
-static bool decOf(int* const res, String str) {
+/* Parse the exponent of a number from the given string. */
+static Number decOf(String str) {
   int const BASE = 10;
-  int const MAX  = INT_MAX / BASE;
 
   // Consume the sign character.
   bool negative = strAt(str, 0) == '-';
   if (negative || strAt(str, 0) == '+') str.bgn++;
 
-  *res = 0;
+  int res = 0;
   for (char const* i = str.bgn; i < str.end; i++) {
     if (*i == '_') continue;
-    if (*res > MAX || (*res == MAX && *i != '0')) return true;
-    *res *= BASE;
-    *res += *i - '0';
+    res *= BASE;
+    res += *i - '0';
+    if (res > EXPMAX)
+      return (Number){.exp = 0, .flag = negative ? NUM_ZERO : NUM_INFINITE};
   }
 
-  if (negative) *res *= -1;
-  return false;
+  if (negative) res *= -1;
+  return (Number){.exp = res};
 }
 
-Number numOfZero() {
+/* Zero number. */
+static Number numOfZero() {
   Number res = {.sig = bfrOf(1)};
   bfrPut(&res.sig, 0);
   return res;
@@ -159,11 +166,16 @@ Number numOfZero() {
 
 void numFree(Number* const num) { bfrFree(&num->sig); }
 
-bool numSetDec(Number* const num, String const str) {
-  int const BASE  = 10;
-  num->exp        = 0;
-  char const* i   = str.bgn;
-  bool        dot = false;
+Number numOfDec(String const str) {
+  int const   BASE = 10;
+  char const* i    = str.bgn;
+  bool        dot  = false;
+  Number      num  = numOfZero();
+
+  if (strLen(str) > DIGITMAX) {
+    num.flag = NUM_TOO_PRECISE;
+    return num;
+  }
 
   for (; i < str.end; i++) {
     switch (*i) {
@@ -171,19 +183,24 @@ bool numSetDec(Number* const num, String const str) {
     case '_': continue;
     case 'e':
     case 'E':
-      int exp = 0;
+      // If the number is zero, skip any exponent checks.
+      if (bfrLen(num.sig) == 1 && !bfrAt(num.sig, 0)) return num;
       // Skip 'e' or 'E' before parsing the exponent.
-      if (decOf(&exp, (String){.bgn = i + 1, .end = str.end})) return true;
-      num->exp += exp;
+      Number exp = decOf((String){.bgn = i + 1, .end = str.end});
+      num.exp += exp.exp;
+      num.flag = exp.flag;
+      numFree(&exp);
+      if (num.exp < -EXPMAX) num.flag = NUM_ZERO;
+      if (num.flag != NUM_NORMAL) return num;
       goto success;
     }
-    if (dot) num->exp--;
-    numMul(num, BASE);
-    numAdd(num, *i - '0');
+    if (dot) num.exp--;
+    numMul(&num, BASE);
+    numAdd(&num, *i - '0');
   }
 success:
-  numBase(num, BASE, 2);
-  return false;
+  numBase(&num, BASE, 2);
+  return num;
 }
 
 int numCmp(Number const num, uint64_t const val) {
@@ -202,7 +219,9 @@ int numCmp(Number const num, uint64_t const val) {
   return 0;
 }
 
-bool numIsInt(Number const num) { return num.exp >= 0; }
+bool numIsInt(Number const num) {
+  return num.flag == NUM_NORMAL && num.exp >= 0;
+}
 
 uint64_t numAsInt(Number const num) {
   Converter con = {0};
@@ -214,25 +233,19 @@ uint64_t numAsInt(Number const num) {
 int const FLOAT_EXPONENT  = 8;
 int const DOUBLE_EXPONENT = 11;
 
-bool isFloat(Number const num, int const exponent) {
-  return num.exp + numBitMost(num) <= 1 << (exponent - 1);
-}
-
-bool numIsFloat(Number const num) { return isFloat(num, FLOAT_EXPONENT); }
-
-bool numIsDouble(Number const num) { return isFloat(num, DOUBLE_EXPONENT); }
-
 #define asFloat(type, exponentArgument, integer)                              \
+  if (num.flag == NUM_INFINITE) return (type)1 / 0;                           \
+  if (num.flag == NUM_ZERO) return 0;                                         \
   union {                                                                     \
     type    val;                                                              \
     integer i;                                                                \
   } con = {0};                                                                \
                                                                               \
   iptr const most     = numBitMost(num);                                      \
-  int const  exponent = exponentArgument;                                     \
-  int const  mantissa = sizeof(integer) * CHAR_BIT - 1 - exponent;            \
+  iptr const exponent = exponentArgument;                                     \
+  iptr const mantissa = sizeof(integer) * CHAR_BIT - 1 - exponent;            \
                                                                               \
-  int i = 0;                                                                  \
+  iptr i = 0;                                                                 \
   for (; i < mantissa && i < most; i++)                                       \
     con.i = bitSet(con.i, mantissa - 1 - i, numBitGet(num, most - 1 - i));    \
   int exp = num.exp;                                                          \
@@ -246,9 +259,13 @@ bool numIsDouble(Number const num) { return isFloat(num, DOUBLE_EXPONENT); }
     }                                                                         \
   }                                                                           \
                                                                               \
-  int const bias = (1 << (exponent - 1)) - 1;                                 \
-  int const mask = (1 << exponent) - 1;                                       \
-  con.i |= ((exp + bias + most) & mask) << mantissa;                          \
+  uint64_t const bias  = (1 << (exponent - 1)) - 1;                           \
+  uint64_t const mask  = (1 << exponent) - 1;                                 \
+  uint64_t const scale = exp + bias + most;                                   \
+  /* TODO: Handle subnormals if they need special attention and make sure the \
+   * infinity check below is correct. */                                      \
+  if (scale > mask) return (type)1 / 0;                                       \
+  con.i |= scale << mantissa;                                                 \
                                                                               \
   return con.val
 

@@ -12,7 +12,7 @@
 /* Make sure the given amount of symbol space exists at the end of the given
  * table. When necessary, grows by at least half of the current capacity. */
 static void symReserve(Table* const tbl, iptr const amount) {
-  iptr const cap   = tbl->sym.all - tbl->sym.bgn;
+  iptr const cap   = tbl->all - tbl->bgn;
   iptr const len   = tblLen(*tbl);
   iptr const space = cap - len;
   if (space >= amount) return;
@@ -20,51 +20,12 @@ static void symReserve(Table* const tbl, iptr const amount) {
   iptr const    growth    = amount - space;
   iptr const    minGrowth = cap / 2;
   iptr const    newCap    = cap + (growth < minGrowth ? minGrowth : growth);
-  Symbol* const mem       = realloc(tbl->sym.bgn, newCap * sizeof(Symbol));
+  Symbol* const mem       = realloc(tbl->bgn, newCap * sizeof(Symbol));
   dbgExpect(mem, "Could not reallocate!");
 
-  tbl->sym.bgn = mem;
-  tbl->sym.end = mem + len;
-  tbl->sym.all = mem + newCap;
-}
-
-/* Make sure the given amount of operation space exists at the end of the given
- * table. When necessary, grows by at least half of the current capacity. */
-static void opnReserve(Table* const tbl, iptr const amount) {
-  iptr const cap   = tbl->opn.all - tbl->opn.bgn;
-  iptr const len   = tbl->opn.end - tbl->opn.bgn;
-  iptr const space = cap - len;
-  if (space >= amount) return;
-
-  iptr const       growth    = amount - space;
-  iptr const       minGrowth = cap / 2;
-  iptr const       newCap    = cap + (growth < minGrowth ? minGrowth : growth);
-  Operation* const mem = realloc(tbl->opn.bgn, newCap * sizeof(Operation));
-  dbgExpect(mem, "Could not reallocate!");
-
-  tbl->opn.bgn = mem;
-  tbl->opn.end = mem + len;
-  tbl->opn.all = mem + newCap;
-}
-
-/* Make sure the given amount of conversion space exists at the end of the given
- * table. When necessary, grows by at least half of the current capacity. */
-static void cnvReserve(Table* const tbl, iptr const amount) {
-  iptr const cap   = tbl->cnv.all - tbl->cnv.bgn;
-  iptr const len   = tbl->cnv.end - tbl->cnv.bgn;
-  iptr const space = cap - len;
-  if (space >= amount) return;
-
-  iptr const growth    = amount - space;
-  iptr const minGrowth = cap / 2;
-  iptr const newCap    = cap + (growth < minGrowth ? minGrowth : growth);
-  TypeConversion* const mem =
-    realloc(tbl->cnv.bgn, newCap * sizeof(TypeConversion));
-  dbgExpect(mem, "Could not reallocate!");
-
-  tbl->cnv.bgn = mem;
-  tbl->cnv.end = mem + len;
-  tbl->cnv.all = mem + newCap;
+  tbl->bgn = mem;
+  tbl->end = mem + len;
+  tbl->all = mem + newCap;
 }
 
 Table tblOf(Outcome* const otc, Parse const prs) {
@@ -74,19 +35,19 @@ Table tblOf(Outcome* const otc, Parse const prs) {
 }
 
 void tblFree(Table* const tbl) {
-  for (Symbol* i = tbl->sym.bgn; i < tbl->sym.end; i++) evlFree(&i->evl);
-  free(tbl->sym.bgn);
-  tbl->sym.bgn = NULL;
-  tbl->sym.end = NULL;
-  tbl->sym.all = NULL;
+  for (Symbol* i = tbl->bgn; i < tbl->end; i++) evlFree(&i->evl);
+  free(tbl->bgn);
+  tbl->bgn = NULL;
+  tbl->end = NULL;
+  tbl->all = NULL;
 }
 
-iptr tblLen(Table const tbl) { return tbl.sym.end - tbl.sym.bgn; }
+iptr tblLen(Table const tbl) { return tbl.end - tbl.bgn; }
 
-Symbol tblAt(Table const tbl, iptr const i) { return tbl.sym.bgn[i]; }
+Symbol tblAt(Table const tbl, iptr const i) { return tbl.bgn[i]; }
 
 void tblWrite(Table const tbl, FILE* const stream) {
-  for (Symbol const* i = tbl.sym.bgn; i < tbl.sym.end; i++) {
+  for (Symbol const* i = tbl.bgn; i < tbl.end; i++) {
     if (!symUsr(*i)) continue;
     strWrite(i->name, stream);
     fprintf(stream, ": ");
@@ -103,24 +64,7 @@ void tblWrite(Table const tbl, FILE* const stream) {
 
 void tblAdd(Table* const tbl, Symbol const sym) {
   symReserve(tbl, 1);
-  *tbl->sym.end++ = sym;
+  *tbl->end++ = sym;
 }
 
-void tblPop(Table* const tbl) { tbl->sym.end--; }
-
-void tblOpnAdd(Table* const tbl, Operation const opn) {
-  opnReserve(tbl, 1);
-  *tbl->opn.end++ = opn;
-}
-
-void tblCnvAdd(Table* const tbl, TypeConversion const cnv) {
-  cnvReserve(tbl, 1);
-  *tbl->cnv.end++ = cnv;
-}
-
-bool tblCnv(Table const tbl, Type const src, Type const des) {
-  if (typeEq(src, des)) return true;
-  for (TypeConversion const* i = tbl.cnv.bgn; i < tbl.cnv.end; i++)
-    if (typeEq(i->from, src) && typeEq(i->to, des)) return true;
-  return false;
-}
+void tblPop(Table* const tbl) { tbl->end--; }

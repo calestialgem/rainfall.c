@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "anr/api.h"
 #include "psr/api.h"
 #include "utl/api.h"
 
@@ -36,14 +37,6 @@ typedef struct {
   /* Variant of the type. */
   TypeTag tag;
 } Type;
-
-/* Semantic rule of converting a type to another one. */
-typedef struct {
-  /* Source type. */
-  Type to;
-  /* Destination type. */
-  Type from;
-} TypeConversion;
 
 /* Value. */
 typedef union {
@@ -93,100 +86,14 @@ typedef struct {
   Evaluation evl;
 } Symbol;
 
-/* `Operation` with `NullaryOperator`. */
-typedef struct {
-} NullaryOperation;
-
-/* `Operation` with `PrenaryOperator`. */
-typedef struct {
-  /* Type of the operand that comes after the operator. */
-  Type in;
-} PrenaryOperation;
-
-/* `Operation` with `PostaryOperator`. */
-typedef struct {
-  /* Type of the operand that comes before the operator. */
-  Type in;
-} PostaryOperation;
-
-/* `Operation` with `CirnaryOperator`. */
-typedef struct {
-  /* Type of the operand that comes between the operators. */
-  Type in;
-} CirnaryOperation;
-
-/* `Operation` with `BinaryOperator`. */
-typedef struct {
-  /* Type of the operand that comes before the operator. */
-  Type lin;
-  /* Type of the operand that comes after the operator. */
-  Type rin;
-} BinaryOperation;
-
-/* `Operation` with `VariaryOperator`. */
-typedef struct {
-  /* Type of the first operand. */
-  Type  fin;
-  /* Types of the remaining operands. */
-  Type* rin;
-  /* Amound of operands. */
-  iptr  ary;
-} VariaryOperation;
-
-/* Semantic rule of using an operator on types. */
-typedef struct {
-  union {
-    /* Operation as nullary operation. */
-    NullaryOperation null;
-    /* Operation as prenary operation. */
-    PrenaryOperation pre;
-    /* Operation as postary operation. */
-    PostaryOperation post;
-    /* Operation as cirnary operation. */
-    CirnaryOperation cir;
-    /* Operation as binary operation. */
-    BinaryOperation  bin;
-    /* Operation as variary operation. */
-    VariaryOperation var;
-  };
-
-  /* Operator. */
-  Operator op;
-  /* Type of the output of the operation. */
-  Type     out;
-} Operation;
-
 /* List of symbols. */
 typedef struct {
-  /* Dynamicly allocated array of symbols. */
-  struct {
-    /* Pointer to the first symbol if it exists. */
-    Symbol* bgn;
-    /* Pointer to one after the last symbol. */
-    Symbol* end;
-    /* Pointer to one after the last allocated symbol. */
-    Symbol* all;
-  } sym;
-
-  /* Dynamicly allocated array of operations. */
-  struct {
-    /* Pointer to the first operation if it exists. */
-    Operation* bgn;
-    /* Pointer to one after the last operation. */
-    Operation* end;
-    /* Pointer to one after the last allocated operation. */
-    Operation* all;
-  } opn;
-
-  /* Dynamicly allocated array of type conversions. */
-  struct {
-    /* Pointer to the first conversion if it exists. */
-    TypeConversion* bgn;
-    /* Pointer to one after the last conversion. */
-    TypeConversion* end;
-    /* Pointer to one after the last allocated conversion. */
-    TypeConversion* all;
-  } cnv;
+  /* Pointer to the first symbol if it exists. */
+  Symbol* bgn;
+  /* Pointer to one after the last symbol. */
+  Symbol* end;
+  /* Pointer to one after the last allocated symbol. */
+  Symbol* all;
 } Table;
 
 /* Instance of meta type. */
@@ -210,6 +117,10 @@ extern Type const TYPE_INS_DOUBLE;
 #define TYPE_BUILT_LEN 8
 /* Array of built-in types. */
 extern Type const TYPE_BUILT[TYPE_BUILT_LEN];
+/* Amount of arithmetic types. */
+#define TYPE_ARITHMETIC_LEN 6
+/* Types that could be used in arithmetic operations. */
+extern Type const TYPE_ARITHMETIC[TYPE_ARITHMETIC_LEN];
 
 /* Analyze the given parse. Reports to the given outcome. */
 Table tblOf(Outcome* otc, Parse prs);

@@ -11,26 +11,35 @@
 #include <stdint.h>
 #include <stdio.h>
 
+/* Flag that explores the situation of a number. */
+typedef enum {
+  /* Number has an acceptable exponent and the significand is valid. */
+  NUM_NORMAL,
+  /* Exponent is too big, regardless of the significand take the number as
+     infinite. */
+  NUM_INFINITE,
+  /* Exponent is too small, regardless of the significand take the number as
+     zero. */
+  NUM_ZERO,
+  /* Number has too many digits. */
+  NUM_TOO_PRECISE
+} NumberFlag;
+
 /* Dynamicly allocated, infinite precision, signed real. */
 typedef struct {
   /* Significand that is an integer. */
-  Buffer sig;
+  Buffer     sig;
   /* Exponent whose base can vary. */
-  int    exp;
+  int        exp;
+  /* Flag. */
+  NumberFlag flag;
 } Number;
 
 /* Whether the given types are equal. */
 bool        typeEq(Type lhs, Type rhs);
-/*  */
-/* Whether the given type is a built-in signed integer. */
-bool        typeSigned(Type type);
-/* Whether the given type is a built-in unsigned integer. */
-bool        typeUnsigned(Type type);
-/* Whether the given type is a built-in floating-point real. */
-bool        typeFloat(Type type);
-/* Whether the given type is a built-in signed integer, unsigned integer or
- * floating-point real. */
-bool        typeScalar(Type type);
+/* Rank of the given arithmetic type. Returns -1 if the given type is not an
+ * arithmetic type. */
+iptr        typeRank(Type type);
 /* Name of the given type. */
 char const* typeName(Type type);
 /* Stream out the given type as string to the given stream. */
@@ -73,22 +82,11 @@ Symbol tblAt(Table tbl, iptr i);
 void   tblAdd(Table* tbl, Symbol sym);
 /* Remove the last added symbol from the given table. */
 void   tblPop(Table* tbl);
-/* Add the given operation to the end of the given table. */
-void   tblOpnAdd(Table* tbl, Operation opn);
-/* Add the given conversion to the end of the given table. */
-void   tblCnvAdd(Table* tbl, TypeConversion cnv);
-/* Operation from the given  */
-/* Whether the given source type can be converted to the given destination type
- * using the conversions in the given table. */
-bool   tblCnv(Table tbl, Type src, Type des);
 
-/* Zero number. */
-Number   numOfZero();
+/* Parse the given decimal string into the given number. */
+Number   numOfDec(String str);
 /* Release the memory resources used by the given number. */
 void     numFree(Number* num);
-/* Parse the given decimal string into the given number. Returns true signaling
- * error, when the exponent has too many digits. */
-bool     numSetDec(Number* num, String str);
 /* Comparison of the given number with the given value. Returns positive, zero,
  * or negative depending on whether the number is greater than, equals to, or
  * less than the given value, respectively. */
@@ -97,12 +95,6 @@ int      numCmp(Number num, uint64_t val);
 bool     numIsInt(Number num);
 /* Value of the given number as integer. */
 uint64_t numAsInt(Number num);
-/* Whether the given number is a float. Number should be based in 2,
- * because floting-point exponents are based in 2. */
-bool     numIsFloat(Number num);
-/* Whether the given number is a double. Number should be based in 2,
- * because floting-point exponents are based in 2. */
-bool     numIsDouble(Number num);
 /* Value of the given number as a float. Number should be based in 2,
  * because floting-point exponents are based in 2. */
 float    numAsFloat(Number num);
