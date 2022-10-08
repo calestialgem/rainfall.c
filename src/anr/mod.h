@@ -44,9 +44,12 @@ iptr        typeRank(Type type);
 char const* typeName(Type type);
 /* Stream out the given type as string to the given stream. */
 void        typeWrite(Type type, FILE* stream);
+
+/* Default value of the given type. */
+Value valDefault(Type type);
 /* Stream out the given value of the given type as string to the given stream.
  */
-void        valWrite(Type type, Value val, FILE* stream);
+void  valWrite(Type type, Value val, FILE* stream);
 
 /* Evaluation with the given initial node capacity. */
 Evaluation     evlOf(iptr cap);
@@ -71,9 +74,6 @@ Value          evlVal(Evaluation evl);
 /* Whether the value of the given evaluation is known at compile-time. */
 bool           evlHas(Evaluation evl);
 
-/* Whether the given symbol is user-defined. */
-bool symUsr(Symbol sym);
-
 /* Amount of symbols in the given table. */
 iptr   tblLen(Table tbl);
 /* Symbol at the given index in the given table. */
@@ -87,13 +87,13 @@ void   tblPop(Table* tbl);
 Number   numOfDec(String str);
 /* Release the memory resources used by the given number. */
 void     numFree(Number* num);
-/* Comparison of the given number with the given value. Returns positive, zero,
- * or negative depending on whether the number is greater than, equals to, or
- * less than the given value, respectively. */
+/* Comparison of the given number with the given value. Number should be based
+ * in 2. Returns positive, zero, or negative depending on whether the number is
+ * greater than, equals to, or less than the given value, respectively. */
 int      numCmp(Number num, uint64_t val);
 /* Whether the given number is an integer. */
 bool     numIsInt(Number num);
-/* Value of the given number as integer. */
+/* Value of the given number as integer. Number should be based in 2. */
 uint64_t numAsInt(Number num);
 /* Value of the given number as a float. Number should be based in 2,
  * because floting-point exponents are based in 2. */
@@ -101,9 +101,6 @@ float    numAsFloat(Number num);
 /* Value of the given number as a double. Number should be based in 2,
  * because floting-point exponents are based in 2. */
 double   numAsDouble(Number num);
-/* Stream out the given number with the given base and given exponent separator
- * as string to the given stream. */
-void     numWrite(Number num, int base, char exp, FILE* stream);
 
 /* Analyze the given parse into the given table by reporting to the given
  * outcome. */

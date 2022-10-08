@@ -111,6 +111,10 @@ nodeTree(ExpressionNode const* i, iptr const depth, FILE* const stream) {
   return i;
 }
 
+String expStr(Expression const exp) { return exp.end[-1].val; }
+
+iptr expLen(Expression const exp) { return exp.end - exp.bgn; }
+
 Expression expOf(iptr const cap) {
   Expression res = {0};
   if (cap) reserve(&res, cap);
@@ -123,8 +127,6 @@ void expFree(Expression* const exp) {
   exp->end = NULL;
   exp->all = NULL;
 }
-
-iptr expLen(Expression const exp) { return exp.end - exp.bgn; }
 
 ExpressionNode expAt(Expression const exp, iptr const i) { return exp.bgn[i]; }
 

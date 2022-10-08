@@ -187,5 +187,3 @@ Type evlType(Evaluation const evl) { return evlRoot(evl).type; }
 Value evlVal(Evaluation const evl) { return evlRoot(evl).val; }
 
 bool evlHas(Evaluation const evl) { return evlRoot(evl).has; }
-
-bool symUsr(Symbol const sym) { return strLen(evlRoot(sym.evl).exp.val); }

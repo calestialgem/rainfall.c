@@ -110,13 +110,13 @@ typedef struct {
   ExpressionNode* all;
 } Expression;
 
-/* Creation of an immutable variable with its type and value. */
+/* Creation of an immutable binding with its type and value. */
 typedef struct {
-  /* Identifier of the defined variable. */
+  /* Identifier of the defined binding. */
   String     name;
-  /* Expression that gives the type of the defined variable. */
+  /* Expression that gives the type of the defined binding. */
   Expression type;
-  /* Expression that gives the value of the defined variable. */
+  /* Expression that gives the value of the defined binding. */
   Expression val;
 } LetDefinition;
 
@@ -355,6 +355,11 @@ Operator    opOfVar(VariaryOperator var);
 bool        opEq(Operator lhs, Operator rhs);
 /* Name of the given operator. */
 char const* opName(Operator op);
+
+/* Amount of nodes in the given expression. */
+iptr   expLen(Expression exp);
+/* Given expression as string. */
+String expStr(Expression exp);
 
 /* Parse the given lex. Reports to the given outcome. */
 Parse     prsOf(Outcome* otc, Lex lex);

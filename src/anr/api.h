@@ -78,12 +78,50 @@ typedef struct {
   EvaluationNode* all;
 } Evaluation;
 
+/* A value that is bound to a name using a let definition. */
+typedef struct {
+  /* Value that is bound. */
+  Evaluation evl;
+} Binding;
+
+/* A mutable value holder that is created using a var definition. */
+typedef struct {
+  /* Initial value that is set. */
+  Evaluation evl;
+} Variable;
+
+/* Variant of a symbol. */
+typedef enum {
+  /* Binding symbol. */
+  SYM_BIND,
+  /* Variable symbol. */
+  SYM_VAR,
+  /* Type symbol. */
+  SYM_TYPE
+} SymbolTag;
+
 /* Semantic object with a name. */
 typedef struct {
+  union {
+    /* Symbol as binding. */
+    Binding  bind;
+    /* Symbol as variable. */
+    Variable var;
+  };
+
+  /* Variant of the symbol. */
+  SymbolTag tag;
+
   /* Identifier. */
-  String     name;
-  /* Evaluation. */
-  Evaluation evl;
+  String name;
+  /* Type. */
+  Type   type;
+  /* Value if it is known at compile-time. */
+  Value  val;
+  /* Whether the value is known at compile-time. */
+  bool   has;
+  /* Whether the symbol is user-defined. */
+  bool   usr;
 } Symbol;
 
 /* List of symbols. */

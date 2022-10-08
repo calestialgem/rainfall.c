@@ -35,7 +35,13 @@ Table tblOf(Outcome* const otc, Parse const prs) {
 }
 
 void tblFree(Table* const tbl) {
-  for (Symbol* i = tbl->bgn; i < tbl->end; i++) evlFree(&i->evl);
+  for (Symbol* i = tbl->bgn; i < tbl->end; i++) {
+    switch (i->tag) {
+    case SYM_BIND: evlFree(&i->bind.evl); break;
+    case SYM_VAR: evlFree(&i->var.evl); break;
+    default: break;
+    }
+  }
   free(tbl->bgn);
   tbl->bgn = NULL;
   tbl->end = NULL;
@@ -48,17 +54,28 @@ Symbol tblAt(Table const tbl, iptr const i) { return tbl.bgn[i]; }
 
 void tblWrite(Table const tbl, FILE* const stream) {
   for (Symbol const* i = tbl.bgn; i < tbl.end; i++) {
-    if (!symUsr(*i)) continue;
+    if (!i->usr) continue;
     strWrite(i->name, stream);
     fprintf(stream, ": ");
-    typeWrite(evlType(i->evl), stream);
-    if (evlHas(i->evl)) {
+    typeWrite(i->type, stream);
+    if (i->has) {
       fprintf(stream, " = ");
-      valWrite(evlType(i->evl), evlVal(i->evl), stream);
+      valWrite(i->type, i->val, stream);
     }
     fprintf(stream, "\n");
-    evlTree(i->evl, stream);
-    fprintf(stream, "\n");
+    switch (i->tag) {
+    case SYM_BIND:
+      evlTree(i->bind.evl, stream);
+      fprintf(stream, "\n");
+      break;
+    case SYM_VAR:
+      if (evlLen(i->var.evl)) {
+        evlTree(i->var.evl, stream);
+        fprintf(stream, "\n");
+      }
+      break;
+    default: break;
+    }
   }
 }
 

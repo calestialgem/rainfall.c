@@ -62,6 +62,20 @@ void typeWrite(Type const type, FILE* const stream) {
   fprintf(stream, "%s", typeName(type));
 }
 
+Value valDefault(Type const type) {
+  switch (type.tag) {
+  case TYPE_META: return (Value){.meta = TYPE_INS_VOID};
+  case TYPE_VOID: return (Value){.vint = 0};
+  case TYPE_BOOL: return (Value){.vbool = false};
+  case TYPE_BYTE: return (Value){.byte = 0};
+  case TYPE_INT: return (Value){.vint = 0};
+  case TYPE_IPTR: return (Value){.iptr = 0};
+  case TYPE_FLOAT: return (Value){.vfloat = 0};
+  case TYPE_DOUBLE: return (Value){.vdouble = 0};
+  default: dbgUnexpected("Unknown type!");
+  }
+}
+
 void valWrite(Type const type, Value const val, FILE* const stream) {
   switch (type.tag) {
   case TYPE_META: typeWrite(val.meta, stream); return;

@@ -10,6 +10,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 /* Context of the analysis process. */
 struct {
@@ -36,19 +37,24 @@ static Evaluation get() {
   return res;
 }
 
-/* Add a new symbol with the given name with the current evaluation. */
-static void add(String const name) {
-  mapPut(&anr.map, name, tblLen(*anr.tbl));
-  tblAdd(anr.tbl, (Symbol){.name = name, .evl = get()});
+/* Add the given symbol to the table and the map. */
+static void add(Symbol const sym) {
+  iptr const len = tblLen(*anr.tbl);
+  printf("[%lli] %.*s\n", len, (int)strLen(sym.name), sym.name.bgn);
+  mapPut(&anr.map, sym.name, len);
+  tblAdd(anr.tbl, sym);
 }
 
 /* Add the given type as a built-in. */
 static void prepareType(Type const type) {
   String const name = strOf(typeName(type));
-  evlAdd(
-    &anr.evl, (EvaluationNode){
-                .type = TYPE_INS_META, .val = {.meta = type}, .has = true});
-  add(name);
+  Symbol const sym  = {
+     .tag  = SYM_TYPE,
+     .name = name,
+     .type = TYPE_INS_META,
+     .val  = {.meta = type},
+     .has  = true};
+  add(sym);
 }
 
 /* Add the built-in symbols. */
@@ -68,7 +74,7 @@ static ExpressionNode const* evaluateAcs(
     otcErr(anr.otc, node->val, "Unknown symbol!");
     return NULL;
   }
-  EvaluationNode const acs = evlRoot(tblAt(*anr.tbl, e->val).evl);
+  Symbol const acs = tblAt(*anr.tbl, e->val);
   if (expect && !typeEq(acs.type, type)) {
     otcErr(
       anr.otc, node->val, "Expected a `%s`, but `%.*s` is a `%s`!",
@@ -76,8 +82,8 @@ static ExpressionNode const* evaluateAcs(
       typeName(acs.type));
     return NULL;
   }
-  EvaluationNode evl = acs;
-  evl.exp            = *node;
+  EvaluationNode const evl = {
+    .exp = *node, .type = type, .val = acs.val, .has = acs.has};
   evlAdd(&anr.evl, evl);
   return node - 1;
 }
@@ -240,19 +246,27 @@ static ExpressionNode const* evaluatePre(
 
 /* Version of `evaluateNode` that takes `PostaryOperator`s. */
 static ExpressionNode const* evaluatePost(
-  ExpressionNode const* const node, Type const type, bool const expect) {}
+  ExpressionNode const* const node, Type const type, bool const expect) {
+  return NULL;
+}
 
 /* Version of `evaluateNode` that takes `CirnaryOperator`s. */
 static ExpressionNode const* evaluateCir(
-  ExpressionNode const* const node, Type const type, bool const expect) {}
+  ExpressionNode const* const node, Type const type, bool const expect) {
+  return NULL;
+}
 
 /* Version of `evaluateNode` that takes `BinaryOperator`s. */
 static ExpressionNode const* evaluateBin(
-  ExpressionNode const* const node, Type const type, bool const expect) {}
+  ExpressionNode const* const node, Type const type, bool const expect) {
+  return NULL;
+}
 
 /* Version of `evaluateNode` that takes `VariaryOperator`s. */
 static ExpressionNode const* evaluateVar(
-  ExpressionNode const* const node, Type const type, bool const expect) {}
+  ExpressionNode const* const node, Type const type, bool const expect) {
+  return NULL;
+}
 
 /* Evaluate the given node. Returns the node that comes after the given one and
  * its childeren or null if the type does not match. */
@@ -281,7 +295,7 @@ static bool assesDef(String const name) {
   MapEntry const* const e = mapGet(anr.map, name);
   if (!e) return true;
   Symbol const prev = tblAt(*anr.tbl, e->val);
-  if (symUsr(prev)) {
+  if (prev.usr) {
     otcErr(anr.otc, name, "Name clashes with a previously defined symbol!");
     otcInfo(*anr.otc, prev.name, "Previous definition was here.");
   } else {
@@ -290,18 +304,83 @@ static bool assesDef(String const name) {
   return false;
 }
 
+/* Resolve the type of a definiton from the given expression. */
+static void
+resolveType(Expression const exp, Type* const type, bool* const expect) {
+  if (expLen(exp)) {
+    if (!evaluateExp(exp, TYPE_INS_META, true)) return;
+    Evaluation const evl = get();
+    if (!evlHas(evl)) {
+      otcErr(anr.otc, expStr(exp), "Type must be known at compile-time!");
+      return;
+    }
+    *type = evlVal(evl).meta;
+    if (typeEq(*type, TYPE_INS_VOID)) {
+      otcErr(anr.otc, expStr(exp), "Type cannot be void!");
+      return;
+    }
+    *expect = true;
+  }
+}
+
 /* Resolve the given let definition statement. */
 static void resolveLet(LetDefinition const let) {
   if (!assesDef(let.name)) return;
+  bool expect = false;
+  Type type   = TYPE_INS_VOID;
+  resolveType(let.type, &type, &expect);
+
+  if (!evaluateExp(let.val, type, expect)) return;
+
+  Evaluation const evl = get();
+  Symbol const     sym = {
+        .bind = {.evl = evl},
+        .tag  = SYM_BIND,
+        .name = let.name,
+        .type = evlType(evl),
+        .val  = evlVal(evl),
+        .has  = evlHas(evl),
+        .usr  = true};
+  add(sym);
 }
 
 /* Resolve the given var definition statement. */
 static void resolveVar(VarDefinition const var) {
   if (!assesDef(var.name)) return;
+  bool expect = false;
+  Type type   = TYPE_INS_VOID;
+  resolveType(var.type, &type, &expect);
+
+  if (expLen(var.val)) {
+    if (!evaluateExp(var.val, type, expect)) return;
+    Evaluation const evl = get();
+    Symbol const     sym = {
+          .var  = {.evl = evl},
+          .tag  = SYM_VAR,
+          .name = var.name,
+          .type = evlType(evl),
+          .val  = evlVal(evl),
+          .has  = evlHas(evl),
+          .usr  = true};
+    add(sym);
+    return;
+  }
+
+  Symbol const sym = {
+    .tag  = SYM_VAR,
+    .name = var.name,
+    .type = type,
+    .val  = valDefault(type),
+    .has  = true,
+    .usr  = true};
+  add(sym);
 }
 
 /* Resolve the given expression statement. */
-static void resolveExp(ExpressionStatement const exp) {}
+static void resolveExp(ExpressionStatement const exp) {
+  if (!evaluateExp(exp.exp, TYPE_INS_VOID, true))
+    otcErr(anr.otc, expStr(exp.exp), "Value of the expression is lost!");
+}
 
 /* Check the name accesses and types of expressions in the given statement. */
 static void resolve(Statement const stt) {

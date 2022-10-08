@@ -12,8 +12,6 @@
 Expression     expOf(iptr cap);
 /* Release the memory resources used by the given expression. */
 void           expFree(Expression* exp);
-/* Amount of nodes in the given expression. */
-iptr           expLen(Expression exp);
 /* Node at the given index in the given expression. */
 ExpressionNode expAt(Expression exp, iptr i);
 /* Add the given node to the end of the given expression. */

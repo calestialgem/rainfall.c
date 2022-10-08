@@ -48,16 +48,11 @@ static iptr numBitMost(Number const num) {
   return bit;
 }
 
-/* Copy of the given number. */
-static Number numOfCopy(Number const num) {
-  return (Number){.sig = bfrOfCopy(num.sig), .exp = num.exp};
-}
-
 /* Add the given value to the given number. */
 static void numAdd(Number* const num, int const val) {
   int rem = val;
   for (char* i = num->sig.bgn; i < num->sig.end; i++) {
-    rem += *i;
+    rem += (unsigned char)*i;
     if (rem < SIGBASE) {
       *i = rem;
       return;
@@ -67,20 +62,30 @@ static void numAdd(Number* const num, int const val) {
     rem -= byte;
     rem /= SIGBASE;
   }
-  if (rem) bfrPut(&num->sig, rem);
+  while (rem) {
+    int const byte = rem % SIGBASE;
+    bfrPut(&num->sig, byte);
+    rem -= byte;
+    rem /= SIGBASE;
+  }
 }
 
 /* Multiply the given number with the given value. */
 static void numMul(Number* const num, int const val) {
   int rem = 0;
   for (char* i = num->sig.bgn; i < num->sig.end; i++) {
-    rem += *i * val;
+    rem += (unsigned char)*i * val;
     int const byte = rem % SIGBASE;
     *i             = byte;
     rem -= byte;
     rem /= SIGBASE;
   }
-  if (rem) bfrPut(&num->sig, rem);
+  while (rem) {
+    int const byte = rem % SIGBASE;
+    bfrPut(&num->sig, byte);
+    rem -= byte;
+    rem /= SIGBASE;
+  }
 }
 
 /* Divide the given number as integer to the given value. */
@@ -88,7 +93,7 @@ static void numDiv(Number* const num, int const val) {
   int rem = 0;
   for (char* i = num->sig.end - 1; i >= num->sig.bgn; i--) {
     rem *= SIGBASE;
-    rem += *i;
+    rem += (unsigned char)*i;
     *i = rem / val;
     rem %= val;
   }
@@ -99,19 +104,24 @@ static char numRem(Number const num, int const val) {
   int res = 0;
   for (char const* i = num.sig.end - 1; i >= num.sig.bgn; i--) {
     res *= SIGBASE;
-    res += *i;
+    res += (unsigned char)*i;
     res %= val;
   }
   return res;
 }
 
-/* Remove the trailing zeros from the given number and add those to the
- * exponent. */
+/* Remove the leading and trailing zeros from the given number and add those to
+ * the exponent. */
 static void numTrim(Number* const num, int const base) {
+#define leading() \
+  while (num->sig.end > num->sig.bgn + 1 && !num->sig.end[-1]) num->sig.end--
+  leading();
   while (!numRem(*num, base)) {
     numDiv(num, base);
+    leading();
     num->exp++;
   }
+#undef leading
 }
 
 /* Change the base of the given number from the given current base to the given
@@ -126,14 +136,23 @@ static void numBase(Number* const num, int const base, int const target) {
     numTrim(num, target);
     return;
   }
-  int scaledUp = 0;
+  iptr const LIMIT    = 64;
+  iptr const most     = numBitMost(*num);
+  int        scaledUp = 0;
   while (num->exp) {
+    if (scaledUp - most >= LIMIT) break;
     numMul(num, target);
+    numTrim(num, base);
     scaledUp++;
+  }
+  while (num->exp) {
+    int const rem = (unsigned char)numRem(*num, base);
+    numAdd(num, base - rem);
     numTrim(num, base);
   }
-  numTrim(num, base);
+  numTrim(num, target);
   num->exp -= scaledUp;
+  dbgExpect(numBitMost(*num) >= LIMIT, "Precision is not high enough!");
 }
 
 /* Parse the exponent of a number from the given string. */
@@ -204,16 +223,14 @@ success:
 }
 
 int numCmp(Number const num, uint64_t const val) {
-  Converter const con    = {.u8 = val};
-  iptr            valLen = sizeof(uint64_t);
-  while (valLen > 1 && !con.data[valLen - 1]) valLen--;
-  iptr const len = bfrLen(num.sig);
+  iptr const most   = numBitMost(num);
+  iptr const bits   = most + num.exp;
+  iptr const maxBit = max(bits, 63);
 
-  if (len != valLen) return len - valLen;
-
-  for (char const* i = num.sig.end - 1; i >= num.sig.bgn; i--) {
-    char const byte = con.data[i - num.sig.bgn];
-    if (*i != byte) return *i - byte;
+  for (iptr i = maxBit; i >= 0; i--) {
+    int const vbit = i > 63 || i < 0 ? 0 : bitGet(val, i);
+    int const nbit = i > bits || i < num.exp ? 0 : numBitGet(num, i - num.exp);
+    if (nbit != vbit) return nbit - vbit;
   }
 
   return 0;
@@ -227,46 +244,46 @@ uint64_t numAsInt(Number const num) {
   Converter con = {0};
   for (char const* i = num.sig.bgn; i < num.sig.end; i++)
     con.data[i - num.sig.bgn] = *i;
-  return con.u8;
+  return con.u8 << num.exp;
 }
 
 int const FLOAT_EXPONENT  = 8;
 int const DOUBLE_EXPONENT = 11;
 
-#define asFloat(type, exponentArgument, integer)                              \
-  if (num.flag == NUM_INFINITE) return (type)1 / 0;                           \
-  if (num.flag == NUM_ZERO) return 0;                                         \
-  union {                                                                     \
-    type    val;                                                              \
-    integer i;                                                                \
-  } con = {0};                                                                \
-                                                                              \
-  iptr const most     = numBitMost(num);                                      \
-  iptr const exponent = exponentArgument;                                     \
-  iptr const mantissa = sizeof(integer) * CHAR_BIT - 1 - exponent;            \
-                                                                              \
-  iptr i = 0;                                                                 \
-  for (; i < mantissa && i < most; i++)                                       \
-    con.i = bitSet(con.i, mantissa - 1 - i, numBitGet(num, most - 1 - i));    \
-  int exp = num.exp;                                                          \
-  if (                                                                        \
-    i < most && numBitGet(num, most - 1 - i) &&                               \
-    (numBitGet(num, most - 1 - i - 1) || numBitGet(num, most - 1 - i + 1))) { \
-    con.i++;                                                                  \
-    if (con.i >= (integer)1 << mantissa) {                                    \
-      con.i >> 1;                                                             \
-      exp++;                                                                  \
-    }                                                                         \
-  }                                                                           \
-                                                                              \
-  uint64_t const bias  = (1 << (exponent - 1)) - 1;                           \
-  uint64_t const mask  = (1 << exponent) - 1;                                 \
-  uint64_t const scale = exp + bias + most;                                   \
-  /* TODO: Handle subnormals if they need special attention and make sure the \
-   * infinity check below is correct. */                                      \
-  if (scale > mask) return (type)1 / 0;                                       \
-  con.i |= scale << mantissa;                                                 \
-                                                                              \
+#define bit(i) numBitGet(num, most - 1 - (i))
+
+#define asFloat(type, exponentArgument, integer)                           \
+  if (num.flag == NUM_INFINITE) return (type)1 / 0;                        \
+  if (num.flag == NUM_ZERO) return 0;                                      \
+  union {                                                                  \
+    type    val;                                                           \
+    integer i;                                                             \
+  } con = {0};                                                             \
+                                                                           \
+  iptr const most     = numBitMost(num);                                   \
+  iptr const exponent = exponentArgument;                                  \
+  iptr const mantissa = sizeof(integer) * CHAR_BIT - 1 - exponent;         \
+                                                                           \
+  iptr i = 0;                                                              \
+  for (; i < mantissa && i < most; i++)                                    \
+    con.i = bitSet(con.i, mantissa - 1 - i, numBitGet(num, most - 1 - i)); \
+                                                                           \
+  int exp = num.exp;                                                       \
+  if (i < most && numBitGet(num, most - 1 - i)) {                          \
+    con.i++;                                                               \
+    if (con.i >= (integer)1 << mantissa) {                                 \
+      con.i >> 1;                                                          \
+      exp++;                                                               \
+    }                                                                      \
+  }                                                                        \
+                                                                           \
+  uint64_t const bias  = (1 << (exponent - 1)) - 1;                        \
+  uint64_t const mask  = (1 << exponent) - 1;                              \
+  uint64_t const scale = exp + bias + most;                                \
+                                                                           \
+  if (scale > mask) return (type)1 / 0;                                    \
+  con.i |= scale << mantissa;                                              \
+                                                                           \
   return con.val
 
 float numAsFloat(Number const num) { asFloat(float, FLOAT_EXPONENT, uint32_t); }
@@ -275,15 +292,5 @@ double numAsDouble(Number const num) {
   asFloat(double, DOUBLE_EXPONENT, uint64_t);
 }
 
-void numWrite(
-  Number const num, int const base, char const exp, FILE* const stream) {
-  Buffer digits = bfrOf((bfrLen(num.sig) + 1) * 5 / 2);
-  Number rem    = numOfCopy(num);
-  while (numCmp(rem, 0)) {
-    bfrPut(&digits, (char)('0' + numRem(rem, base)));
-    numDiv(&rem, base);
-  }
-  for (char const* i = digits.end - 1; i >= digits.bgn; i--) fputc(*i, stream);
-  bfrFree(&digits);
-  if (num.exp) fprintf(stream, "%c%i", exp, num.exp);
-}
+#undef asFloat
+#undef bit
