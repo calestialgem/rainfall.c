@@ -14,15 +14,15 @@
 /* Make sure the given amount of space exists at the end of the given
  * expression. When necessary, grows by at least half of the current capacity.
  */
-static void reserve(Expression* const exp, ux const amount) {
-  ux const cap   = exp->all - exp->bgn;
-  ux const len   = expLen(*exp);
-  ux const space = cap - len;
+static void reserve(Expression* const exp, iptr const amount) {
+  iptr const cap   = exp->all - exp->bgn;
+  iptr const len   = expLen(*exp);
+  iptr const space = cap - len;
   if (space >= amount) return;
 
-  ux const growth    = amount - space;
-  ux const minGrowth = cap / 2;
-  ux const newCap    = cap + (growth < minGrowth ? minGrowth : growth);
+  iptr const growth    = amount - space;
+  iptr const minGrowth = cap / 2;
+  iptr const newCap    = cap + (growth < minGrowth ? minGrowth : growth);
   ExpressionNode* const mem =
     realloc(exp->bgn, newCap * sizeof(ExpressionNode));
   dbgExpect(mem, "Could not reallocate!");
@@ -79,10 +79,10 @@ nodeWrite(ExpressionNode const* const i, FILE* const stream) {
     }
     ExpressionNode const* ops[i->ary];
     ops[0] = nodeWrite(i - 1, NULL);
-    for (ux j = 1; j < i->ary; j++) ops[j] = nodeWrite(ops[j - 1], NULL);
+    for (iptr j = 1; j < i->ary; j++) ops[j] = nodeWrite(ops[j - 1], NULL);
     nodeWrite(ops[i->ary - 2], stream);
     lxmWrite(i->op.var.lop, stream);
-    for (ux j = i->ary - 2; j > 0; j--) {
+    for (iptr j = i->ary - 2; j > 0; j--) {
       nodeWrite(ops[j - 1], stream);
       lxmWrite(i->op.var.sep, stream);
     }
@@ -98,20 +98,20 @@ nodeWrite(ExpressionNode const* const i, FILE* const stream) {
  * string to the given stream. Returns the position after all the childeren of
  * the node. */
 static ExpressionNode const*
-nodeTree(ExpressionNode const* i, ux const depth, FILE* const stream) {
+nodeTree(ExpressionNode const* i, iptr const depth, FILE* const stream) {
   fprintf(stream, "%20s   ", opName(i->op));
-  for (ux j = 1; j < depth; j++) fprintf(stream, " |  ");
+  for (iptr j = 1; j < depth; j++) fprintf(stream, " |  ");
   if (depth > 0) fprintf(stream, " +- ");
   fprintf(stream, "`");
   strWrite(i->val, stream);
   fprintf(stream, "`\n");
-  ux const ary = i->ary;
+  iptr const ary = i->ary;
   i--;
-  for (ux j = 0; j < ary; j++) i = nodeTree(i, depth + 1, stream);
+  for (iptr j = 0; j < ary; j++) i = nodeTree(i, depth + 1, stream);
   return i;
 }
 
-Expression expOf(ux const cap) {
+Expression expOf(iptr const cap) {
   Expression res = {0};
   if (cap) reserve(&res, cap);
   return res;
@@ -124,9 +124,9 @@ void expFree(Expression* const exp) {
   exp->all = NULL;
 }
 
-ux expLen(Expression const exp) { return exp.end - exp.bgn; }
+iptr expLen(Expression const exp) { return exp.end - exp.bgn; }
 
-ExpressionNode expAt(Expression const exp, ux const i) { return exp.bgn[i]; }
+ExpressionNode expAt(Expression const exp, iptr const i) { return exp.bgn[i]; }
 
 void expAdd(Expression* const exp, ExpressionNode const node) {
   reserve(exp, 1);

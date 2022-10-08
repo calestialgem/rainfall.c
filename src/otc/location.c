@@ -29,7 +29,7 @@ Location locEnd(Location const loc) {
         .src = loc.src,
         .pos = i - 1,
         .ln  = loc.ln,
-        .cl  = loc.cl + i - 1 - loc.pos};
+        .cl  = (int)(loc.cl + i - 1 - loc.pos)};
 
   // Above loop should find a new line at worst at the end of the file.
   dbgUnexpected("File does not end with a new line!");

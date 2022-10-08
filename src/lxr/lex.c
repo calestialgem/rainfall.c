@@ -10,15 +10,15 @@
 
 /* Make sure the given amount of space exists at the end of the given lex.
  * When necessary, grows by at least half of the current capacity. */
-static void reserve(Lex* const lex, ux const amount) {
-  ux const cap   = lex->all - lex->bgn;
-  ux const len   = lexLen(*lex);
-  ux const space = cap - len;
+static void reserve(Lex* const lex, iptr const amount) {
+  iptr const cap   = lex->all - lex->bgn;
+  iptr const len   = lexLen(*lex);
+  iptr const space = cap - len;
   if (space >= amount) return;
 
-  ux const      growth    = amount - space;
-  ux const      minGrowth = cap / 2;
-  ux const      newCap    = cap + (growth < minGrowth ? minGrowth : growth);
+  iptr const    growth    = amount - space;
+  iptr const    minGrowth = cap / 2;
+  iptr const    newCap    = cap + (growth < minGrowth ? minGrowth : growth);
   Lexeme* const mem       = realloc(lex->bgn, newCap * sizeof(Lexeme));
   dbgExpect(mem, "Could not reallocate!");
 
@@ -40,9 +40,9 @@ void lexFree(Lex* const lex) {
   lex->all = NULL;
 }
 
-ux lexLen(Lex const lex) { return lex.end - lex.bgn; }
+iptr lexLen(Lex const lex) { return lex.end - lex.bgn; }
 
-Lexeme lexAt(Lex const lex, ux const i) { return lex.bgn[i]; }
+Lexeme lexAt(Lex const lex, iptr const i) { return lex.bgn[i]; }
 
 Lexeme const* lexBgn(Lex const lex) { return lex.bgn; }
 

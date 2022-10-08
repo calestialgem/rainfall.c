@@ -18,9 +18,9 @@ typedef struct {
   /* Source file that results belongs to. */
   Source src;
   /* Amount of errors orginated in the source file. */
-  u4     err;
+  int    err;
   /* Amount of warnings orginated in the source file. */
-  u4     wrn;
+  int    wrn;
 } Outcome;
 
 /* Load the source file at the given name. */
@@ -28,9 +28,9 @@ Source      srcOf(char const* name);
 /* Dispose the contents of the given source file. */
 void        srcFree(Source* src);
 /* Amount of characters in the given source file. */
-ux          srcLen(Source src);
+iptr        srcLen(Source src);
 /* Character at the given index in the given source file. */
-char        srcAt(Source src, ux i);
+char        srcAt(Source src, iptr i);
 /* Pointer to the first character of the contents of the given source file if it
  * exits. */
 char const* srcBgn(Source src);

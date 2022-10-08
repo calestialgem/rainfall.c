@@ -16,9 +16,9 @@ typedef struct {
   /* Pointer to the character. */
   char const* pos;
   /* Line number the character is at. */
-  u4          ln;
+  int         ln;
   /* Column number the character is at. */
-  u4          cl;
+  int         cl;
 } Location;
 
 /* Location of a part of a source file. */

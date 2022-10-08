@@ -23,7 +23,7 @@ static void print(Portion const por, FILE* const stream, bool const skip) {
 
   fprintf(stream, "\n%8s |", skip ? "..." : "");
 
-  for (ux i = 0; i <= por.end.cl; i++)
+  for (iptr i = 0; i <= por.end.cl; i++)
     fprintf(stream, "%c", i < por.bgn.cl ? ' ' : '~');
 
   fprintf(stream, "\n");
@@ -38,7 +38,7 @@ Portion porOf(Source const src, String const part) {
 }
 
 void porUnderline(Portion const por, FILE* const stream) {
-  u4 const span = por.end.ln - por.bgn.ln + 1;
+  int const span = por.end.ln - por.bgn.ln + 1;
   // If the portion is contained in a single line.
   if (span == 1) {
     print(por, stream, false);

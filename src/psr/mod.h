@@ -9,13 +9,13 @@
 #include "utl/api.h"
 
 /* Expression with the given initial node capacity. */
-Expression     expOf(ux cap);
+Expression     expOf(iptr cap);
 /* Release the memory resources used by the given expression. */
 void           expFree(Expression* exp);
 /* Amount of nodes in the given expression. */
-ux             expLen(Expression exp);
+iptr           expLen(Expression exp);
 /* Node at the given index in the given expression. */
-ExpressionNode expAt(Expression exp, ux i);
+ExpressionNode expAt(Expression exp, iptr i);
 /* Add the given node to the end of the given expression. */
 void           expAdd(Expression* exp, ExpressionNode node);
 /* Stream out the given expression as string to the given stream. */

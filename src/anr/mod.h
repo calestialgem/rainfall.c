@@ -8,6 +8,7 @@
 #include "utl/api.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 
 /* Dynamicly allocated, infinite precision, signed real. */
@@ -15,7 +16,7 @@ typedef struct {
   /* Significand that is an integer. */
   Buffer sig;
   /* Exponent whose base can vary. */
-  i8     exp;
+  int    exp;
 } Number;
 
 /* Whether the given types are equal. */
@@ -39,13 +40,13 @@ void        typeWrite(Type type, FILE* stream);
 void        valWrite(Type type, Value val, FILE* stream);
 
 /* Evaluation with the given initial node capacity. */
-Evaluation     evlOf(ux cap);
+Evaluation     evlOf(iptr cap);
 /* Release the memory resources used by the given evaluation. */
 void           evlFree(Evaluation* evl);
 /* Amount of nodes in the given evaluation. */
-ux             evlLen(Evaluation evl);
+iptr           evlLen(Evaluation evl);
 /* Node at the given index in the given evaluation. */
-EvaluationNode evlAt(Evaluation evl, ux i);
+EvaluationNode evlAt(Evaluation evl, iptr i);
 /* Add the given node to the end of the given evaluation. */
 void           evlAdd(Evaluation* evl, EvaluationNode node);
 /* Stream out the given evaluation as string to the given stream. */
@@ -65,9 +66,9 @@ bool           evlHas(Evaluation evl);
 bool symUsr(Symbol sym);
 
 /* Amount of symbols in the given table. */
-ux     tblLen(Table tbl);
+iptr   tblLen(Table tbl);
 /* Symbol at the given index in the given table. */
-Symbol tblAt(Table tbl, ux i);
+Symbol tblAt(Table tbl, iptr i);
 /* Add the given symbol to the end of the given table. */
 void   tblAdd(Table* tbl, Symbol sym);
 /* Remove the last added symbol from the given table. */
@@ -82,26 +83,35 @@ void   tblCnvAdd(Table* tbl, TypeConversion cnv);
 bool   tblCnv(Table tbl, Type src, Type des);
 
 /* Zero number. */
-Number numOfZero();
+Number   numOfZero();
 /* Release the memory resources used by the given number. */
-void   numFree(Number* num);
+void     numFree(Number* num);
 /* Parse the given decimal string into the given number. Returns true signaling
  * error, when the exponent has too many digits. */
-bool   numSetDec(Number* num, String str);
+bool     numSetDec(Number* num, String str);
 /* Comparison of the given number with the given value. Returns positive, zero,
  * or negative depending on whether the number is greater than, equals to, or
  * less than the given value, respectively. */
-i8     numCmp(Number num, u8 val);
+int      numCmp(Number num, uint64_t val);
 /* Whether the given number is an integer. */
-bool   numInt(Number num);
+bool     numIsInt(Number num);
 /* Value of the given number as integer. */
-u8     numU8(Number num);
-/* Value of the given number as floating-point. Number should be based in 2,
+uint64_t numAsInt(Number num);
+/* Whether the given number is a float. Number should be based in 2,
  * because floting-point exponents are based in 2. */
-f8     numF8(Number num);
+bool     numIsFloat(Number num);
+/* Whether the given number is a double. Number should be based in 2,
+ * because floting-point exponents are based in 2. */
+bool     numIsDouble(Number num);
+/* Value of the given number as a float. Number should be based in 2,
+ * because floting-point exponents are based in 2. */
+float    numAsFloat(Number num);
+/* Value of the given number as a double. Number should be based in 2,
+ * because floting-point exponents are based in 2. */
+double   numAsDouble(Number num);
 /* Stream out the given number with the given base and given exponent separator
  * as string to the given stream. */
-void   numWrite(Number num, u1 base, char exp, FILE* stream);
+void     numWrite(Number num, int base, char exp, FILE* stream);
 
 /* Analyze the given parse into the given table by reporting to the given
  * outcome. */

@@ -34,9 +34,9 @@ Source srcOf(char const* const name) {
 
 void srcFree(Source* const src) { bfrFree(&src->con); }
 
-ux srcLen(Source const src) { return bfrLen(src.con); }
+iptr srcLen(Source const src) { return bfrLen(src.con); }
 
-char srcAt(Source const src, ux const i) { return bfrAt(src.con, i); }
+char srcAt(Source const src, iptr const i) { return bfrAt(src.con, i); }
 
 char const* srcBgn(Source const src) { return src.con.bgn; }
 

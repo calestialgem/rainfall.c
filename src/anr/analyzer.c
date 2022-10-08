@@ -84,7 +84,7 @@ prepareBin(Operator const op, Type const out, Type const lin, Type const rin) {
  * and the given input types. */
 static void prepareVar(
   Operator const op, Type const out, Type const fin, Type* const rin,
-  ux const ary) {
+  iptr const ary) {
   tblOpnAdd(
     anr.tbl,
     (Operation){
@@ -101,83 +101,35 @@ static void prepareCnv(Type const src, Type const des) {
 
 /* Add the built-in symbols. */
 static void prepare() {
-  for (ux i = 0; i < TYPE_BUILT_LEN; i++) prepareType(TYPE_BUILT[i]);
+  for (iptr i = 0; i < TYPE_BUILT_LEN; i++) prepareType(TYPE_BUILT[i]);
 
   // Skips meta and void, for all scalars.
-  for (ux i = 2; i < TYPE_BUILT_LEN; i++)
+  for (iptr i = 2; i < TYPE_BUILT_LEN; i++)
     prepareCir(OP_GRP, TYPE_BUILT[i], TYPE_BUILT[i]);
 
-  Type const ARITHMETIC[] = {
-    TYPE_INS_I4, TYPE_INS_I8, TYPE_INS_IX,
-    TYPE_INS_U4, TYPE_INS_U8, TYPE_INS_UX,
-  };
-
   // Skips meta and void, for all scalars.
-  for (ux i = 2; i < TYPE_BUILT_LEN; i++)
+  for (iptr i = 2; i < TYPE_BUILT_LEN; i++)
     prepareCnv(TYPE_BUILT[i], TYPE_INS_VOID);
 
-  prepareCnv(TYPE_INS_I1, TYPE_INS_I2);
-  prepareCnv(TYPE_INS_I1, TYPE_INS_I4);
-  prepareCnv(TYPE_INS_I1, TYPE_INS_I8);
-  prepareCnv(TYPE_INS_I1, TYPE_INS_IX);
-  prepareCnv(TYPE_INS_I1, TYPE_INS_F4);
-  prepareCnv(TYPE_INS_I1, TYPE_INS_F8);
+  prepareCnv(TYPE_INS_BOOL, TYPE_INS_BYTE);
+  prepareCnv(TYPE_INS_BOOL, TYPE_INS_INT);
+  prepareCnv(TYPE_INS_BOOL, TYPE_INS_IPTR);
+  prepareCnv(TYPE_INS_BOOL, TYPE_INS_FLOAT);
+  prepareCnv(TYPE_INS_BOOL, TYPE_INS_DOUBLE);
 
-  prepareCnv(TYPE_INS_I2, TYPE_INS_I4);
-  prepareCnv(TYPE_INS_I2, TYPE_INS_I8);
-  prepareCnv(TYPE_INS_I2, TYPE_INS_IX);
-  prepareCnv(TYPE_INS_I2, TYPE_INS_F4);
-  prepareCnv(TYPE_INS_I2, TYPE_INS_F8);
+  prepareCnv(TYPE_INS_BYTE, TYPE_INS_INT);
+  prepareCnv(TYPE_INS_BYTE, TYPE_INS_IPTR);
+  prepareCnv(TYPE_INS_BYTE, TYPE_INS_FLOAT);
+  prepareCnv(TYPE_INS_BYTE, TYPE_INS_DOUBLE);
 
-  prepareCnv(TYPE_INS_I4, TYPE_INS_I8);
-  prepareCnv(TYPE_INS_I4, TYPE_INS_IX);
-  prepareCnv(TYPE_INS_I4, TYPE_INS_F4);
-  prepareCnv(TYPE_INS_I4, TYPE_INS_F8);
+  prepareCnv(TYPE_INS_INT, TYPE_INS_IPTR);
+  prepareCnv(TYPE_INS_INT, TYPE_INS_FLOAT);
+  prepareCnv(TYPE_INS_INT, TYPE_INS_DOUBLE);
 
-  prepareCnv(TYPE_INS_I8, TYPE_INS_IX);
-  prepareCnv(TYPE_INS_I8, TYPE_INS_F4);
-  prepareCnv(TYPE_INS_I8, TYPE_INS_F8);
+  prepareCnv(TYPE_INS_IPTR, TYPE_INS_FLOAT);
+  prepareCnv(TYPE_INS_IPTR, TYPE_INS_DOUBLE);
 
-  prepareCnv(TYPE_INS_IX, TYPE_INS_I8);
-  prepareCnv(TYPE_INS_IX, TYPE_INS_F4);
-  prepareCnv(TYPE_INS_IX, TYPE_INS_F8);
-
-  prepareCnv(TYPE_INS_U1, TYPE_INS_I2);
-  prepareCnv(TYPE_INS_U1, TYPE_INS_I4);
-  prepareCnv(TYPE_INS_U1, TYPE_INS_I8);
-  prepareCnv(TYPE_INS_U1, TYPE_INS_IX);
-  prepareCnv(TYPE_INS_U1, TYPE_INS_U2);
-  prepareCnv(TYPE_INS_U1, TYPE_INS_U4);
-  prepareCnv(TYPE_INS_U1, TYPE_INS_U8);
-  prepareCnv(TYPE_INS_U1, TYPE_INS_UX);
-  prepareCnv(TYPE_INS_U1, TYPE_INS_F4);
-  prepareCnv(TYPE_INS_U1, TYPE_INS_F8);
-
-  prepareCnv(TYPE_INS_U2, TYPE_INS_I4);
-  prepareCnv(TYPE_INS_U2, TYPE_INS_I8);
-  prepareCnv(TYPE_INS_U2, TYPE_INS_IX);
-  prepareCnv(TYPE_INS_U2, TYPE_INS_U4);
-  prepareCnv(TYPE_INS_U2, TYPE_INS_U8);
-  prepareCnv(TYPE_INS_U2, TYPE_INS_UX);
-  prepareCnv(TYPE_INS_U2, TYPE_INS_F4);
-  prepareCnv(TYPE_INS_U2, TYPE_INS_F8);
-
-  prepareCnv(TYPE_INS_U4, TYPE_INS_I8);
-  prepareCnv(TYPE_INS_U4, TYPE_INS_IX);
-  prepareCnv(TYPE_INS_U4, TYPE_INS_U8);
-  prepareCnv(TYPE_INS_U4, TYPE_INS_UX);
-  prepareCnv(TYPE_INS_U4, TYPE_INS_F4);
-  prepareCnv(TYPE_INS_U4, TYPE_INS_F8);
-
-  prepareCnv(TYPE_INS_U8, TYPE_INS_UX);
-  prepareCnv(TYPE_INS_U8, TYPE_INS_F4);
-  prepareCnv(TYPE_INS_U8, TYPE_INS_F8);
-
-  prepareCnv(TYPE_INS_UX, TYPE_INS_U8);
-  prepareCnv(TYPE_INS_UX, TYPE_INS_F4);
-  prepareCnv(TYPE_INS_UX, TYPE_INS_F8);
-
-  prepareCnv(TYPE_INS_F4, TYPE_INS_F8);
+  prepareCnv(TYPE_INS_FLOAT, TYPE_INS_DOUBLE);
 }
 
 // Prototype for recursive check of expressions.
@@ -214,12 +166,6 @@ checkAcs(ExpressionNode const* const node, Type const type) {
 /* Version of `checkNull` that takes `OP_DEC`s. */
 static ExpressionNode const*
 checkDec(ExpressionNode const* const node, Type const type) {
-  if (!typeScalar(type)) {
-    otcErr(
-      anr.otc, node->val, "Expected a `%s`, not a scalar!", typeName(type));
-    return NULL;
-  }
-
   bool const neg = strAt(node->val, 0) == '-';
   Number     num = numOfZero();
   if (numSetDec(
@@ -230,15 +176,15 @@ checkDec(ExpressionNode const* const node, Type const type) {
     return NULL;
   }
 
-#define parseSigned(TYPE, TYPE_INS, MAX)                                    \
+#define parseSigned(TYPE, TYPE_VAL, TYPE_INS, MAX)                          \
   if (typeEq(type, TYPE_INS)) {                                             \
-    if (!numInt(num)) {                                                     \
+    if (!numIsInt(num)) {                                                   \
       otcErr(                                                               \
         anr.otc, node->val, "Not an integer for integer type `%s`!",        \
         typeName(type));                                                    \
       return NULL;                                                          \
     }                                                                       \
-    i8 const cmp = numCmp(num, (u8)(MAX) + 1);                              \
+    int const cmp = numCmp(num, (uint64_t)(MAX) + 1);                       \
     if (cmp == 1 || (cmp == 0 && !neg)) {                                   \
       otcErr(anr.otc, node->val, "Out of bounds of `%s`!", typeName(type)); \
       return NULL;                                                          \
@@ -246,14 +192,14 @@ checkDec(ExpressionNode const* const node, Type const type) {
     EvaluationNode evl = {                                                  \
       .exp  = *node,                                                        \
       .type = type,                                                         \
-      .val  = {.TYPE = (TYPE)numU8(num)},                                   \
+      .val  = {.TYPE_VAL = (TYPE)numAsInt(num)},                            \
       .has  = true};                                                         \
-    if (neg) evl.val.TYPE = (TYPE)-evl.val.TYPE;                            \
+    if (neg) evl.val.TYPE_VAL = (TYPE)-evl.val.TYPE_VAL;                    \
     evlAdd(&anr.evl, evl);                                                  \
     goto success;                                                           \
   }
 
-#define parseUnsigned(TYPE, TYPE_INS, MAX)                                    \
+#define parseUnsigned(TYPE, TYPE_VAL, TYPE_INS, MAX)                          \
   if (typeEq(type, TYPE_INS)) {                                               \
     if (!numInt(num)) {                                                       \
       otcErr(                                                                 \
@@ -261,7 +207,7 @@ checkDec(ExpressionNode const* const node, Type const type) {
         typeName(type));                                                      \
       return NULL;                                                            \
     }                                                                         \
-    i8 const cmp = numCmp(num, MAX);                                          \
+    int const cmp = numCmp(num, MAX);                                         \
     if (cmp == 1) {                                                           \
       otcErr(anr.otc, node->val, "Out of bounds of `%s`!", typeName(type));   \
       return NULL;                                                            \
@@ -269,9 +215,9 @@ checkDec(ExpressionNode const* const node, Type const type) {
     EvaluationNode evl = {                                                    \
       .exp  = *node,                                                          \
       .type = type,                                                           \
-      .val  = {.TYPE = (TYPE)numU8(num)},                                     \
+      .val  = {.TYPE_VAL = (TYPE)numU8(num)},                                 \
       .has  = true};                                                           \
-    if (neg && evl.val.TYPE != 0) {                                           \
+    if (neg && evl.val.TYPE_VAL != 0) {                                       \
       otcErr(                                                                 \
         anr.otc, node->val, "Negative value for unsigned integer type `%s`!", \
         typeName(type));                                                      \
@@ -281,32 +227,33 @@ checkDec(ExpressionNode const* const node, Type const type) {
     goto success;                                                             \
   }
 
-#define parseFloat(TYPE, TYPE_INS)         \
-  if (typeEq(type, TYPE_INS)) {            \
-    EvaluationNode evl = {                 \
-      .exp  = *node,                       \
-      .type = type,                        \
-      .val  = {.TYPE = (TYPE)numF8(num)},  \
-      .has  = true};                        \
-    if (neg) evl.val.TYPE = -evl.val.TYPE; \
-    evlAdd(&anr.evl, evl);                 \
-    goto success;                          \
+#define parseFloat(TYPE, TYPE_VAL, TYPE_INS, NUM_PARSE) \
+  if (typeEq(type, TYPE_INS)) {                         \
+    EvaluationNode evl = {                              \
+      .exp  = *node,                                    \
+      .type = type,                                     \
+      .val  = {.TYPE_VAL = NUM_PARSE(num)},             \
+      .has  = true};                                     \
+    if (neg) evl.val.TYPE_VAL = -evl.val.TYPE_VAL;      \
+    evlAdd(&anr.evl, evl);                              \
+    goto success;                                       \
   }
 
-  parseSigned(i1, TYPE_INS_I1, INT8_MAX);
-  parseSigned(i2, TYPE_INS_I2, INT16_MAX);
-  parseSigned(i4, TYPE_INS_I4, INT32_MAX);
-  parseSigned(i8, TYPE_INS_I8, INT64_MAX);
-  parseSigned(ix, TYPE_INS_IX, INTPTR_MAX);
+  if (typeEq(type, TYPE_INS_BOOL)) {
+    EvaluationNode evl = {
+      .exp = *node, .type = type, .val = {.vbool = numAsInt(num)}, .has = true};
+    evlAdd(&anr.evl, evl);
+  }
 
-  parseUnsigned(u1, TYPE_INS_U1, UINT8_MAX);
-  parseUnsigned(u2, TYPE_INS_U2, UINT16_MAX);
-  parseUnsigned(u4, TYPE_INS_U4, UINT32_MAX);
-  parseUnsigned(u8, TYPE_INS_U8, UINT64_MAX);
-  parseUnsigned(ux, TYPE_INS_UX, UINTPTR_MAX);
+  parseSigned(char, byte, TYPE_INS_BYTE, INT8_MAX);
+  parseSigned(int, vint, TYPE_INS_INT, INT_MAX);
+  parseSigned(iptr, iptr, TYPE_INS_IPTR, PTRDIFF_MAX);
+  parseFloat(float, vfloat, TYPE_INS_FLOAT, numAsFloat);
+  parseFloat(double, vdouble, TYPE_INS_DOUBLE, numAsDouble);
 
-  parseFloat(f4, TYPE_INS_F4);
-  parseFloat(f8, TYPE_INS_F8);
+  otcErr(anr.otc, node->val, "Expected a `%s`, not a number!", typeName(type));
+  numFree(&num);
+  return NULL;
 
 #undef parseSigned
 #undef parseUnsigned

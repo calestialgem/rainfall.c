@@ -8,27 +8,27 @@
 #include <stdlib.h>
 
 /* Amount of allocated strings in the given set. */
-static ux setCap(Set const set) { return set.end - set.bgn; }
+static iptr setCap(Set const set) { return set.end - set.bgn; }
 
 /* Whether the given set should grow before adding a new string. */
 static bool shouldGrow(Set const set) {
-  f8 const MIN_RATIO = 0.5;
-  ux const cap       = setCap(set);
-  return cap == 0 || (f8)set.len / (f8)cap >= MIN_RATIO;
+  double const MIN_RATIO = 0.5;
+  iptr const   cap       = setCap(set);
+  return cap == 0 || (double)set.len / (double)cap >= MIN_RATIO;
 }
 
 /* Multiply the capacity of the given set by 16. */
 static void grow(Set* const set) {
-  ux const MULTIPLIER = 16;
-  ux const cap        = setCap(*set);
-  Set new             = setOf(cap < MULTIPLIER ? MULTIPLIER : cap * MULTIPLIER);
+  iptr const MULTIPLIER = 16;
+  iptr const cap        = setCap(*set);
+  Set new = setOf(cap < MULTIPLIER ? MULTIPLIER : cap * MULTIPLIER);
   for (String const* i = set->bgn; i < set->end; i++)
     if (strLen(*i)) setPut(&new, *i);
   setFree(set);
   *set = new;
 }
 
-Set setOf(ux const cap) {
+Set setOf(iptr const cap) {
   Set res = {0};
   if (cap) {
     res.bgn = calloc(cap, sizeof(String));
@@ -47,10 +47,10 @@ void setFree(Set* const set) {
 
 void setPut(Set* const set, String const str) {
   if (shouldGrow(*set)) grow(set);
-  ux const cap  = setCap(*set);
-  ux const hash = strHash(str);
-  for (ux i = 0; i < cap; i++) {
-    ux const index = (hash + i) % cap;
+  iptr const cap  = setCap(*set);
+  iptr const hash = strHash(str);
+  for (iptr i = 0; i < cap; i++) {
+    iptr const index = (hash + i) % cap;
     if (!strLen(set->bgn[index])) {
       set->bgn[index] = str;
       set->len++;
@@ -61,10 +61,10 @@ void setPut(Set* const set, String const str) {
 }
 
 String const* setGet(Set const set, String const str) {
-  ux const cap  = setCap(set);
-  ux const hash = strHash(str);
-  for (ux i = 0; i < cap; i++) {
-    ux const index = (hash + i) % cap;
+  iptr const cap  = setCap(set);
+  iptr const hash = strHash(str);
+  for (iptr i = 0; i < cap; i++) {
+    iptr const index = (hash + i) % cap;
     if (strEq(set.bgn[index], str)) return set.bgn + index;
   }
   return NULL;

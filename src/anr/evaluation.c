@@ -12,15 +12,15 @@
 /* Make sure the given amount of space exists at the end of the given
  * evaluation. When necessary, grows by at least half of the current capacity.
  */
-static void reserve(Evaluation* const evl, ux const amount) {
-  ux const cap   = evl->all - evl->bgn;
-  ux const len   = evlLen(*evl);
-  ux const space = cap - len;
+static void reserve(Evaluation* const evl, iptr const amount) {
+  iptr const cap   = evl->all - evl->bgn;
+  iptr const len   = evlLen(*evl);
+  iptr const space = cap - len;
   if (space >= amount) return;
 
-  ux const growth    = amount - space;
-  ux const minGrowth = cap / 2;
-  ux const newCap    = cap + (growth < minGrowth ? minGrowth : growth);
+  iptr const growth    = amount - space;
+  iptr const minGrowth = cap / 2;
+  iptr const newCap    = cap + (growth < minGrowth ? minGrowth : growth);
   EvaluationNode* const mem =
     realloc(evl->bgn, newCap * sizeof(EvaluationNode));
   dbgExpect(mem, "Could not reallocate!");
@@ -105,10 +105,10 @@ nodeWrite(EvaluationNode const* const i, FILE* const stream) {
     }
     EvaluationNode const* ops[i->exp.ary];
     ops[0] = nodeWrite(i - 1, NULL);
-    for (ux j = 1; j < i->exp.ary; j++) ops[j] = nodeWrite(ops[j - 1], NULL);
+    for (iptr j = 1; j < i->exp.ary; j++) ops[j] = nodeWrite(ops[j - 1], NULL);
     nodeWrite(ops[i->exp.ary - 2], stream);
     lxmWrite(i->exp.op.var.lop, stream);
-    for (ux j = i->exp.ary - 2; j > 0; j--) {
+    for (iptr j = i->exp.ary - 2; j > 0; j--) {
       nodeWrite(ops[j - 1], stream);
       lxmWrite(i->exp.op.var.sep, stream);
     }
@@ -131,9 +131,9 @@ nodeWrite(EvaluationNode const* const i, FILE* const stream) {
  * string to the given stream. Returns the position after all the childeren of
  * the node. */
 static EvaluationNode const*
-nodeTree(EvaluationNode const* i, ux const depth, FILE* const stream) {
+nodeTree(EvaluationNode const* i, iptr const depth, FILE* const stream) {
   fprintf(stream, "%20s   ", opName(i->exp.op));
-  for (ux j = 1; j < depth; j++) fprintf(stream, " |  ");
+  for (iptr j = 1; j < depth; j++) fprintf(stream, " |  ");
   if (depth > 0) fprintf(stream, " +- ");
   fprintf(stream, "`");
   strWrite(i->exp.val, stream);
@@ -142,13 +142,13 @@ nodeTree(EvaluationNode const* i, ux const depth, FILE* const stream) {
     valWrite(i->type, i->val, stream);
   }
   fprintf(stream, "`\n");
-  ux const ary = i->exp.ary;
+  iptr const ary = i->exp.ary;
   i--;
-  for (ux j = 0; j < ary; j++) i = nodeTree(i, depth + 1, stream);
+  for (iptr j = 0; j < ary; j++) i = nodeTree(i, depth + 1, stream);
   return i;
 }
 
-Evaluation evlOf(ux const cap) {
+Evaluation evlOf(iptr const cap) {
   Evaluation res = {0};
   if (cap) reserve(&res, cap);
   return res;
@@ -161,9 +161,9 @@ void evlFree(Evaluation* const evl) {
   evl->all = NULL;
 }
 
-ux evlLen(Evaluation const evl) { return evl.end - evl.bgn; }
+iptr evlLen(Evaluation const evl) { return evl.end - evl.bgn; }
 
-EvaluationNode evlAt(Evaluation const evl, ux const i) { return evl.bgn[i]; }
+EvaluationNode evlAt(Evaluation const evl, iptr const i) { return evl.bgn[i]; }
 
 void evlAdd(Evaluation* const evl, EvaluationNode const node) {
   reserve(evl, 1);

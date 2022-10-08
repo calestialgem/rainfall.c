@@ -57,7 +57,7 @@ static bool take(char const c) {
 /* Whether the next characters are the same as the given string. Consumes the
  * characters if true. */
 static bool check(String const str) {
-  for (ux i = 0; i < strLen(str); i++)
+  for (iptr i = 0; i < strLen(str); i++)
     if (!has() || lxr.cur[i] != strAt(str, i)) return false;
   lxr.cur += strLen(str);
   return true;
@@ -112,7 +112,7 @@ static bool mark() {
     strOf(">>"), strOf(">="), strOf(">"),  strOf("=="), strOf("="),
     strOf("!="), strOf("!"),  strOf("~")};
 
-  for (ux i = 0; i < LENGTH; i++) {
+  for (iptr i = 0; i < LENGTH; i++) {
     if (check(MARKS[i])) {
       add(val(old), LXM_COMMA + i);
       return true;
@@ -147,7 +147,7 @@ static bool word() {
 #define LENGTH 2
   String const KEYWORDS[LENGTH] = {strOf("let"), strOf("var")};
 
-  for (ux i = 0; i < LENGTH; i++) {
+  for (iptr i = 0; i < LENGTH; i++) {
     if (strEq(word, KEYWORDS[i])) {
       add(word, LXM_LET + i);
       return true;

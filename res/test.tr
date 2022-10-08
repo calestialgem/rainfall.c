@@ -1,17 +1,17 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-var a: i4 = 200.0e-1;
-let b: i4 = -5.1e2;
-let c: i4 = a + a*b + b;
-let d: i4 = 1*2/(3+4)%5-6;
+var a: int = 200.0e-1;
+let b: int = -5.1e2;
+let c: int = a + a*b + b;
+let d: int = 1*2/(3+4)%5-6;
 
-let pi: f8 = +3.14;
-let e : f8 = +2.72;
-let r : f8 = pi/r;
+let pi: double = +3.14;
+let e : double = +2.72;
+let r : double = pi/r;
 
-var someVariable     : i4 = 000_017_350_00;
-var someOtherVariable: i4;
+var someVariable     : int = 000_017_350_00;
+var someOtherVariable: int;
 
 someOtherVariable = someVariable * 2 + 70e+5;
 
@@ -21,7 +21,7 @@ a = func(3);
 
 someVariable = a++ * --someOtherVariable;
 
-var nice: i4 = 7;
+var nice: int = 7;
 nice += 1;    // 8
 nice /= 2;    // 4
 nice %= 3;    // 1
@@ -43,9 +43,9 @@ boolean = !boolean;
 
 someOtherVariable = ~someVariable;
 
-let shifty0 : i4 = 1 << 4;
-let shifty1 : i4 = shifty0 >> 2;
-var shifty2 : i4 = ~shifty1;
+let shifty0 : int = 1 << 4;
+let shifty1 : int = shifty0 >> 2;
+var shifty2 : int = ~shifty1;
 shifty2 <<= 4;
 shifty2 >>= 3;
 
@@ -62,5 +62,5 @@ comp ^= shortCircuit;
 comp &= shortCircuit;
 comp |= shortCircuit;
 
-let MASK : i4 = 1 << 5;
+let MASK : int = 1 << 5;
 var res: bool = a & MASK != 1 << 2;

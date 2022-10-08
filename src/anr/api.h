@@ -15,30 +15,18 @@ typedef enum {
   TYPE_META,
   /* Void type. */
   TYPE_VOID,
-  /* I1 type. */
-  TYPE_I1,
-  /* I2 type. */
-  TYPE_I2,
-  /* I4 type. */
-  TYPE_I4,
-  /* I8 type. */
-  TYPE_I8,
-  /* IX type. */
-  TYPE_IX,
-  /* U1 type. */
-  TYPE_U1,
-  /* U2 type. */
-  TYPE_U2,
-  /* U4 type. */
-  TYPE_U4,
-  /* U8 type. */
-  TYPE_U8,
-  /* UX type. */
-  TYPE_UX,
-  /* F4 type. */
-  TYPE_F4,
-  /* F8 type. */
-  TYPE_F8
+  /* Boolean algebra integer type. */
+  TYPE_BOOL,
+  /* Smallest addressable integer type. */
+  TYPE_BYTE,
+  /* Signed, word integer type. */
+  TYPE_INT,
+  /* Signed, index and size integer type. */
+  TYPE_IPTR,
+  /* Single precision floating-point real type. */
+  TYPE_FLOAT,
+  /* Double precision floating-point real type. */
+  TYPE_DOUBLE,
 } TypeTag;
 
 /* Meaning of a value. */
@@ -59,32 +47,20 @@ typedef struct {
 
 /* Value. */
 typedef union {
-  /* Value of a meta type. */
-  Type meta;
-  /* Value of a i1 type. */
-  i1   i1;
-  /* Value of a i2 type. */
-  i2   i2;
-  /* Value of a i4 type. */
-  i4   i4;
-  /* Value of a i8 type. */
-  i8   i8;
-  /* Value of a ix type. */
-  ix   ix;
-  /* Value of a u1 type. */
-  u1   u1;
-  /* Value of a u2 type. */
-  u2   u2;
-  /* Value of a u4 type. */
-  u4   u4;
-  /* Value of a u8 type. */
-  u8   u8;
-  /* Value of a ux type. */
-  ux   ux;
-  /* Value of a f4 type. */
-  f4   f4;
-  /* Value of a f8 type. */
-  f8   f8;
+  /* Value of meta type. */
+  Type   meta;
+  /* Value of bool type. */
+  bool   vbool;
+  /* Value of byte type. */
+  char   byte;
+  /* Value of int type. */
+  int    vint;
+  /* Value of iptr type. */
+  iptr   iptr;
+  /* Value of float type. */
+  float  vfloat;
+  /* Value of double type. */
+  double vdouble;
 } Value;
 
 /* Semantic representation of an expression node. */
@@ -154,7 +130,7 @@ typedef struct {
   /* Types of the remaining operands. */
   Type* rin;
   /* Amound of operands. */
-  ux    ary;
+  iptr  ary;
 } VariaryOperation;
 
 /* Semantic rule of using an operator on types. */
@@ -217,33 +193,21 @@ typedef struct {
 extern Type const TYPE_INS_META;
 /* Instance of void type. */
 extern Type const TYPE_INS_VOID;
-/* Instance of i1 type. */
-extern Type const TYPE_INS_I1;
-/* Instance of i2 type. */
-extern Type const TYPE_INS_I2;
-/* Instance of i4 type. */
-extern Type const TYPE_INS_I4;
-/* Instance of i8 type. */
-extern Type const TYPE_INS_I8;
-/* Instance of ix type. */
-extern Type const TYPE_INS_IX;
-/* Instance of u1 type. */
-extern Type const TYPE_INS_U1;
-/* Instance of u2 type. */
-extern Type const TYPE_INS_U2;
-/* Instance of u4 type. */
-extern Type const TYPE_INS_U4;
-/* Instance of u8 type. */
-extern Type const TYPE_INS_U8;
-/* Instance of ux type. */
-extern Type const TYPE_INS_UX;
-/* Instance of f4 type. */
-extern Type const TYPE_INS_F4;
-/* Instance of f8 type. */
-extern Type const TYPE_INS_F8;
+/* Instance of bool type. */
+extern Type const TYPE_INS_BOOL;
+/* Instance of byte type. */
+extern Type const TYPE_INS_BYTE;
+/* Instance of int type. */
+extern Type const TYPE_INS_INT;
+/* Instance of iptr type. */
+extern Type const TYPE_INS_IPTR;
+/* Instance of float type. */
+extern Type const TYPE_INS_FLOAT;
+/* Instance of double type. */
+extern Type const TYPE_INS_DOUBLE;
 
 /* Amount of built-in types. */
-#define TYPE_BUILT_LEN 14
+#define TYPE_BUILT_LEN 8
 /* Array of built-in types. */
 extern Type const TYPE_BUILT[TYPE_BUILT_LEN];
 

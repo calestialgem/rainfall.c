@@ -12,15 +12,15 @@
 
 /* Make sure the given amount of space exists at the end of the given parse.
  * When necessary, grows by at least half of the current capacity. */
-static void reserve(Parse* const prs, ux const amount) {
-  ux const cap   = prs->all - prs->bgn;
-  ux const len   = prsLen(*prs);
-  ux const space = cap - len;
+static void reserve(Parse* const prs, iptr const amount) {
+  iptr const cap   = prs->all - prs->bgn;
+  iptr const len   = prsLen(*prs);
+  iptr const space = cap - len;
   if (space >= amount) return;
 
-  ux const         growth    = amount - space;
-  ux const         minGrowth = cap / 2;
-  ux const         newCap    = cap + (growth < minGrowth ? minGrowth : growth);
+  iptr const       growth    = amount - space;
+  iptr const       minGrowth = cap / 2;
+  iptr const       newCap    = cap + (growth < minGrowth ? minGrowth : growth);
   Statement* const mem       = realloc(prs->bgn, newCap * sizeof(Statement));
   dbgExpect(mem, "Could not reallocate!");
 
@@ -58,9 +58,9 @@ void prsFree(Parse* const prs) {
   prs->all = NULL;
 }
 
-ux prsLen(Parse const prs) { return prs.end - prs.bgn; }
+iptr prsLen(Parse const prs) { return prs.end - prs.bgn; }
 
-Statement prsAt(Parse const prs, ux const i) { return prs.bgn[i]; }
+Statement prsAt(Parse const prs, iptr const i) { return prs.bgn[i]; }
 
 void prsWrite(Parse const prs, FILE* const stream) {
   for (Statement const* i = prs.bgn; i < prs.end; i++) {

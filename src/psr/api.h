@@ -95,7 +95,7 @@ typedef struct {
   Operator op;
   /* Amount of operands, which are the nodes that come before this one in the
    * expression's array. */
-  ux       ary;
+  iptr     ary;
   /* Combined value of all the lexemes of the expression. */
   String   val;
 } ExpressionNode;
@@ -334,7 +334,7 @@ extern Operator const OP_SHORT_OR[OP_LOGOR_LEN];
 /* Amount of operator precedence levels. */
 #define OP_ORDER_LEN 12
 /* Amounts of operators in precedence levels. */
-extern ux const              OP_LEVEL_LEN[OP_ORDER_LEN];
+extern iptr const            OP_LEVEL_LEN[OP_ORDER_LEN];
 /* Precedence levels of operators from low to high. */
 extern Operator const* const OP_ORDER[OP_ORDER_LEN];
 
@@ -365,8 +365,8 @@ Parse     prsOf(Outcome* otc, Lex lex);
 /* Release the memory resources used by the given parse. */
 void      prsFree(Parse* prs);
 /* Amount of statements in the given parse. */
-ux        prsLen(Parse prs);
+iptr      prsLen(Parse prs);
 /* Statement at the given index in the given parse. */
-Statement prsAt(Parse prs, ux i);
+Statement prsAt(Parse prs, iptr i);
 /* Stream out the given parse as string to the given stream. */
 void      prsWrite(Parse prs, FILE* stream);

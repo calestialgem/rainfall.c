@@ -11,15 +11,15 @@
 
 /* Make sure the given amount of symbol space exists at the end of the given
  * table. When necessary, grows by at least half of the current capacity. */
-static void symReserve(Table* const tbl, ux const amount) {
-  ux const cap   = tbl->sym.all - tbl->sym.bgn;
-  ux const len   = tblLen(*tbl);
-  ux const space = cap - len;
+static void symReserve(Table* const tbl, iptr const amount) {
+  iptr const cap   = tbl->sym.all - tbl->sym.bgn;
+  iptr const len   = tblLen(*tbl);
+  iptr const space = cap - len;
   if (space >= amount) return;
 
-  ux const      growth    = amount - space;
-  ux const      minGrowth = cap / 2;
-  ux const      newCap    = cap + (growth < minGrowth ? minGrowth : growth);
+  iptr const    growth    = amount - space;
+  iptr const    minGrowth = cap / 2;
+  iptr const    newCap    = cap + (growth < minGrowth ? minGrowth : growth);
   Symbol* const mem       = realloc(tbl->sym.bgn, newCap * sizeof(Symbol));
   dbgExpect(mem, "Could not reallocate!");
 
@@ -30,15 +30,15 @@ static void symReserve(Table* const tbl, ux const amount) {
 
 /* Make sure the given amount of operation space exists at the end of the given
  * table. When necessary, grows by at least half of the current capacity. */
-static void opnReserve(Table* const tbl, ux const amount) {
-  ux const cap   = tbl->opn.all - tbl->opn.bgn;
-  ux const len   = tbl->opn.end - tbl->opn.bgn;
-  ux const space = cap - len;
+static void opnReserve(Table* const tbl, iptr const amount) {
+  iptr const cap   = tbl->opn.all - tbl->opn.bgn;
+  iptr const len   = tbl->opn.end - tbl->opn.bgn;
+  iptr const space = cap - len;
   if (space >= amount) return;
 
-  ux const         growth    = amount - space;
-  ux const         minGrowth = cap / 2;
-  ux const         newCap    = cap + (growth < minGrowth ? minGrowth : growth);
+  iptr const       growth    = amount - space;
+  iptr const       minGrowth = cap / 2;
+  iptr const       newCap    = cap + (growth < minGrowth ? minGrowth : growth);
   Operation* const mem = realloc(tbl->opn.bgn, newCap * sizeof(Operation));
   dbgExpect(mem, "Could not reallocate!");
 
@@ -49,15 +49,15 @@ static void opnReserve(Table* const tbl, ux const amount) {
 
 /* Make sure the given amount of conversion space exists at the end of the given
  * table. When necessary, grows by at least half of the current capacity. */
-static void cnvReserve(Table* const tbl, ux const amount) {
-  ux const cap   = tbl->cnv.all - tbl->cnv.bgn;
-  ux const len   = tbl->cnv.end - tbl->cnv.bgn;
-  ux const space = cap - len;
+static void cnvReserve(Table* const tbl, iptr const amount) {
+  iptr const cap   = tbl->cnv.all - tbl->cnv.bgn;
+  iptr const len   = tbl->cnv.end - tbl->cnv.bgn;
+  iptr const space = cap - len;
   if (space >= amount) return;
 
-  ux const growth    = amount - space;
-  ux const minGrowth = cap / 2;
-  ux const newCap    = cap + (growth < minGrowth ? minGrowth : growth);
+  iptr const growth    = amount - space;
+  iptr const minGrowth = cap / 2;
+  iptr const newCap    = cap + (growth < minGrowth ? minGrowth : growth);
   TypeConversion* const mem =
     realloc(tbl->cnv.bgn, newCap * sizeof(TypeConversion));
   dbgExpect(mem, "Could not reallocate!");
@@ -81,9 +81,9 @@ void tblFree(Table* const tbl) {
   tbl->sym.all = NULL;
 }
 
-ux tblLen(Table const tbl) { return tbl.sym.end - tbl.sym.bgn; }
+iptr tblLen(Table const tbl) { return tbl.sym.end - tbl.sym.bgn; }
 
-Symbol tblAt(Table const tbl, ux const i) { return tbl.sym.bgn[i]; }
+Symbol tblAt(Table const tbl, iptr const i) { return tbl.sym.bgn[i]; }
 
 void tblWrite(Table const tbl, FILE* const stream) {
   for (Symbol const* i = tbl.sym.bgn; i < tbl.sym.end; i++) {

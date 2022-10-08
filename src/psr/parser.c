@@ -85,7 +85,7 @@ static String lxmJoin(Lexeme const old) { return strJoin(old.val); }
 static String expJoin(ExpressionNode const node) { return strJoin(node.val); }
 
 /* Add a new expression node with the given operator, arity and value. */
-static void expNodeAdd(Operator const op, ux const ary, String const val) {
+static void expNodeAdd(Operator const op, iptr const ary, String const val) {
   expAdd(&psr.exp, (ExpressionNode){.op = op, .ary = ary, .val = val});
 }
 
@@ -102,7 +102,7 @@ static Expression expGet() {
 }
 
 // Prototype to recursivly parse expressions.
-static Result exp(ux lvl);
+static Result exp(iptr lvl);
 
 /* Try to parse a nullary expression node. */
 static Result expNodeNull(NullaryOperator const null, bool const has) {
@@ -114,7 +114,7 @@ static Result expNodeNull(NullaryOperator const null, bool const has) {
 
 /* Try to parse a prenary expression node. */
 static Result
-expNodePre(PrenaryOperator const pre, ux const lvl, bool const has) {
+expNodePre(PrenaryOperator const pre, iptr const lvl, bool const has) {
   Lexeme const old = get();
   if (has || !consume(pre.op)) return NO;
   switch (exp(lvl)) {
@@ -161,7 +161,7 @@ static Result expNodeCir(CirnaryOperator const cir, bool const has) {
 
 /* Try to parse a binary expression node. */
 static Result
-expNodeBin(BinaryOperator const bin, ux const lvl, bool const has) {
+expNodeBin(BinaryOperator const bin, iptr const lvl, bool const has) {
   if (!has || !consume(bin.op)) return NO;
   ExpressionNode const old = expNodeGet();
   switch (exp(lvl + 1)) {
@@ -194,7 +194,7 @@ static Result expNodeVar(VariaryOperator const var, bool const has) {
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
-  ux ary = 2;
+  iptr ary = 2;
   while (true) {
     if (consume(var.rop)) break;
     if (!consume(var.sep)) {
@@ -219,7 +219,7 @@ static Result expNodeVar(VariaryOperator const var, bool const has) {
 }
 
 /* Try to parse an expression node. */
-static Result expNode(ux const lvl, ux const i, bool const has) {
+static Result expNode(iptr const lvl, iptr const i, bool const has) {
   Operator const op = OP_ORDER[lvl][i];
   switch (op.tag) {
   case OP_NULL: return expNodeNull(op.null, has);
@@ -233,10 +233,10 @@ static Result expNode(ux const lvl, ux const i, bool const has) {
 }
 
 /* Try to parse an expression. */
-static Result exp(ux const lvl) {
+static Result exp(iptr const lvl) {
   Result parsed = NO;
-  for (ux i = lvl; i < OP_ORDER_LEN; i++) {
-    for (ux j = 0; j < OP_LEVEL_LEN[i]; j++) {
+  for (iptr i = lvl; i < OP_ORDER_LEN; i++) {
+    for (iptr j = 0; j < OP_LEVEL_LEN[i]; j++) {
       switch (expNode(i, j, parsed == YES)) {
       case YES:
         parsed = YES;
@@ -401,7 +401,7 @@ static Result cas() {
 
   Operator op = {0};
 
-  for (ux i = 0; i < OP_COMPOUND_LEN; i++) {
+  for (iptr i = 0; i < OP_COMPOUND_LEN; i++) {
     Operator const test = OP_COMPOUND[i];
     if (test.tag != OP_BIN || !consume(test.bin.op)) continue;
     op = test;
@@ -445,7 +445,7 @@ static Result statement() {
 #define OPERATIONS \
   (operation[OPERATIONS_LEN]) { &let, &var, &ass, &cas }
 
-  for (ux i = 0; i < OPERATIONS_LEN; i++) {
+  for (iptr i = 0; i < OPERATIONS_LEN; i++) {
     Result const res = OPERATIONS[i]();
     if (res != NO) return res;
   }
