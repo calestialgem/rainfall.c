@@ -139,7 +139,8 @@ static Result expNodePost(PostaryOperator const post, bool const has) {
 static Result expNodeCir(CirnaryOperator const cir, bool const has) {
   Lexeme const old = get();
   if (has || !consume(cir.lop)) return NO;
-  switch (exp(0)) {
+  // Skip assignment level.
+  switch (exp(1)) {
   case YES: break;
   case NO:
     otcErr(
@@ -180,7 +181,8 @@ static Result expNodeVar(VariaryOperator const var, bool const has) {
   Lexeme const open = get();
   if (!has || !consume(var.lop)) return NO;
   ExpressionNode const old = expNodeGet();
-  switch (exp(0)) {
+  // Skip assignment level.
+  switch (exp(1)) {
   case YES: break;
   case NO:
     if (consume(var.rop)) {
@@ -204,7 +206,8 @@ static Result expNodeVar(VariaryOperator const var, bool const has) {
       otcInfo(*psr.otc, open.val, "Opened here.");
       return ERR;
     }
-    switch (exp(0)) {
+    // Skip assignment level.
+    switch (exp(1)) {
     case YES: ary++; continue;
     case NO:
       otcErr(
@@ -268,31 +271,29 @@ static Result let() {
   }
   Lexeme const name = take();
 
-  if (!consume(LXM_COLON)) {
-    otcErr(psr.otc, lxmJoin(old), "Expected a `:` in the definition!");
-    return ERR;
+  Expression type = expOf(0);
+  if (consume(LXM_COLON)) {
+    // Skip assignment level.
+    switch (exp(1)) {
+    case YES: break;
+    case NO:
+      otcErr(psr.otc, lxmJoin(old), "Expected a type in the definition!");
+    case ERR: return ERR;
+    default: dbgUnexpected("Unknown parse result!");
+    }
+    expGet();
   }
-
-  switch (exp(0)) {
-  case YES: break;
-  case NO:
-    otcErr(
-      psr.otc, lxmJoin(old), "Expected a type expression in the definition!");
-  case ERR: return ERR;
-  default: dbgUnexpected("Unknown parse result!");
-  }
-  Expression const type = expGet();
 
   if (!consume(LXM_EQUAL)) {
-    otcErr(psr.otc, lxmJoin(old), "Expected a `=` in the definition!");
+    otcErr(
+      psr.otc, lxmJoin(old), "Expected a `=` and a value in the definition!");
     return ERR;
   }
 
-  switch (exp(0)) {
+  // Skip assignment level.
+  switch (exp(1)) {
   case YES: break;
-  case NO:
-    otcErr(
-      psr.otc, lxmJoin(old), "Expected a value expression in the definition!");
+  case NO: otcErr(psr.otc, lxmJoin(old), "Expected a value in the definition!");
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
@@ -319,39 +320,37 @@ static Result var() {
   }
   Lexeme const name = take();
 
-  if (!consume(LXM_COLON)) {
-    otcErr(psr.otc, lxmJoin(old), "Expected a `:` in the definition!");
+  Expression type = expOf(0);
+  if (consume(LXM_COLON)) {
+    // Skip assignment level.
+    switch (exp(1)) {
+    case YES: break;
+    case NO:
+      otcErr(psr.otc, lxmJoin(old), "Expected a type in the definition!");
+    case ERR: return ERR;
+    default: dbgUnexpected("Unknown parse result!");
+    }
+    type = expGet();
+  }
+
+  Expression val = expOf(0);
+  if (consume(LXM_EQUAL)) {
+    // Skip assignment level.
+    switch (exp(1)) {
+    case YES: break;
+    case NO:
+      otcErr(psr.otc, lxmJoin(old), "Expected a value in the definition!");
+    case ERR: return ERR;
+    default: dbgUnexpected("Unknown parse result!");
+    }
+    val = expGet();
+  }
+
+  if (!expLen(type) && !expLen(val)) {
+    otcErr(
+      psr.otc, lxmJoin(old), "Expected a type or value in the definition!");
     return ERR;
   }
-
-  switch (exp(0)) {
-  case YES: break;
-  case NO:
-    otcErr(
-      psr.otc, lxmJoin(old), "Expected a type expression in the definition!");
-  case ERR: return ERR;
-  default: dbgUnexpected("Unknown parse result!");
-  }
-  Expression const type = expGet();
-
-  if (!consume(LXM_EQUAL)) {
-    prsAdd(
-      psr.prs, (Statement){
-                 .var = {.name = name.val, .type = type, .val = expOf(0)},
-                 .tag = STT_VAR
-    });
-    return YES;
-  }
-
-  switch (exp(0)) {
-  case YES: break;
-  case NO:
-    otcErr(
-      psr.otc, lxmJoin(old), "Expected a value expression in the definition!");
-  case ERR: return ERR;
-  default: dbgUnexpected("Unknown parse result!");
-  }
-  Expression const val = expGet();
 
   prsAdd(
     psr.prs,
@@ -362,88 +361,11 @@ static Result var() {
   return YES;
 }
 
-/* Try to parse a assignment statement. */
-static Result ass() {
-  Lexeme const old = get();
-
-  if (!check(LXM_ID)) return NO;
-  Lexeme const name = take();
-
-  if (!consume(LXM_EQUAL)) {
-    prev(); // Rollback name.
-    return NO;
-  }
-
-  switch (exp(0)) {
-  case YES: break;
-  case NO:
-    otcErr(
-      psr.otc, lxmJoin(old), "Expected a value expression in the assignment!");
-  case ERR: return ERR;
-  default: dbgUnexpected("Unknown parse result!");
-  }
-  Expression const val = expGet();
-
-  prsAdd(
-    psr.prs, (Statement){
-               .ass = {.name = name.val, .val = val},
-                 .tag = STT_ASS
-  });
-  return YES;
-}
-
-/* Try to parse a compound assignment statement. */
-static Result cas() {
-  Lexeme const old = get();
-
-  if (!check(LXM_ID)) return NO;
-  Lexeme const name = take();
-
-  Operator op = {0};
-
-  for (iptr i = 0; i < OP_COMPOUND_LEN; i++) {
-    Operator const test = OP_COMPOUND[i];
-    if (test.tag != OP_BIN || !consume(test.bin.op)) continue;
-    op = test;
-    break;
-  }
-
-  if (op.tag != OP_BIN) {
-    prev(); // Rollback name.
-    return NO;
-  }
-
-  if (!consume(LXM_EQUAL)) {
-    prev(); // Rollback name.
-    prev(); // Rollback binary operator.
-    return NO;
-  }
-
-  switch (exp(0)) {
-  case YES: break;
-  case NO:
-    otcErr(
-      psr.otc, lxmJoin(old),
-      "Expected a value expression in the compound assignment!");
-  case ERR: return ERR;
-  default: dbgUnexpected("Unknown parse result!");
-  }
-  Expression const rhs = expGet();
-
-  prsAdd(
-    psr.prs,
-    (Statement){
-      .cas = {.name = name.val, .op = op, .rhs = rhs},
-        .tag = STT_CAS
-  });
-  return YES;
-}
-
 /* Try to parse a statement. */
 static Result statement() {
-#define OPERATIONS_LEN 4
+#define OPERATIONS_LEN 2
 #define OPERATIONS \
-  (operation[OPERATIONS_LEN]) { &let, &var, &ass, &cas }
+  (operation[OPERATIONS_LEN]) { &let, &var }
 
   for (iptr i = 0; i < OPERATIONS_LEN; i++) {
     Result const res = OPERATIONS[i]();
@@ -453,7 +375,8 @@ static Result statement() {
 #undef OPERATIONS
 #undef OPERATIONS_LEN
 
-  // If everything fails, try to parse it as an expression.
+  // If everything fails, try to parse it as an expression, including assignment
+  // expressions. This is the only place an assignment expression is allowed.
   switch (exp(0)) {
   case YES:
     prsAdd(psr.prs, (Statement){.exp = {.exp = expGet()}, .tag = STT_EXP});

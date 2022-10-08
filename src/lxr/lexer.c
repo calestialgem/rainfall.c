@@ -103,14 +103,16 @@ static bool mark() {
   char const* const old = lxr.cur;
 
 // Check whether there is a mark.
-#define LENGTH 28
+#define LENGTH 38
   String const MARKS[LENGTH] = {
-    strOf(","),  strOf(":"),  strOf(";"),  strOf("("),  strOf(")"),
-    strOf("*"),  strOf("/"),  strOf("%"),  strOf("++"), strOf("+"),
-    strOf("--"), strOf("-"),  strOf("&&"), strOf("&"),  strOf("||"),
-    strOf("|"),  strOf("^"),  strOf("<<"), strOf("<="), strOf("<"),
-    strOf(">>"), strOf(">="), strOf(">"),  strOf("=="), strOf("="),
-    strOf("!="), strOf("!"),  strOf("~")};
+    strOf(","),   strOf(":"),  strOf(";"),  strOf("("),  strOf(")"),
+    strOf("*="),  strOf("*"),  strOf("/="), strOf("/"),  strOf("%="),
+    strOf("%"),   strOf("+="), strOf("++"), strOf("+"),  strOf("-="),
+    strOf("--"),  strOf("-"),  strOf("&="), strOf("&&"), strOf("&"),
+    strOf("|="),  strOf("||"), strOf("|"),  strOf("^="), strOf("^"),
+    strOf("<<="), strOf("<<"), strOf("<="), strOf("<"),  strOf(">>="),
+    strOf(">>"),  strOf(">="), strOf(">"),  strOf("=="), strOf("="),
+    strOf("!="),  strOf("!"),  strOf("~")};
 
   for (iptr i = 0; i < LENGTH; i++) {
     if (check(MARKS[i])) {

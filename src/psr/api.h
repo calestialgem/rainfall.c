@@ -130,25 +130,6 @@ typedef struct {
   Expression val;
 } VarDefinition;
 
-/* Changing the value of a mutable variable. */
-typedef struct {
-  /* Identifier of the defined variable. */
-  String     name;
-  /* Expression that gives the assigned value. */
-  Expression val;
-} Assignment;
-
-/* Changing the value of a mutable variable by applying a binary operator where
- * its on the left. */
-typedef struct {
-  /* Identifier of the assigned variable. */
-  String     name;
-  /* Operator. */
-  Operator   op;
-  /* Expression that gives the right hand side of the binary expression. */
-  Expression rhs;
-} CompoundAssignment;
-
 /* Expression whose resulting value is discarded. These are calculated for the
  * side effects. */
 typedef struct {
@@ -162,10 +143,6 @@ typedef enum {
   STT_LET,
   /* Var definition statement. */
   STT_VAR,
-  /* Assignment statement. */
-  STT_ASS,
-  /* Compound assignment statement. */
-  STT_CAS,
   /* Expression statement. */
   STT_EXP
 } StatementTag;
@@ -177,10 +154,6 @@ typedef struct {
     LetDefinition       let;
     /* Statement as var definition statement. */
     VarDefinition       var;
-    /* Statement as assignment statement. */
-    Assignment          ass;
-    /* Statement as compound assignment statement. */
-    CompoundAssignment  cas;
     /* Statement as expression statement. */
     ExpressionStatement exp;
   };
@@ -271,6 +244,29 @@ extern Operator const OP_LAN;
 /* Logical OR. */
 extern Operator const OP_LOR;
 
+/* Assignment. */
+extern Operator const OP_ASS;
+/* Assignment after multiplication. */
+extern Operator const OP_MLA;
+/* Assignment after division. */
+extern Operator const OP_DVA;
+/* Assignment after reminder. */
+extern Operator const OP_RMA;
+/* Assignment after addition. */
+extern Operator const OP_ADA;
+/* Assignment after subtraction. */
+extern Operator const OP_SBA;
+/* Assignment after left shift. */
+extern Operator const OP_LSA;
+/* Assignment after right shift. */
+extern Operator const OP_RSA;
+/* Assignment after bitwise and. */
+extern Operator const OP_ANA;
+/* Assignment after bitwise xor. */
+extern Operator const OP_XRA;
+/* Assignment after bitwise or. */
+extern Operator const OP_ORA;
+
 /* Amount of primary operators. */
 #define OP_PRIMARY_LEN 4
 /* Operators that are the indivisible parts of an expression. */
@@ -331,17 +327,17 @@ extern Operator const OP_LOGAND[OP_LOGAND_LEN];
 /* Operators that OR logically. */
 extern Operator const OP_SHORT_OR[OP_LOGOR_LEN];
 
+/* Amount of assignment operators. */
+#define OP_ASSIGNMENT_LEN 11
+/* Operators that change a variable. */
+extern Operator const OP_ASSIGNMENT[OP_ASSIGNMENT_LEN];
+
 /* Amount of operator precedence levels. */
-#define OP_ORDER_LEN 12
+#define OP_ORDER_LEN 13
 /* Amounts of operators in precedence levels. */
 extern iptr const            OP_LEVEL_LEN[OP_ORDER_LEN];
 /* Precedence levels of operators from low to high. */
 extern Operator const* const OP_ORDER[OP_ORDER_LEN];
-
-/* Amount of binary operators that could be used in compound assignments. */
-#define OP_COMPOUND_LEN 10
-/* Binary operators that could be used in compound assignments. */
-extern Operator const OP_COMPOUND[OP_COMPOUND_LEN];
 
 /* Flatten the given nullary operator. */
 Operator    opOfNull(NullaryOperator null);

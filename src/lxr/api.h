@@ -20,36 +20,56 @@ typedef enum {
   LXM_OPAREN,
   /* Mark ")". */
   LXM_CPAREN,
+  /* Mark "*=". */
+  LXM_STAREQ,
   /* Mark "*". */
   LXM_STAR,
+  /* Mark "/=". */
+  LXM_SLASHEQ,
   /* Mark "/". */
   LXM_SLASH,
+  /* Mark "%=". */
+  LXM_PERCEQ,
   /* Mark "%". */
   LXM_PERCENT,
+  /* Mark "+=". */
+  LXM_PLUSEQ,
   /* Mark "++". */
   LXM_PLUSPLUS,
   /* Mark "+". */
   LXM_PLUS,
+  /* Mark "-=". */
+  LXM_MINUSEQ,
   /* Mark "--". */
   LXM_MINUSMINUS,
   /* Mark "-". */
   LXM_MINUS,
+  /* Mark "&=". */
+  LXM_AMPEQ,
   /* Mark "&&". */
   LXM_AMPAMP,
   /* Mark "&". */
   LXM_AMP,
+  /* Mark "|=". */
+  LXM_PIPEEQ,
   /* Mark "||". */
   LXM_PIPEPIPE,
   /* Mark "|". */
   LXM_PIPE,
+  /* Mark "^=". */
+  LXM_CARETEQ,
   /* Mark "^". */
   LXM_CARET,
+  /* Mark "<<=". */
+  LXM_LARLAREQ,
   /* Mark "<<". */
   LXM_LARLAR,
   /* Mark "<=". */
   LXM_LAREQ,
   /* Mark "<". */
   LXM_LARROW,
+  /* Mark ">>=". */
+  LXM_RARRAREQ,
   /* Mark ">>". */
   LXM_RARRAR,
   /* Mark ">=". */

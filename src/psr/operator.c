@@ -31,6 +31,7 @@
 #define acs null(LXM_ID)
 #define grp cir(LXM_OPAREN, LXM_CPAREN)
 #define cll var(LXM_OPAREN, LXM_COMMA, LXM_CPAREN)
+
 #define sin post(LXM_PLUSPLUS)
 #define sde post(LXM_MINUSMINUS)
 #define pin pre(LXM_PLUSPLUS)
@@ -68,6 +69,18 @@
 #define lan bin(LXM_AMPAMP)
 
 #define lor bin(LXM_PIPEPIPE)
+
+#define ass bin(LXM_EQUAL)
+#define mla bin(LXM_STAREQ)
+#define dva bin(LXM_SLASHEQ)
+#define rma bin(LXM_PERCEQ)
+#define ada bin(LXM_PLUSEQ)
+#define sba bin(LXM_MINUSEQ)
+#define lsa bin(LXM_LARLAREQ)
+#define rsa bin(LXM_RARRAREQ)
+#define ana bin(LXM_AMPEQ)
+#define xra bin(LXM_CARETEQ)
+#define ora bin(LXM_PIPEEQ)
 
 Operator const OP_DEC = dec;
 Operator const OP_ACS = acs;
@@ -111,6 +124,18 @@ Operator const OP_LAN = lan;
 
 Operator const OP_LOR = lor;
 
+Operator const OP_ASS = ass;
+Operator const OP_MLA = mla;
+Operator const OP_DVA = dva;
+Operator const OP_RMA = rma;
+Operator const OP_ADA = ada;
+Operator const OP_SBA = sba;
+Operator const OP_LSA = lsa;
+Operator const OP_RSA = rsa;
+Operator const OP_ANA = ana;
+Operator const OP_XRA = xra;
+Operator const OP_ORA = ora;
+
 Operator const OP_PRIMARY[OP_PRIMARY_LEN]       = {dec, acs, grp, cll};
 Operator const OP_UNARY[OP_UNARY_LEN]           = {pos, neg, sin, sde,
                                                    pin, pde, not, bnt};
@@ -124,17 +149,18 @@ Operator const OP_COMPARISON[OP_COMPARISON_LEN] = {smt, ste, lgt, lte};
 Operator const OP_EQUALITY[OP_EQUALITY_LEN]     = {equ, neq};
 Operator const OP_LOGAND[OP_LOGAND_LEN]         = {lan};
 Operator const OP_LOGOR[OP_LOGOR_LEN]           = {lor};
+Operator const OP_ASSIGNMENT[OP_ASSIGNMENT_LEN] = {ass, mla, dva, rma, ada, sba,
+                                                   lsa, rsa, ana, xra, ora};
 
 iptr const OP_LEVEL_LEN[OP_ORDER_LEN] = {
-  OP_LOGOR_LEN, OP_LOGAND_LEN, OP_EQUALITY_LEN, OP_COMPARISON_LEN,
-  OP_BITOR_LEN, OP_BITXOR_LEN, OP_BITAND_LEN,   OP_SHIFT_LEN,
-  OP_TERM_LEN,  OP_FACTOR_LEN, OP_UNARY_LEN,    OP_PRIMARY_LEN};
+  OP_ASSIGNMENT_LEN, OP_LOGOR_LEN, OP_LOGAND_LEN, OP_EQUALITY_LEN,
+  OP_COMPARISON_LEN, OP_BITOR_LEN, OP_BITXOR_LEN, OP_BITAND_LEN,
+  OP_SHIFT_LEN,      OP_TERM_LEN,  OP_FACTOR_LEN, OP_UNARY_LEN,
+  OP_PRIMARY_LEN};
 Operator const* const OP_ORDER[OP_ORDER_LEN] = {
-  OP_LOGOR,  OP_LOGAND, OP_EQUALITY, OP_COMPARISON, OP_BITOR, OP_BITXOR,
-  OP_BITAND, OP_SHIFT,  OP_TERM,     OP_FACTOR,     OP_UNARY, OP_PRIMARY};
-
-Operator const OP_COMPOUND[OP_COMPOUND_LEN] = {add, sub, mul, div, rem,
-                                               lsh, rsh, and, xor, orr};
+  OP_ASSIGNMENT, OP_LOGOR,  OP_LOGAND, OP_EQUALITY, OP_COMPARISON,
+  OP_BITOR,      OP_BITXOR, OP_BITAND, OP_SHIFT,    OP_TERM,
+  OP_FACTOR,     OP_UNARY,  OP_PRIMARY};
 
 Operator opOfNull(NullaryOperator const null) {
   return (Operator){.null = null, .tag = OP_NULL};
@@ -204,5 +230,16 @@ char const* opName(Operator const op) {
   if (opEq(op, OP_NEQ)) return "not equal";
   if (opEq(op, OP_LAN)) return "and";
   if (opEq(op, OP_LOR)) return "or";
+  if (opEq(op, OP_ASS)) return "assignment";
+  if (opEq(op, OP_MLA)) return "multiply assign";
+  if (opEq(op, OP_DVA)) return "divide assign";
+  if (opEq(op, OP_RMA)) return "reminder assign";
+  if (opEq(op, OP_ADA)) return "add assign";
+  if (opEq(op, OP_SBA)) return "subtract assign";
+  if (opEq(op, OP_LSA)) return "left shift assign";
+  if (opEq(op, OP_RSA)) return "right shift assign";
+  if (opEq(op, OP_ANA)) return "bitwise and assign";
+  if (opEq(op, OP_XRA)) return "bitwise xor assign";
+  if (opEq(op, OP_ORA)) return "bitwise or assign";
   dbgUnexpected("Unknown operator!");
 }

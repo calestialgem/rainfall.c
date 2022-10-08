@@ -354,12 +354,6 @@ static void resolveVar(VarDefinition const var) {
   if (!assesDef(var.name)) return;
 }
 
-/* Resolve the given assignment statement. */
-static void resolveAss(Assignment const ass) {}
-
-/* Resolve the given compound assignment statement. */
-static void resolveCas(CompoundAssignment const cas) {}
-
 /* Resolve the given expression statement. */
 static void resolveExp(ExpressionStatement const exp) {}
 
@@ -368,8 +362,6 @@ static void resolve(Statement const stt) {
   switch (stt.tag) {
   case STT_LET: resolveLet(stt.let); break;
   case STT_VAR: resolveVar(stt.var); break;
-  case STT_ASS: resolveAss(stt.ass); break;
-  case STT_CAS: resolveCas(stt.cas); break;
   case STT_EXP: resolveExp(stt.exp); break;
   default: dbgUnexpected("Unknown statement tag!");
   }
