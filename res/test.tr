@@ -7,8 +7,7 @@
 let decimal = 10;
 let access  = decimal;
 let group   = (access);
-// Function call is not implemented.
-// let call    = function();
+let call    = function();
 
 // [Unary]
 // ~~~~~~~

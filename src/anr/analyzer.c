@@ -544,7 +544,7 @@ static ExpressionNode const* evaluateVar(
     dbgUnexpected("Unknown variary operator!");
     return NULL;
   }
-  otcErr(anr.otc, node->val, "Function call is not implemented!");
+  otcWrn(anr.otc, node->val, "Function call is not yet implemented.");
   return NULL;
 }
 
@@ -658,7 +658,16 @@ static void resolveVar(VarDefinition const var) {
 
 /* Resolve the given expression statement. */
 static void resolveExp(ExpressionStatement const exp) {
-  evaluateExp(exp.exp, TYPE_INS_VOID, true);
+  if (evaluateExp(exp.exp, TYPE_INS_VOID, true)) {
+    otcWrn(
+      anr.otc, expStr(exp.exp),
+      "Expression statement in the global scope is skipped for now. Later it "
+      "will not be allowed.");
+    Evaluation const evl = get();
+    printf("Expression Statement:\n");
+    evlTree(evl, stdout);
+    printf("\n");
+  }
 }
 
 /* Check the name accesses and types of expressions in the given statement. */
