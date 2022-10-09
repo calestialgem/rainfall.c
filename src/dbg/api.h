@@ -6,23 +6,32 @@
 #include "utl/api.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Path to the Rainfall source file relative to the root source folder. Returns
- * the full path if it cannot find the root. */
-char const* dbgPath(char const* fullPath);
+/* Allocate a memory block with the given amount of bytes. If a previous memory
+ * block is given tries to change its size. If the bytes are zero, frees the
+ * previous block. */
+void* allocate(void* previous, ptrdiff_t bytes);
+/* Call `allocate` with amount of bytes enough to have the given amount of
+ * elements of the given type. */
+#define allocateArray(previous, elements, Element) \
+  allocate(previous, (elements) * sizeof(Element))
+/* Path to the Rainfall source file at the given path relative to the root
+ * source folder. Returns the full path if it cannot find the root. */
+char const* trimPath(char const* fullPath);
 
 /* Aborts if the given condition does not hold, after printing the given
  * message with the file and line information of the Rainfall source file. */
-#define dbgExpect(condition, message)                                        \
-  do {                                                                       \
-    if (!(condition)) {                                                      \
-      fprintf(                                                               \
-        stderr, "%s:%u: debug: %s\n", dbgPath(__FILE__), __LINE__, message); \
-      abort();                                                               \
-    }                                                                        \
+#define expect(condition, message)                                            \
+  do {                                                                        \
+    if (!(condition)) {                                                       \
+      fprintf(                                                                \
+        stderr, "%s:%u: debug: %s\n", trimPath(__FILE__), __LINE__, message); \
+      abort();                                                                \
+    }                                                                         \
   } while (false)
 
-/* Calls `dbgExpect` with a condition that always fails. */
-#define dbgUnexpected(message) dbgExpect(false, message)
+/* Calls `expect` with a condition that always fails. */
+#define unexpected(message) expect(false, message)

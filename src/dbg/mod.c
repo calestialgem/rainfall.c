@@ -4,22 +4,34 @@
 #include "dbg/api.h"
 #include "utl/api.h"
 
-char const* dbgPath(char const* const fullPath) {
-  String const ROOT = strOf("src");
-  String const path = strOf(fullPath);
-  char const*  pre  = NULL;
+#include <stdlib.h>
+
+void* allocate(void* previous, ptrdiff_t bytes) {
+  if (!bytes) {
+    free(previous);
+    return NULL;
+  }
+  previous = realloc(previous, bytes);
+  expect(previous, "Could not allocate!");
+  return previous;
+}
+
+char const* trimPath(char const* fullPath) {
+  String      root     = nullTerminated("src");
+  String      asString = nullTerminated(fullPath);
+  char const* previous = NULL;
 
   // Last "src" is the source folder; remove the path upto that.
-  for (char const* i = path.end - 1; i >= path.bgn; i--) {
+  for (char const* i = asString.first; i < asString.after; i++) {
     // If not positioned right after a folder, continue.
     if (*i != '\\' && *i != '/') continue;
     // If there is a previous position after a folder saved, check.
-    if (pre) {
-      String const folder = {.bgn = i + 1, .end = pre};
-      if (strEq(folder, ROOT)) return pre + 1;
+    if (previous) {
+      String folder = stringOf(i + 1, previous);
+      if (equalStrings(folder, root)) return previous + 1;
     }
     // Save this position if failed to match.
-    pre = i;
+    previous = i;
   }
 
   return fullPath;
