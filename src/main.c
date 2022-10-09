@@ -36,10 +36,6 @@ int main(int const argumentCount, char const* const* const arguments) {
       otc, otc.wrn > 1 ? "There were %u warnings." : "There was a warning.",
       otc.wrn);
 
-  printf("\nTable:\n");
-  tblWrite(tbl, stdout);
-  printf("\n");
-
   tblFree(&tbl);
   prsFree(&prs);
   lexFree(&lex);

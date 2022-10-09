@@ -686,10 +686,7 @@ static void resolveExp(ExpressionStatement const exp) {
       anr.otc, expStr(exp.exp),
       "Expression statement in the global scope is skipped for now. Later it "
       "will not be allowed.");
-    Evaluation const evl = get();
-    printf("Expression Statement:\n");
-    evlTree(evl, stdout);
-    printf("\n");
+    get();
   }
 }
 
