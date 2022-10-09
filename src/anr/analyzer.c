@@ -605,8 +605,8 @@ resolveType(Expression const exp, Type* const type, bool* const expect) {
 /* Resolve the given let definition statement. */
 static void resolveLet(LetDefinition const let) {
   if (!assesDef(let.name)) return;
-  bool expect = false;
   Type type   = TYPE_INS_VOID;
+  bool expect = false;
   resolveType(let.type, &type, &expect);
 
   if (!evaluateExp(let.val, type, expect)) return;
@@ -626,8 +626,8 @@ static void resolveLet(LetDefinition const let) {
 /* Resolve the given var definition statement. */
 static void resolveVar(VarDefinition const var) {
   if (!assesDef(var.name)) return;
-  bool expect = false;
   Type type   = TYPE_INS_VOID;
+  bool expect = false;
   resolveType(var.type, &type, &expect);
 
   if (expLen(var.val)) {

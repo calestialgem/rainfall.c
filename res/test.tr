@@ -4,10 +4,10 @@
 // [Primary]
 // ~~~~~~~~~
 
-let decimal = 10;
-let access  = decimal;
-let group   = (access);
-let call    = function();
+let decimal: iptr   = 10;
+let access:  float  = decimal;
+let group:   double = (access);
+let call            = function();
 
 // [Unary]
 // ~~~~~~~
