@@ -4,37 +4,37 @@
 #include "utl/api.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 
-String strOf(char const* const terminated) {
-  String res = {.bgn = terminated, .end = terminated};
-  while (*res.end) res.end++;
-  return res;
+String stringOf(char const* first, char const* after) {
+  return (String){.first = first, .after = after};
 }
 
-String strOfEmpty() { return (String){0}; }
+String nullTerminated(char const* array) {
+  char const* null = array;
+  while (*null) null++;
+  return stringOf(array, null);
+}
 
-char strAt(String const str, iptr const i) { return str.bgn[i]; }
+String emptyString() { return stringOf(NULL, NULL); }
 
-iptr strLen(String const str) { return str.end - str.bgn; }
+ptrdiff_t characters(String string) { return string.after - string.first; }
 
-bool strEq(String const lhs, String const rhs) {
-  iptr const length = strLen(lhs);
-  if (length != strLen(rhs)) return false;
-  for (iptr i = 0; i < length; i++)
-    if (strAt(lhs, i) != strAt(rhs, i)) return false;
+bool equalStrings(String left, String right) {
+  ptrdiff_t length = characters(left);
+  if (length != characters(right)) return false;
+  for (ptrdiff_t i = 0; i < length; i++)
+    if (left.first[i] != right.first[i]) return false;
   return true;
 }
 
-iptr strHash(String const str) {
-  iptr const PRIME = 53;
-  iptr       hash  = 0;
-  for (char const* i = str.bgn; i < str.end; i++) {
+#define PRIME 53
+
+ptrdiff_t hashcode(String string) {
+  ptrdiff_t hash = 0;
+  for (char const* i = string.first; i < string.after; i++) {
     hash *= PRIME;
     hash += *i;
   }
   return hash;
-}
-
-void strWrite(String const str, FILE* const stream) {
-  fwrite(str.bgn, sizeof(char), strLen(str), stream);
 }
