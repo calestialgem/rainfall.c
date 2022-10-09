@@ -281,7 +281,7 @@ static Result let() {
     case ERR: return ERR;
     default: dbgUnexpected("Unknown parse result!");
     }
-    expGet();
+    type = expGet();
   }
 
   if (!consume(LXM_EQUAL)) {
