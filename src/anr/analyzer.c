@@ -271,13 +271,17 @@ static ExpressionNode const* evaluatePre(
     if (opExp == NULL) return NULL;
     EvaluationNode const opEvl = root();
     arithmetic(opEvl.type, op);
-    if (expect && !typeCnv(type, TYPE_INS_VOID)) {
-      otcErr(
-        anr.otc, node->val, "Result of `%s` is a `%s`, but expected a `%s`!",
-        opName(node->op), typeName(TYPE_INS_VOID), typeName(type));
-      return NULL;
+    if (expect) {
+      if (!typeCnv(TYPE_INS_VOID, type)) {
+        otcErr(
+          anr.otc, node->val, "Result of `%s` is a `%s`, but expected a `%s`!",
+          opName(node->op), typeName(TYPE_INS_VOID), typeName(type));
+        return NULL;
+      }
+      evaluate(node, type);
+    } else {
+      evaluate(node, TYPE_INS_VOID);
     }
-    evaluate(node, TYPE_INS_VOID);
     return opExp;
   }
   dbgUnexpected("Unknown prenary operator!");
@@ -296,13 +300,17 @@ static ExpressionNode const* evaluatePost(
   }
   EvaluationNode const opEvl = root();
   arithmetic(opEvl.type, op);
-  if (expect && !typeEq(type, TYPE_INS_VOID)) {
-    otcErr(
-      anr.otc, node->val, "Result of `%s` is a `%s`, but expected a `%s`!",
-      opName(node->op), typeName(TYPE_INS_VOID), typeName(type));
-    return NULL;
+  if (expect) {
+    if (!typeCnv(TYPE_INS_VOID, type)) {
+      otcErr(
+        anr.otc, node->val, "Result of `%s` is a `%s`, but expected a `%s`!",
+        opName(node->op), typeName(TYPE_INS_VOID), typeName(type));
+      return NULL;
+    }
+    evaluate(node, type);
+  } else {
+    evaluate(node, TYPE_INS_VOID);
   }
-  evaluate(node, TYPE_INS_VOID);
   return opExp;
 }
 
@@ -437,13 +445,17 @@ static ExpressionNode const* evaluateBin(
     EvaluationNode const lopEvl = root();
     arithmetic(lopEvl.type, lop);
 
-    if (expect && !typeCnv(TYPE_INS_BOOL, type)) {
-      otcErr(
-        anr.otc, node->val, "Result of `%s` is a `%s`, but expected a `%s`!",
-        opName(node->op), typeName(TYPE_INS_BOOL), typeName(type));
-      return NULL;
+    if (expect) {
+      if (!typeCnv(TYPE_INS_BOOL, type)) {
+        otcErr(
+          anr.otc, node->val, "Result of `%s` is a `%s`, but expected a `%s`!",
+          opName(node->op), typeName(TYPE_INS_BOOL), typeName(type));
+        return NULL;
+      }
+      evaluate(node, type);
+    } else {
+      evaluate(node, TYPE_INS_BOOL);
     }
-    evaluate(node, TYPE_INS_BOOL);
     return lopExp;
   }
   if (opEq(node->op, OP_ASS)) {
@@ -459,13 +471,17 @@ static ExpressionNode const* evaluateBin(
 
     checkAssignment(node->val, lopEvl, ropEvl.type);
 
-    if (expect && !typeCnv(TYPE_INS_VOID, type)) {
-      otcErr(
-        anr.otc, node->val, "Result of `%s` is a `%s`, but expected a `%s`!",
-        opName(node->op), typeName(TYPE_INS_VOID), typeName(type));
-      return NULL;
+    if (expect) {
+      if (!typeCnv(TYPE_INS_VOID, type)) {
+        otcErr(
+          anr.otc, node->val, "Result of `%s` is a `%s`, but expected a `%s`!",
+          opName(node->op), typeName(TYPE_INS_VOID), typeName(type));
+        return NULL;
+      }
+      evaluate(node, type);
+    } else {
+      evaluate(node, TYPE_INS_VOID);
     }
-    evaluate(node, TYPE_INS_VOID);
     return lopExp;
   }
   if (
@@ -490,13 +506,17 @@ static ExpressionNode const* evaluateBin(
 
     checkAssignment(node->val, lopEvl, src.type);
 
-    if (expect && !typeCnv(TYPE_INS_VOID, type)) {
-      otcErr(
-        anr.otc, node->val, "Result of `%s` is a `%s`, but expected a `%s`!",
-        opName(node->op), typeName(TYPE_INS_VOID), typeName(type));
-      return NULL;
+    if (expect) {
+      if (!typeCnv(TYPE_INS_VOID, type)) {
+        otcErr(
+          anr.otc, node->val, "Result of `%s` is a `%s`, but expected a `%s`!",
+          opName(node->op), typeName(TYPE_INS_VOID), typeName(type));
+        return NULL;
+      }
+      evaluate(node, type);
+    } else {
+      evaluate(node, TYPE_INS_VOID);
     }
-    evaluate(node, TYPE_INS_VOID);
     return lopExp;
   }
   if (
@@ -523,13 +543,17 @@ static ExpressionNode const* evaluateBin(
 
     checkAssignment(node->val, lopEvl, src.type);
 
-    if (expect && !typeCnv(TYPE_INS_VOID, type)) {
-      otcErr(
-        anr.otc, node->val, "Result of `%s` is a `%s`, but expected a `%s`!",
-        opName(node->op), typeName(TYPE_INS_VOID), typeName(type));
-      return NULL;
+    if (expect) {
+      if (!typeCnv(TYPE_INS_VOID, type)) {
+        otcErr(
+          anr.otc, node->val, "Result of `%s` is a `%s`, but expected a `%s`!",
+          opName(node->op), typeName(TYPE_INS_VOID), typeName(type));
+        return NULL;
+      }
+      evaluate(node, type);
+    } else {
+      evaluate(node, TYPE_INS_VOID);
     }
-    evaluate(node, TYPE_INS_VOID);
     return lopExp;
   }
   dbgUnexpected("Unknown binary operator!");
