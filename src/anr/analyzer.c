@@ -39,9 +39,7 @@ static Evaluation get() {
 
 /* Add the given symbol to the table and the map. */
 static void add(Symbol const sym) {
-  iptr const len = tblLen(*anr.tbl);
-  printf("[%lli] %.*s\n", len, (int)strLen(sym.name), sym.name.bgn);
-  mapPut(&anr.map, sym.name, len);
+  mapPut(&anr.map, sym.name, tblLen(*anr.tbl));
   tblAdd(anr.tbl, sym);
 }
 
