@@ -20,24 +20,25 @@ int main(int const argumentCount, char const* const* const arguments) {
     return -1;
   }
 
-  Source  src = srcOf(arguments[1]);
-  Outcome otc = otcOf(src);
+  Source  source  = srcOf(arguments[1]);
+  Outcome outcome = otcOf(source);
+  Lex     lex     = lexOf(&outcome, source);
+  Parse   parse   = prsOf(&outcome, lex);
+  Table   table   = tblOf(&outcome, parse);
 
-  Lex   lex = lexOf(&otc, src);
-  Parse prs = prsOf(&otc, lex);
-  Table tbl = tblOf(&otc, prs);
-
-  if (otc.err > 0)
+  if (outcome.err > 0)
     otcInfoWhole(
-      otc, otc.err > 1 ? "There were %u errors." : "There was an error.",
-      otc.err);
-  if (otc.wrn > 0)
+      outcome,
+      outcome.err > 1 ? "There were %u errors." : "There was an error.",
+      outcome.err);
+  if (outcome.wrn > 0)
     otcInfoWhole(
-      otc, otc.wrn > 1 ? "There were %u warnings." : "There was a warning.",
-      otc.wrn);
+      outcome,
+      outcome.wrn > 1 ? "There were %u warnings." : "There was a warning.",
+      outcome.wrn);
 
-  tblFree(&tbl);
-  prsFree(&prs);
+  tblFree(&table);
+  prsFree(&parse);
   lexFree(&lex);
-  srcFree(&src);
+  srcFree(&source);
 }
