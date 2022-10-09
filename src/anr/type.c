@@ -36,12 +36,21 @@ Type const TYPE_BUILT[TYPE_BUILT_LEN]           = {tmeta, tvoid, tbool,  tbyte,
 Type const TYPE_ARITHMETIC[TYPE_ARITHMETIC_LEN] = {tbool, tbyte,  tint,
                                                    tptr,  tfloat, tdouble};
 
+Arithmetic const ARI_INT = {.type = tint, .rank = 2};
+
 bool typeEq(Type const lhs, Type const rhs) { return lhs.tag == rhs.tag; }
 
 iptr typeRank(Type const type) {
   for (iptr i = 0; i < TYPE_ARITHMETIC_LEN; i++)
     if (typeEq(type, TYPE_ARITHMETIC[i])) return i;
   return -1;
+}
+
+bool typeCnv(Type const src, Type const des) {
+  if (typeEq(src, des)) return true;
+  Arithmetic const ariSrc = ariOf(src);
+  Arithmetic const ariDes = ariOf(des);
+  return ariValid(ariSrc) && ariValid(ariDes) && ariFits(ariSrc, ariDes);
 }
 
 char const* typeName(Type const type) {
@@ -62,6 +71,79 @@ void typeWrite(Type const type, FILE* const stream) {
   fprintf(stream, "%s", typeName(type));
 }
 
+Arithmetic ariOf(Type const type) {
+  return (Arithmetic){.type = type, .rank = typeRank(type)};
+}
+
+bool ariValid(Arithmetic const ari) { return ari.rank != -1; }
+
+bool ariInt(Arithmetic const ari) { return ari.rank < TYPE_ARITHMETIC_LEN - 2; }
+
+bool ariFits(Arithmetic const src, Arithmetic const des) {
+  return src.rank <= des.rank;
+}
+
+Arithmetic ariLarger(Arithmetic const lhs, Arithmetic const rhs) {
+  return !ariFits(lhs, rhs) ? lhs : rhs;
+}
+
+Value ariCnv(Arithmetic const src, Arithmetic const des, Value const val) {
+  switch (src.type.tag) {
+  case TYPE_BOOL:
+    switch (des.type.tag) {
+    case TYPE_BOOL: return val;
+    case TYPE_BYTE: return (Value){.byte = val.vbool};
+    case TYPE_INT: return (Value){.vint = val.vbool};
+    case TYPE_IPTR: return (Value){.iptr = val.vbool};
+    case TYPE_FLOAT: return (Value){.vfloat = val.vbool};
+    case TYPE_DOUBLE: return (Value){.vdouble = val.vbool};
+    default: dbgUnexpected("Unknown arithmetic type!");
+    }
+    break;
+  case TYPE_BYTE:
+    switch (des.type.tag) {
+    case TYPE_BYTE: return val;
+    case TYPE_INT: return (Value){.vint = val.byte};
+    case TYPE_IPTR: return (Value){.iptr = val.byte};
+    case TYPE_FLOAT: return (Value){.vfloat = val.byte};
+    case TYPE_DOUBLE: return (Value){.vdouble = val.byte};
+    default: dbgUnexpected("Unknown arithmetic type!");
+    }
+    break;
+  case TYPE_INT:
+    switch (des.type.tag) {
+    case TYPE_INT: return val;
+    case TYPE_IPTR: return (Value){.iptr = val.vint};
+    case TYPE_FLOAT: return (Value){.vfloat = val.vint};
+    case TYPE_DOUBLE: return (Value){.vdouble = val.vint};
+    default: dbgUnexpected("Unknown arithmetic type!");
+    }
+    break;
+  case TYPE_IPTR:
+    switch (des.type.tag) {
+    case TYPE_IPTR: return val;
+    case TYPE_FLOAT: return (Value){.vfloat = val.iptr};
+    case TYPE_DOUBLE: return (Value){.vdouble = val.iptr};
+    default: dbgUnexpected("Unknown arithmetic type!");
+    }
+    break;
+  case TYPE_FLOAT:
+    switch (des.type.tag) {
+    case TYPE_FLOAT: return val;
+    case TYPE_DOUBLE: return (Value){.vdouble = val.vfloat};
+    default: dbgUnexpected("Unknown arithmetic type!");
+    }
+    break;
+  case TYPE_DOUBLE:
+    switch (des.type.tag) {
+    case TYPE_DOUBLE: return val;
+    default: dbgUnexpected("Unknown arithmetic type!");
+    }
+    break;
+  default: dbgUnexpected("Unknown arithmetic type!");
+  }
+}
+
 Value valDefault(Type const type) {
   switch (type.tag) {
   case TYPE_META: return (Value){.meta = TYPE_INS_VOID};
@@ -74,6 +156,13 @@ Value valDefault(Type const type) {
   case TYPE_DOUBLE: return (Value){.vdouble = 0};
   default: dbgUnexpected("Unknown type!");
   }
+}
+
+Value valCnv(Type src, Type des, Value val) {
+  if (typeEq(src, des)) return val;
+  Arithmetic const ariSrc = ariOf(src);
+  Arithmetic const ariDes = ariOf(des);
+  return ariCnv(ariSrc, ariDes, val);
 }
 
 void valWrite(Type const type, Value const val, FILE* const stream) {

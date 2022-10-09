@@ -32,15 +32,14 @@
 #define grp cir(LXM_OPAREN, LXM_CPAREN)
 #define cll var(LXM_OPAREN, LXM_COMMA, LXM_CPAREN)
 
+#define pos pre(LXM_PLUS)
+#define neg pre(LXM_MINUS)
 #define sin post(LXM_PLUSPLUS)
 #define sde post(LXM_MINUSMINUS)
 #define pin pre(LXM_PLUSPLUS)
 #define pde pre(LXM_MINUSMINUS)
 #define not pre(LXM_EXC)
 #define bnt pre(LXM_TILDE)
-
-#define pos pre(LXM_PLUS)
-#define neg pre(LXM_MINUS)
 
 #define mul bin(LXM_STAR)
 #define div bin(LXM_SLASH)

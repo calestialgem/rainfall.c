@@ -11,6 +11,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
+/* Rank of an arithmetic operand. */
+typedef struct {
+  /* Type. */
+  Type type;
+  /* Rank. */
+  iptr rank;
+} Arithmetic;
+
 /* Flag that explores the situation of a number. */
 typedef enum {
   /* Number has an acceptable exponent and the significand is valid. */
@@ -35,18 +43,39 @@ typedef struct {
   NumberFlag flag;
 } Number;
 
+/* Arithmetic of the int type. */
+extern Arithmetic const ARI_INT;
+
 /* Whether the given types are equal. */
 bool        typeEq(Type lhs, Type rhs);
 /* Rank of the given arithmetic type. Returns -1 if the given type is not an
  * arithmetic type. */
 iptr        typeRank(Type type);
+/* Whether the given source type can be converted to given destination type. */
+bool        typeCnv(Type src, Type des);
 /* Name of the given type. */
 char const* typeName(Type type);
 /* Stream out the given type as string to the given stream. */
 void        typeWrite(Type type, FILE* stream);
 
+/* Arithmetic of the given type. The rank is *1 if the given type is not an
+ * arithmetic. */
+Arithmetic ariOf(Type type);
+/* Whether the arithmetic is valid. */
+bool       ariValid(Arithmetic ari);
+/* Whether the arithmetic is an integer. */
+bool       ariInt(Arithmetic ari);
+/* Whether the given source arithmetic can be fit to the given destination. */
+bool       ariFits(Arithmetic src, Arithmetic des);
+/* Arithmetic with the larger rank from the given ones. */
+Arithmetic ariLarger(Arithmetic lhs, Arithmetic rhs);
+/* Convert the value of the given source arithmetic to the given destination. */
+Value      ariCnv(Arithmetic src, Arithmetic des, Value val);
+
 /* Default value of the given type. */
 Value valDefault(Type type);
+/* Convert the value of the given source type to the given destination. */
+Value valCnv(Type src, Type des, Value val);
 /* Stream out the given value of the given type as string to the given stream.
  */
 void  valWrite(Type type, Value val, FILE* stream);
