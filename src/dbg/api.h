@@ -17,7 +17,7 @@ void* allocate(void* previous, ptrdiff_t bytes);
 /* Call `allocate` with amount of bytes enough to have the given amount of
  * elements of the given type. */
 #define allocateArray(previous, elements, Element) \
-  allocate(previous, (elements) * sizeof(Element))
+  (Element*)allocate(previous, (elements) * sizeof(Element))
 /* Path to the Rainfall source file at the given path relative to the root
  * source folder. Returns the full path if it cannot find the root. */
 char const* trimPath(char const* fullPath);

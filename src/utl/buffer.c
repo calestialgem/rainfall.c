@@ -4,81 +4,62 @@
 #include "dbg/api.h"
 #include "utl/api.h"
 
+#include <stddef.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-/* Makes sure the given amount of space exists at the end of the given buffer.
+/* Make sure the given amount of space exists at the end of the given buffer.
  * When necessary, grows by at least half of the current capacity. */
-static void reserve(Buffer* const bfr, iptr const amount) {
-  iptr const cap   = bfrCap(*bfr);
-  iptr const len   = bfrLen(*bfr);
-  iptr const space = cap - len;
+static void reserve(Buffer* buffer, ptrdiff_t amount) {
+  ptrdiff_t capacity = buffer->bound - buffer->first;
+  ptrdiff_t bytes    = buffer->after - buffer->first;
+  ptrdiff_t space    = capacity - bytes;
   if (space >= amount) return;
 
-  iptr const  growth    = amount - space;
-  iptr const  minGrowth = cap / 2;
-  iptr const  newCap    = cap + (growth < minGrowth ? minGrowth : growth);
-  char* const mem       = realloc(bfr->bgn, newCap);
-  dbgExpect(mem, "Could not reallocate!");
+  ptrdiff_t growth    = amount - space;
+  ptrdiff_t minGrowth = capacity / 2;
+  if (growth < minGrowth) growth = minGrowth;
+  capacity += growth;
 
-  bfr->bgn = mem;
-  bfr->end = mem + len;
-  bfr->all = mem + newCap;
+  buffer->first = allocateArray(buffer->first, capacity, char);
+  buffer->after = buffer->first + bytes;
+  buffer->bound = buffer->first + capacity;
 }
 
-Buffer bfrOf(iptr const cap) {
-  Buffer res = {0};
-  if (cap) reserve(&res, cap);
-  return res;
+Buffer emptyBuffer(void) {
+  return (Buffer){.first = NULL, .after = NULL, .bound = NULL};
 }
 
-Buffer bfrOfCopy(Buffer const bfr) {
-  iptr const len = bfrLen(bfr);
-  Buffer     res = bfrOf(len);
-  memcpy(res.bgn, bfr.bgn, len);
-  res.end += len;
-  return res;
+Buffer copyBuffer(Buffer buffer) {
+  ptrdiff_t bytes = buffer.after - buffer.first;
+  Buffer    copy  = emptyBuffer();
+  reserve(&copy, bytes);
+  memcpy(copy.first, buffer.first, bytes);
+  copy.after += bytes;
+  return copy;
 }
 
-void bfrFree(Buffer* const bfr) {
-  free(bfr->bgn);
-  bfr->bgn = NULL;
-  bfr->end = NULL;
-  bfr->all = NULL;
+void disposeBuffer(Buffer* buffer) {
+  buffer->first = allocateArray(buffer->first, 0, char);
+  buffer->after = buffer->first;
+  buffer->bound = buffer->first;
 }
 
-iptr bfrLen(Buffer const bfr) { return bfr.end - bfr.bgn; }
+ptrdiff_t bytes(Buffer buffer) { return buffer.after - buffer.first; }
 
-iptr bfrCap(Buffer const bfr) { return bfr.all - bfr.bgn; }
-
-char bfrAt(Buffer const bfr, iptr const i) { return bfr.bgn[i]; }
-
-String bfrView(Buffer const bfr) {
-  return (String){.bgn = bfr.bgn, .end = bfr.end};
+void append(Buffer* buffer, char character) {
+  reserve(buffer, 1);
+  *buffer->after++ = character;
 }
 
-void bfrAppend(Buffer* const bfr, String const str) {
-  iptr const len = strLen(str);
-  reserve(bfr, len);
-  memmove(bfr->end, str.bgn, len);
-  bfr->end += len;
-}
+/* Amount of bytes to read from a stream at every step. */
+#define CHUNK 1024
 
-void bfrPut(Buffer* const bfr, char const c) {
-  reserve(bfr, 1);
-  *bfr->end++ = c;
-}
-
-void bfrRead(Buffer* const bfr, FILE* const stream) {
-  iptr const CHUNK = 1024;
-  for (iptr written = CHUNK; written == CHUNK; bfr->end += written) {
-    reserve(bfr, CHUNK);
-    written = (iptr)fread(bfr->end, sizeof(char), CHUNK, stream);
+void read(Buffer* buffer, FILE* stream) {
+  for (ptrdiff_t written = CHUNK; written == CHUNK;) {
+    reserve(buffer, CHUNK);
+    written = fread(buffer->after, sizeof(char), CHUNK, stream);
+    buffer->after += written;
   }
-  dbgExpect(feof(stream), "Error reading stream!");
-}
-
-void bfrWrite(Buffer const bfr, FILE* const stream) {
-  fwrite(bfr.bgn, sizeof(char), bfrLen(bfr), stream);
+  expect(feof(stream), "Could not read the stream!");
 }
