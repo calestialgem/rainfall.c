@@ -77,7 +77,7 @@ let logicalAND = equal && notEqual;
 // [Logical OR]
 // ~~~~~~~~~~~~
 
-var logicalOR = notEqual || logicalAND;
+var logicalOR: int = notEqual || logicalAND;
 
 // [Assignment]
 // ~~~~~~~~~~~~
