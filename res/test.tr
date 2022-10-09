@@ -1,66 +1,96 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-var a: int = 200.0e-1;
-let b: int = -5.1e2;
-let c: int = a + a*b + b;
-let d: int = 1*2/(3+4)%5-6;
+// [Primary]
+// ~~~~~~~~~
 
-let pi: double = +3.14;
-let e : double = +2.72;
-let r : double = pi/r;
+let decimal = 10;
+let access  = decimal;
+let group   = (access);
+// Function call is not implemented.
+// let call    = function();
 
-var someVariable     : int = 000_017_350_00;
-var someOtherVariable: int;
+// [Unary]
+// ~~~~~~~
 
-someOtherVariable = someVariable * 2 + 70e+5;
+let posate = +group;
+var negate = -posate;
+negate++;
+negate--;
+++negate;
+--negate;
+let not        = negate;
+let complement = ~not;
 
-a = func(b, 3, someOtherVariable);
-a = func();
-a = func(3);
+// [Factor]
+// ~~~~~~~~
 
-someVariable = a++ * --someOtherVariable;
+let multiply = not * complement;
+let divide   = complement / multiply;
+let reminder = multiply % divide;
 
-var nice: int = 7;
-nice += 1;    // 8
-nice /= 2;    // 4
-nice %= 3;    // 1
-nice *= 4;    // 4
-nice -= -5*6; // 34
+// [Term]
+// ~~~~~~
 
-nice++;
-nice--;
+let add = divide + reminder;
+let sub = reminder - add;
 
-nice += 4;
+// [Shift]
+// ~~~~~~~
 
-++nice;
---nice;
+let leftShift  = add << sub;
+let rightShift = sub >> leftShift;
 
-func();
+// [Bitwise AND]
+// ~~~~~~~~~~~~~
 
-var boolean: bool = false;
-boolean = !boolean;
+let bitwiseAND = leftShift & rightShift;
 
-someOtherVariable = ~someVariable;
+// [Bitwise XOR]
+// ~~~~~~~~~~~~~
 
-let shifty0 : int = 1 << 4;
-let shifty1 : int = shifty0 >> 2;
-var shifty2 : int = ~shifty1;
-shifty2 <<= 4;
-shifty2 >>= 3;
+let bitwiseXOR = rightShift ^ bitwiseAND;
 
-var comp: bool = a < b;
-comp = a <= b;
-comp = a >= b;
-comp = a > b;
+// [Bitwise OR]
+// ~~~~~~~~~~~~~
 
-comp = c == d;
-comp = a < b != a > b;
+let bitwiseOR = bitwiseAND | bitwiseXOR;
 
-var shortCircuit: bool = a < b && a > b;
-comp ^= shortCircuit;
-comp &= shortCircuit;
-comp |= shortCircuit;
+// [Comparison]
+// ~~~~~~~~~~~~
 
-let MASK : int = 1 << 5;
-var res: bool = a & MASK != 1 << 2;
+let smallerThan    = bitwiseXOR < bitwiseOR;
+let smallerOrEqual = bitwiseOR <= smallerThan;
+let largerThan     = smallerThan > smallerOrEqual;
+let largerOrEqual  = smallerOrEqual >= largerThan;
+
+// [Equality]
+// ~~~~~~~~~~
+
+let equal    = largerThan == largerOrEqual;
+let notEqual = largerOrEqual != equal;
+
+// [Logical AND]
+// ~~~~~~~~~~~~~
+
+let logicalAND = equal && notEqual;
+
+// [Logical OR]
+// ~~~~~~~~~~~~
+
+var logicalOR = notEqual || logicalAND;
+
+// [Assignment]
+// ~~~~~~~~~~~~
+
+logicalOR   = logicalAND;
+logicalOR  *= logicalAND;
+logicalOR  /= logicalAND;
+logicalOR  %= logicalAND;
+logicalOR  += logicalAND;
+logicalOR  -= logicalAND;
+logicalOR <<= logicalAND;
+logicalOR >>= logicalAND;
+logicalOR  &= logicalAND;
+logicalOR  ^= logicalAND;
+logicalOR  |= logicalAND;
