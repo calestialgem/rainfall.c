@@ -338,9 +338,8 @@ checkAssignment(String const str, EvaluationNode const des, Type const src) {
   bool res = true;
   if (!typeCnv(src, des.type)) {
     otcErr(
-      anr.otc, str,
-      "Result of `%s` is a `%s`, which cannot be converted to a `%s`!",
-      typeName(src), typeName(des.type));
+      anr.otc, str, "Cannot assign a `%s` to a `%s`!", typeName(src),
+      typeName(des.type));
     res = false;
   }
   if (!opEq(des.exp.op, OP_ACS)) {
