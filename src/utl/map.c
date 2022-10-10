@@ -4,77 +4,68 @@
 #include "dbg/api.h"
 #include "utl/api.h"
 
-#include <stdbool.h>
-#include <stdlib.h>
+#include <stddef.h>
 
-/* Amount of allocated pairs in the given map. */
-static iptr mapCap(Map const map) { return map.end - map.bgn; }
+Map emptyMap(void) { return (Map){.first = NULL, .after = NULL, .entries = 0}; }
 
-/* Whether the given map should grow before adding a new pair. */
-static bool shouldGrow(Map const map) {
-  double const MIN_RATIO = 0.5;
-  iptr const   cap       = mapCap(map);
-  return cap == 0 || (double)map.len / (double)cap >= MIN_RATIO;
+void disposeMap(Map* map) {
+  map->first   = allocateArray(map->first, 0, MapEntry);
+  map->after   = map->first;
+  map->entries = 0;
 }
 
-/* Multiply the capacity of the given map by 16. */
-static void grow(Map* const map) {
-  iptr const MULTIPLIER = 16;
-  iptr const cap        = mapCap(*map);
-  Map new = mapOf(cap < MULTIPLIER ? MULTIPLIER : cap * MULTIPLIER);
-  for (MapEntry const* i = map->bgn; i < map->end; i++)
-    if (strLen(i->key)) mapPut(&new, i->key, i->val);
-  mapFree(map);
-  *map = new;
-}
+/* Lowest ratio of used capacity to total capacity thay is allowed. */
+#define MIN_RATIO  0.5
+/* Factor to scale the capacity in each growth. */
+#define MULTIPLIER 16
 
-Map mapOf(iptr const cap) {
-  Map res = {0};
-  if (cap) {
-    res.bgn = calloc(cap, sizeof(MapEntry));
-    dbgExpect(res.bgn, "Could not allocate!");
-    res.end = res.bgn + cap;
+void insertEntry(Map* map, String key, ptrdiff_t value) {
+  ptrdiff_t capacity = map->after - map->first;
+
+  // Grow if necessary.
+  if (capacity == 0 || (double)map->entries / capacity >= MIN_RATIO) {
+    ptrdiff_t newCapacity =
+      capacity < MULTIPLIER ? MULTIPLIER : capacity * MULTIPLIER;
+
+    Map new   = emptyMap();
+    new.first = allocateArray(new.first, newCapacity, MapEntry);
+    new.after = new.first + newCapacity;
+
+    for (MapEntry const* i = map->first; i < map->after; i++)
+      if (characters(i->key)) insertEntry(&new, i->key, i->value);
+
+    disposeMap(map);
+    *map = new;
   }
-  return res;
-}
 
-void mapFree(Map* const map) {
-  free(map->bgn);
-  map->bgn = NULL;
-  map->end = NULL;
-  map->len = 0;
-}
-
-void mapPut(Map* const map, String const key, iptr const val) {
-  if (shouldGrow(*map)) grow(map);
-  iptr const cap  = mapCap(*map);
-  iptr const hash = strHash(key);
-  for (iptr i = 0; i < cap; i++) {
-    iptr const index = (hash + i) % cap;
-    if (!strLen(map->bgn[index].key)) {
-      map->bgn[index].key = key;
-      map->bgn[index].val = val;
-      map->len++;
+  ptrdiff_t hash = hashcode(key);
+  for (ptrdiff_t i = 0; i < capacity; i++) {
+    ptrdiff_t index = (hash + i) % capacity;
+    if (!characters(map->first[index].key)) {
+      map->first[index].key   = key;
+      map->first[index].value = value;
+      map->entries++;
       return;
     }
   }
-  dbgUnexpected("Could not find empty place in map!");
+
+  unexpected("Could not find an empty place in the map!");
 }
 
-MapEntry const* mapGet(Map const map, String const key) {
-  iptr const cap  = mapCap(map);
-  iptr const hash = strHash(key);
-  for (iptr i = 0; i < cap; i++) {
-    iptr const index = (hash + i) % cap;
-    if (strEq(map.bgn[index].key, key)) return map.bgn + index;
+MapEntry const* accessEntry(Map map, String key) {
+  ptrdiff_t capacity = map.after - map.first;
+  ptrdiff_t hash     = hashcode(key);
+  for (ptrdiff_t i = 0; i < capacity; i++) {
+    ptrdiff_t index = (hash + i) % capacity;
+    if (equalStrings(map.first[index].key, key)) return map.first + index;
   }
   return NULL;
 }
 
-String const* mapGetKey(Map const map, String const key) {
-  return &mapGet(map, key)->key;
+String const* accessKey(Map map, String key) {
+  return &accessEntry(map, key)->key;
 }
 
-iptr const* mapGetVal(Map const map, String const key) {
-  return &mapGet(map, key)->val;
+ptrdiff_t const* accessValue(Map map, String key) {
+  return &accessEntry(map, key)->value;
 }

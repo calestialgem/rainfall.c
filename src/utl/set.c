@@ -4,68 +4,59 @@
 #include "dbg/api.h"
 #include "utl/api.h"
 
-#include <stdbool.h>
-#include <stdlib.h>
+#include <stddef.h>
 
-/* Amount of allocated strings in the given set. */
-static iptr setCap(Set const set) { return set.end - set.bgn; }
+Set emptySet(void) { return (Set){.first = NULL, .after = NULL, .members = 0}; }
 
-/* Whether the given set should grow before adding a new string. */
-static bool shouldGrow(Set const set) {
-  double const MIN_RATIO = 0.5;
-  iptr const   cap       = setCap(set);
-  return cap == 0 || (double)set.len / (double)cap >= MIN_RATIO;
+void disposeSet(Set* set) {
+  set->first   = allocateArray(set->first, 0, String);
+  set->after   = set->first;
+  set->members = 0;
 }
 
-/* Multiply the capacity of the given set by 16. */
-static void grow(Set* const set) {
-  iptr const MULTIPLIER = 16;
-  iptr const cap        = setCap(*set);
-  Set new = setOf(cap < MULTIPLIER ? MULTIPLIER : cap * MULTIPLIER);
-  for (String const* i = set->bgn; i < set->end; i++)
-    if (strLen(*i)) setPut(&new, *i);
-  setFree(set);
-  *set = new;
-}
+/* Lowest ratio of used capacity to total capacity thay is allowed. */
+#define MIN_RATIO  0.5
+/* Factor to scale the capacity in each growth. */
+#define MULTIPLIER 16
 
-Set setOf(iptr const cap) {
-  Set res = {0};
-  if (cap) {
-    res.bgn = calloc(cap, sizeof(String));
-    dbgExpect(res.bgn, "Could not allocate!");
-    res.end = res.bgn + cap;
+void insertMember(Set* set, String member) {
+  ptrdiff_t capacity = set->after - set->first;
+
+  // Grow if necessary.
+  if (capacity == 0 || (double)set->members / capacity >= MIN_RATIO) {
+    ptrdiff_t newCapacity =
+      capacity < MULTIPLIER ? MULTIPLIER : capacity * MULTIPLIER;
+
+    Set new   = emptySet();
+    new.first = allocateArray(new.first, newCapacity, String);
+    new.after = new.first + newCapacity;
+
+    for (String const* i = set->first; i < set->after; i++)
+      if (characters(*i)) insertMember(&new, *i);
+
+    disposeSet(set);
+    *set = new;
   }
-  return res;
-}
 
-void setFree(Set* const set) {
-  free(set->bgn);
-  set->bgn = NULL;
-  set->end = NULL;
-  set->len = 0;
-}
-
-void setPut(Set* const set, String const str) {
-  if (shouldGrow(*set)) grow(set);
-  iptr const cap  = setCap(*set);
-  iptr const hash = strHash(str);
-  for (iptr i = 0; i < cap; i++) {
-    iptr const index = (hash + i) % cap;
-    if (!strLen(set->bgn[index])) {
-      set->bgn[index] = str;
-      set->len++;
+  ptrdiff_t hash = hashcode(member);
+  for (ptrdiff_t i = 0; i < capacity; i++) {
+    ptrdiff_t index = (hash + i) % capacity;
+    if (!characters(set->first[index])) {
+      set->first[index] = member;
+      set->members++;
       return;
     }
   }
-  dbgUnexpected("Could not find empty place in set!");
+
+  unexpected("Could not find an empty place in the set!");
 }
 
-String const* setGet(Set const set, String const str) {
-  iptr const cap  = setCap(set);
-  iptr const hash = strHash(str);
-  for (iptr i = 0; i < cap; i++) {
-    iptr const index = (hash + i) % cap;
-    if (strEq(set.bgn[index], str)) return set.bgn + index;
+String const* accessMember(Set set, String member) {
+  ptrdiff_t capacity = set.after - set.first;
+  ptrdiff_t hash     = hashcode(member);
+  for (ptrdiff_t i = 0; i < capacity; i++) {
+    ptrdiff_t index = (hash + i) % capacity;
+    if (equalStrings(set.first[index], member)) return set.first + index;
   }
   return NULL;
 }

@@ -56,54 +56,54 @@ void      read(Buffer* buffer, FILE* stream);
  * existance checking. */
 typedef struct {
   /* Pointer to the first string if it exists. */
-  String* bgn;
+  String*   first;
   /* Pointer to one after the last string. */
-  String* end;
+  String*   after;
   /* Amount of strings. */
-  iptr    len;
+  ptrdiff_t members;
 } Set;
 
-/* Set with the given initial capacity. */
-Set           setOf(iptr cap);
-/* Release the memory resources used by the given set. */
-void          setFree(Set* set);
+/* Set without any elements. */
+Set           emptySet(void);
+/* Release the memory used by the given set. */
+void          disposeSet(Set* set);
 /* Put the given string to the given set. */
-void          setPut(Set* set, String str);
+void          insertMember(Set* set, String member);
 /* Pointer to the string in the given set that is equal to the given string.
  * Returns null if there is no string that is equal. */
-String const* setGet(Set set, String str);
+String const* accessMember(Set set, String member);
 
 /* Pair of a string as the key and a corresponding index as a value. */
 typedef struct {
   /* String that differentiates the index. */
-  String key;
+  String    key;
   /* The index value. */
-  iptr   val;
+  ptrdiff_t value;
 } MapEntry;
 
 /* Dynamicly allocated array of string and index pairs that uses hashcode for
  * fast element existance checking and access. */
 typedef struct {
   /* Pointer to the first entry if it exists. */
-  MapEntry* bgn;
+  MapEntry* first;
   /* Pointer to one after the last entry. */
-  MapEntry* end;
-  /* Amount of strings. */
-  iptr      len;
+  MapEntry* after;
+  /* Amount of entries. */
+  ptrdiff_t entries;
 } Map;
 
-/* Map with the given initial capacity. */
-Map             mapOf(iptr cap);
-/* Release the memory resources used by the given map. */
-void            mapFree(Map* map);
+/* Map without any entries. */
+Map              emptyMap(void);
+/* Release the memory used by the given map. */
+void             disposeMap(Map* map);
 /* Put the given index with the given string as the key to the given map. */
-void            mapPut(Map* map, String key, iptr val);
+void             insertEntry(Map* map, String key, ptrdiff_t value);
 /* Pointer to the entry in the given map that corresponds to the given key.
  * Returns null if there is no entry with the given key. */
-MapEntry const* mapGet(Map map, String key);
+MapEntry const*  accessEntry(Map map, String key);
 /* Pointer to the string in the given map that corresponds to the given key.
  * Returns null if there is no entry with the given key. */
-String const*   mapGetKey(Map map, String key);
+String const*    accessKey(Map map, String key);
 /* Pointer to the index in the given map that corresponds to the given key.
  * Returns null if there is no entry with the given key. */
-iptr const*     mapGetVal(Map map, String key);
+ptrdiff_t const* accessValue(Map map, String key);
