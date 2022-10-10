@@ -4,6 +4,7 @@
 #include "dbg/api.h"
 #include "utl/api.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
 void* allocate(void* previous, ptrdiff_t bytes) {
