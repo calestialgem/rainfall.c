@@ -7,52 +7,52 @@
 #include "utl/api.h"
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <vadefs.h>
 
 /* Log the given formatted message at the given level for the given part of the
  * given source file to the given stream. */
-static void log(
-  Source source, FILE* stream, char const* level, String section,
-  char const* format, va_list args) {
-  Portion por = portionOf(source, section);
+static void highlight(
+  Source s, FILE* f, char const* level, String section, char const* format,
+  va_list v) {
+  Portion p = portionOf(s, section);
   fprintf(
-    stream, "%s:%u:%u:%u:%u: %s: ", source.name, por.first.line, por.first.cl,
-    por.end.line, por.end.cl, level);
+    f, "%s:%u:%u:%u:%u: %s: ", s.name, p.first.line, p.first.column,
+    p.last.line, p.last.column, level);
 
-  vfprintf(stream, format, args);
-  fprintf(stream, "\n");
+  vfprintf(f, format, v);
+  fputc('\n', f);
 
-  underline(por, stream);
+  underline(p, f);
 }
 
 /* Log the given formatted message at the given level for the given source file
  * to the given stream. */
-static void logWhole(
-  Source source, FILE* stream, char const* level, char const* format,
-  va_list args) {
-  fprintf(stream, "%s: %s: ", source.name, level);
+static void
+report(Source s, FILE* f, char const* level, char const* format, va_list v) {
+  fprintf(f, "%s: %s: ", s.name, level);
 
-  vfprintf(stream, format, args);
-  fprintf(stream, "\n");
+  vfprintf(f, format, v);
+  fputc('\n', f);
 }
 
-/* Calls `log` with the given source, stream and level. */
-#define logArgs(stream, level)                          \
-  do {                                                  \
-    va_list args = NULL;                                \
-    va_start(args, format);                             \
-    log(*source, stream, level, section, format, args); \
-    va_end(args);                                       \
+/* Passes the varargs to `highlight` with the given stream and level. */
+#define highlightArgs(stream, level)                     \
+  do {                                                   \
+    va_list args = NULL;                                 \
+    va_start(args, format);                              \
+    highlight(*s, stream, level, section, format, args); \
+    va_end(args);                                        \
   } while (false)
 
-/* Calls `logWhole` with the given source, stream and level. */
-#define logWholeArgs(stream, level)                 \
-  do {                                              \
-    va_list args = NULL;                            \
-    va_start(args, format);                         \
-    logWhole(*source, stream, level, format, args); \
-    va_end(args);                                   \
+/* Passes the varargs to `report` with the given stream and level. */
+#define reportArgs(stream, level)            \
+  do {                                       \
+    va_list args = NULL;                     \
+    va_start(args, format);                  \
+    report(*s, stream, level, format, args); \
+    va_end(args);                            \
   } while (false)
 
 Source loadSource(char const* name) {
@@ -63,12 +63,12 @@ Source loadSource(char const* name) {
   append(&path, nullTerminated("tr"));
   put(&path, 0);
 
-  FILE* stream = fopen(path.first, "r");
+  FILE* f = fopen(path.first, "r");
   disposeBuffer(&path);
-  expect(stream, "Could not open file!");
+  expect(f, "Could not open file!");
 
   Buffer contents = emptyBuffer();
-  read(&contents, stream);
+  read(&contents, f);
 
   // Put the null-terminator as end of file character, and a new line, which
   // makes sure that there is always a line that could be reported to user.
@@ -79,33 +79,32 @@ Source loadSource(char const* name) {
     .name = name, .contents = contents, .errors = 0, .warnings = 0};
 }
 
-void disposeSource(Source* source) { disposeBuffer(&source->contents); }
+void disposeSource(Source* s) { disposeBuffer(&s->contents); }
 
-void highlightError(Source* source, String section, char const* format, ...) {
-  logArgs(stderr, "error");
-  source->errors++;
+void highlightError(Source* s, String section, char const* format, ...) {
+  highlightArgs(stderr, "error");
+  s->errors++;
 }
 
-void highlightWarning(Source* source, String section, char const* format, ...) {
-  logArgs(stdout, "warning");
-  source->warnings++;
+void highlightWarning(Source* s, String section, char const* format, ...) {
+  highlightArgs(stdout, "warning");
+  s->warnings++;
 }
 
-void highlightInformation(
-  Source* source, String section, char const* format, ...) {
-  logArgs(stdout, "info");
+void highlightInfo(Source* s, String section, char const* format, ...) {
+  highlightArgs(stdout, "info");
 }
 
-void reportError(Source* source, char const* format, ...) {
-  logWholeArgs(stderr, "error");
-  source->errors++;
+void reportError(Source* s, char const* format, ...) {
+  reportArgs(stderr, "error");
+  s->errors++;
 }
 
-void reportWarning(Source* source, char const* format, ...) {
-  logWholeArgs(stdout, "warning");
-  source->warnings++;
+void reportWarning(Source* s, char const* format, ...) {
+  reportArgs(stdout, "warning");
+  s->warnings++;
 }
 
-void reportInformation(Source* source, char const* format, ...) {
-  logWholeArgs(stdout, "info");
+void reportInfo(Source* s, char const* format, ...) {
+  reportArgs(stdout, "info");
 }
