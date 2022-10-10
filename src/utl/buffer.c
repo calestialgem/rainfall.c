@@ -47,9 +47,16 @@ void disposeBuffer(Buffer* buffer) {
 
 ptrdiff_t bytes(Buffer buffer) { return buffer.after - buffer.first; }
 
-void append(Buffer* buffer, char character) {
+void put(Buffer* buffer, char character) {
   reserve(buffer, 1);
   *buffer->after++ = character;
+}
+
+void append(Buffer* buffer, String string) {
+  ptrdiff_t amount = characters(string);
+  reserve(buffer, amount);
+  memmove(buffer->after, string.first, amount * sizeof(char));
+  buffer->after += amount;
 }
 
 /* Amount of bytes to read from a stream at every step. */

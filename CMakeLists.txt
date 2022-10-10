@@ -31,7 +31,6 @@ add_executable(${PROJECT_NAME}
 
   # Outcome Module
   src/otc/location.c
-  src/otc/outcome.c
   src/otc/portion.c
   src/otc/source.c
 

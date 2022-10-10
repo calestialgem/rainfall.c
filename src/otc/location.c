@@ -5,32 +5,37 @@
 #include "otc/api.h"
 #include "otc/mod.h"
 
-Location locOf(Source const src, char const* const pos) {
-  Location res = {.src = src, .pos = pos, .ln = 1, .cl = 1};
-  for (char const* i = srcBgn(src); i < pos; i++)
+Location locationAt(Source source, char const* position) {
+  Location res = {
+    .source = source, .position = position, .line = 1, .column = 1};
+  for (char const* i = source.contents.first; i < position; i++)
     if (*i == '\n') {
-      res.ln++;
-      res.cl = 1;
+      res.line++;
+      res.column = 1;
     } else {
-      res.cl++;
+      res.column++;
     }
   return res;
 }
 
-Location locStart(Location const loc) {
+Location lineStart(Location location) {
   return (Location){
-    .src = loc.src, .pos = loc.pos - loc.cl + 1, .ln = loc.ln, .cl = 1};
+    .source   = location.source,
+    .position = location.position - location.column + 1,
+    .line     = location.line,
+    .column   = 1};
 }
 
-Location locEnd(Location const loc) {
-  for (char const* i = loc.pos; i < srcEnd(loc.src); i++)
+Location lineEnd(Location location) {
+  for (char const* i = location.position; i < location.source.contents.after;
+       i++)
     if (*i == '\n')
       return (Location){
-        .src = loc.src,
-        .pos = i - 1,
-        .ln  = loc.ln,
-        .cl  = (int)(loc.cl + i - 1 - loc.pos)};
+        .source   = location.source,
+        .position = i - 1,
+        .line     = location.line,
+        .column   = location.column + i - 1 - location.position};
 
   // Above loop should find a new line at worst at the end of the file.
-  dbgUnexpected("File does not end with a new line!");
+  unexpected("File does not end with a new line!");
 }

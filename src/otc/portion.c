@@ -6,47 +6,49 @@
 #include "utl/api.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 
 /* Print the given portion, which is contained in a singe line, to the given
  * stream. Prints "..." as continuation marks according to given skip flag. */
-static void print(Portion const por, FILE* const stream, bool const skip) {
-  Portion const line = {.bgn = locStart(por.bgn), .end = locEnd(por.end)};
+static void print(Portion por, FILE* stream, bool skip) {
+  Portion line = {.first = lineStart(por.first), .last = lineEnd(por.last)};
 
   fprintf(stream, "%8s |\n", "");
-  fprintf(stream, "%8i | ", line.bgn.ln);
+  fprintf(stream, "%8i | ", line.first.line);
 
-  // `String` is exclusive, meaning it does not include the character pointed by
-  // its `end` member; while, `Portion` is inclusive. Thus, add one to the `end`
-  // of `Portion` to get the `end` of `String`.
-  strWrite((String){.bgn = line.bgn.pos, .end = line.end.pos + 1}, stream);
+  fwrite(
+    line.first.position, sizeof(char),
+    line.last.position - line.first.position + 1, stream);
 
   fprintf(stream, "\n%8s |", skip ? "..." : "");
 
-  for (iptr i = 0; i <= por.end.cl; i++)
-    fprintf(stream, "%c", i < por.bgn.cl ? ' ' : '~');
+  for (ptrdiff_t i = 0; i <= por.last.column; i++)
+    fputc(i < por.first.column ? ' ' : '~', stream);
 
-  fprintf(stream, "\n");
+  fputc('\n', stream);
 }
 
-Portion porOf(Source const src, String const part) {
-  // `String` is exclusive, meaning it does not include the character pointed by
-  // its `end` member; while, `Portion` is inclusive. Thus, subtract one from
-  // the `end` of `String` to get the `end` of `Portion`.
+Portion portionOf(Source source, String section) {
   return (Portion){
-    .bgn = locOf(src, part.bgn), .end = locOf(src, part.end - 1)};
+    .first = locationAt(source, section.first),
+    .last  = locationAt(source, section.after - 1)};
 }
 
-void porUnderline(Portion const por, FILE* const stream) {
-  int const span = por.end.ln - por.bgn.ln + 1;
+void underline(Portion portion, FILE* stream) {
+  int span = portion.last.line - portion.first.line + 1;
   // If the portion is contained in a single line.
   if (span == 1) {
-    print(por, stream, false);
+    print(portion, stream, false);
   } else {
     // If there are lines skiped between the begining and end of the portion,
     // pass the flag as set.
-    print((Portion){.bgn = por.bgn, .end = locEnd(por.bgn)}, stream, span > 2);
-    print((Portion){.bgn = locStart(por.end), .end = por.end}, stream, false);
+    print(
+      (Portion){.first = portion.first, .last = lineEnd(portion.first)}, stream,
+      span > 2);
+    print(
+      (Portion){.first = lineStart(portion.last), .last = portion.last}, stream,
+      false);
   }
-  fprintf(stream, "\n");
+  fputc('\n', stream);
 }

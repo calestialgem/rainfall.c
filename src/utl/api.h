@@ -48,7 +48,9 @@ void      disposeBuffer(Buffer* buffer);
 /* Amount of bytes in the given buffer. */
 ptrdiff_t bytes(Buffer buffer);
 /* Insert the given byte to the end of the given buffer. */
-void      append(Buffer* buffer, char character);
+void      put(Buffer* buffer, char character);
+/* Insert the bytes in the given string to the end of the given buffer. */
+void      append(Buffer* buffer, String string);
 /* Insert all the bytes from the given stream to the end of the given buffer. */
 void      read(Buffer* buffer, FILE* stream);
 

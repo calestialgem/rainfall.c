@@ -3,41 +3,109 @@
 
 #include "dbg/api.h"
 #include "otc/api.h"
+#include "otc/mod.h"
 #include "utl/api.h"
 
+#include <stdarg.h>
 #include <stdio.h>
+#include <vadefs.h>
 
-Source srcOf(char const* const name) {
+/* Log the given formatted message at the given level for the given part of the
+ * given source file to the given stream. */
+static void log(
+  Source source, FILE* stream, char const* level, String section,
+  char const* format, va_list args) {
+  Portion por = portionOf(source, section);
+  fprintf(
+    stream, "%s:%u:%u:%u:%u: %s: ", source.name, por.first.line, por.first.cl,
+    por.end.line, por.end.cl, level);
+
+  vfprintf(stream, format, args);
+  fprintf(stream, "\n");
+
+  underline(por, stream);
+}
+
+/* Log the given formatted message at the given level for the given source file
+ * to the given stream. */
+static void logWhole(
+  Source source, FILE* stream, char const* level, char const* format,
+  va_list args) {
+  fprintf(stream, "%s: %s: ", source.name, level);
+
+  vfprintf(stream, format, args);
+  fprintf(stream, "\n");
+}
+
+/* Calls `log` with the given source, stream and level. */
+#define logArgs(stream, level)                          \
+  do {                                                  \
+    va_list args = NULL;                                \
+    va_start(args, format);                             \
+    log(*source, stream, level, section, format, args); \
+    va_end(args);                                       \
+  } while (false)
+
+/* Calls `logWhole` with the given source, stream and level. */
+#define logWholeArgs(stream, level)                 \
+  do {                                              \
+    va_list args = NULL;                            \
+    va_start(args, format);                         \
+    logWhole(*source, stream, level, format, args); \
+    va_end(args);                                   \
+  } while (false)
+
+Source loadSource(char const* name) {
   // Join the name with the extension.
-  String const EXTENSION = strOf("tr");
-  String const str       = strOf(name);
-  Buffer       path      = bfrOf(0);
-  bfrAppend(&path, str);
-  bfrPut(&path, '.');
-  bfrAppend(&path, EXTENSION);
-  bfrPut(&path, 0);
+  Buffer path = emptyBuffer();
+  append(&path, nullTerminated(name));
+  put(&path, '.');
+  append(&path, nullTerminated("tr"));
+  put(&path, 0);
 
-  FILE* const stream = fopen(path.bgn, "r");
-  bfrFree(&path);
-  dbgExpect(stream, "Could not open file!");
+  FILE* stream = fopen(path.first, "r");
+  disposeBuffer(&path);
+  expect(stream, "Could not open file!");
 
-  Buffer con = bfrOf(0);
-  bfrRead(&con, stream);
+  Buffer contents = emptyBuffer();
+  read(&contents, stream);
 
   // Put the null-terminator as end of file character, and a new line, which
   // makes sure that there is always a line that could be reported to user.
-  bfrPut(&con, 0);
-  bfrPut(&con, '\n');
+  put(&contents, 0);
+  put(&contents, '\n');
 
-  return (Source){.name = name, .con = con};
+  return (Source){
+    .name = name, .contents = contents, .errors = 0, .warnings = 0};
 }
 
-void srcFree(Source* const src) { bfrFree(&src->con); }
+void disposeSource(Source* source) { disposeBuffer(&source->contents); }
 
-iptr srcLen(Source const src) { return bfrLen(src.con); }
+void highlightError(Source* source, String section, char const* format, ...) {
+  logArgs(stderr, "error");
+  source->errors++;
+}
 
-char srcAt(Source const src, iptr const i) { return bfrAt(src.con, i); }
+void highlightWarning(Source* source, String section, char const* format, ...) {
+  logArgs(stdout, "warning");
+  source->warnings++;
+}
 
-char const* srcBgn(Source const src) { return src.con.bgn; }
+void highlightInformation(
+  Source* source, String section, char const* format, ...) {
+  logArgs(stdout, "info");
+}
 
-char const* srcEnd(Source const src) { return src.con.end; }
+void reportError(Source* source, char const* format, ...) {
+  logWholeArgs(stderr, "error");
+  source->errors++;
+}
+
+void reportWarning(Source* source, char const* format, ...) {
+  logWholeArgs(stdout, "warning");
+  source->warnings++;
+}
+
+void reportInformation(Source* source, char const* format, ...) {
+  logWholeArgs(stdout, "info");
+}
