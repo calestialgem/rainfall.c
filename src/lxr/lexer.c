@@ -7,65 +7,65 @@
 #include "utl/api.h"
 
 #include <stdbool.h>
-#include <stdio.h>
+#include <stddef.h>
 
 /* Context of the lexing process. */
-static struct {
+typedef struct {
   /* Lex to add the lexemes into. */
   Lex*        lex;
-  /* Outcome to report to. */
-  Outcome*    otc;
   /* Lexed source. */
-  Source      src;
+  Source*     source;
   /* Position of the currently lexed character. */
-  char const* cur;
-} lxr;
+  char const* current;
+} Lexer;
+
+String marks[MARKS];
+String keywords[KEYWORDS];
 
 /* Add a lexeme with the given value and type. */
-static void add(String const val, LexemeType const type) {
-  lexAdd(lxr.lex, (Lexeme){.val = val, .type = type});
-}
+#define push(section_, tag_) \
+  pushLexeme(l->lex, (Lexeme){.section = (section_), .tag = (tag_)})
 
 /* Whether there is a character to lex. */
-static bool has() { return lxr.cur < srcEnd(lxr.src); }
+#define has() (l->current < l->source->contents.after)
 
 /* Character that is lexed. */
-static char get() { return *lxr.cur; }
+#define get() (*l->current)
 
 /* Go to the next character. */
-static void next() { lxr.cur++; }
+#define next() (l->current++)
 
 /* Go to the previous character. */
-static void prev() { lxr.cur--; }
+#define previous() (l->current--)
 
 /* Go back to the given position. */
-static void back(char const* const old) { lxr.cur = old; }
+#define back(old) \
+  do { l->current = (old); } while (false)
 
-/* String starting from the given position upto the current character. */
-static String val(char const* const old) {
-  return (String){.bgn = old, .end = lxr.cur};
-}
+/* Section of the source file starting from the given position upto the current
+ * character. */
+#define section(old) stringOf(old, l->current)
 
 /* Whether the current character exists and it equals to the given one. Consumes
  * the character if true. */
-static bool take(char const c) {
-  bool const res = has() && get() == c;
+static bool take(Lexer* l, char c) {
+  bool res = has() && get() == c;
   if (res) next();
   return res;
 }
 
 /* Whether the next characters are the same as the given string. Consumes the
  * characters if true. */
-static bool check(String const str) {
-  for (iptr i = 0; i < strLen(str); i++)
-    if (!has() || lxr.cur[i] != strAt(str, i)) return false;
-  lxr.cur += strLen(str);
+static bool check(Lexer* l, String s) {
+  for (ptrdiff_t i = 0; i < characters(s); i++)
+    if (!has() || l->current[i] != s.first[i]) return false;
+  l->current += characters(s);
   return true;
 }
 
 /* Consume the character if the first one fits the given initial predicate and
  * the remaining fit the given rest predicate. */
-static bool consume(bool (*const init)(char), bool (*const rest)(char)) {
+static bool consume(Lexer* l, bool (*init)(char), bool (*rest)(char)) {
   if (!has() || !init(get())) return false;
   next();
   while (has() && rest(get())) next();
@@ -73,58 +73,46 @@ static bool consume(bool (*const init)(char), bool (*const rest)(char)) {
 }
 
 /* Whether the given character is in the English alphabet. */
-static bool alpha(char const c) {
+static bool alpha(char c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
 /* Whether the given character is a decimal digit. */
-static bool digit(char const c) { return c >= '0' && c <= '9'; }
+static bool digit10(char c) { return c >= '0' && c <= '9'; }
 
 /* Whether the given character is whitespace. */
-static bool space(char const c) { return c == ' ' || c == '\t' || c == '\n'; }
+static bool space(char c) { return c == ' ' || c == '\t' || c == '\n'; }
 
 /* Try to skip a whitespace. */
-static bool whitespace() { return consume(&space, &space); }
+static bool whitespace(Lexer* l) { return consume(l, &space, &space); }
 
 /* Try to skip a comment. */
-static bool comment() {
-  if (!take('/')) return false;
-  if (!take('/')) {
-    prev(); // Roll back the first '/'.
+static bool comment(Lexer* l) {
+  if (!take(l, '/')) return false;
+  if (!take(l, '/')) {
+    previous(); // Roll back the first '/'.
     return false;
   }
   // Consume until a new line.
-  while (!take('\n')) next();
+  while (!take(l, '\n')) next();
   return true;
 }
 
 /* Try to lex a mark. */
-static bool mark() {
-  char const* const old = lxr.cur;
+static bool mark(Lexer* l) {
+  char const* old = l->current;
 
-// Check whether there is a mark.
-#define LENGTH 38
-  String const MARKS[LENGTH] = {
-    strOf(","),   strOf(":"),  strOf(";"),  strOf("("),  strOf(")"),
-    strOf("*="),  strOf("*"),  strOf("/="), strOf("/"),  strOf("%="),
-    strOf("%"),   strOf("+="), strOf("++"), strOf("+"),  strOf("-="),
-    strOf("--"),  strOf("-"),  strOf("&="), strOf("&&"), strOf("&"),
-    strOf("|="),  strOf("||"), strOf("|"),  strOf("^="), strOf("^"),
-    strOf("<<="), strOf("<<"), strOf("<="), strOf("<"),  strOf(">>="),
-    strOf(">>"),  strOf(">="), strOf(">"),  strOf("=="), strOf("="),
-    strOf("!="),  strOf("!"),  strOf("~")};
-
-  for (iptr i = 0; i < LENGTH; i++) {
-    if (check(MARKS[i])) {
-      add(val(old), LXM_COMMA + i);
+  // Check whether there is a mark.
+  for (ptrdiff_t i = 0; i < MARKS; i++) {
+    if (check(l, marks[i])) {
+      push(section(old), MARK_FIRST + i);
       return true;
     }
   }
-#undef LENGTH
 
   // EOF mark.
-  if (take(0)) {
-    add(val(old), LXM_EOF);
+  if (take(l, 0)) {
+    push(section(old), LEXEME_EOF);
     return true;
   }
 
@@ -132,101 +120,108 @@ static bool mark() {
 }
 
 /* Whether the given character can be start of a word. */
-static bool wordInit(char const c) { return alpha(c) || c == '_'; }
+static bool wordInit(char c) { return alpha(c) || c == '_'; }
 
 /* Whether the given character can be rest of a word. */
-static bool wordRest(char const c) { return alpha(c) || digit(c) || c == '_'; }
+static bool wordRest(char c) { return alpha(c) || digit10(c) || c == '_'; }
 
 /* Try to lex a word. */
-static bool word() {
-  char const* const old = lxr.cur;
+static bool word(Lexer* l) {
+  char const* old = l->current;
 
   // Identifier.
-  if (!consume(&wordInit, &wordRest)) return false;
-  String const word = val(old);
+  if (!consume(l, &wordInit, &wordRest)) return false;
+  String word = section(old);
 
-// Check whether it is a reserved identifier.
-#define LENGTH 2
-  String const KEYWORDS[LENGTH] = {strOf("let"), strOf("var")};
-
-  for (iptr i = 0; i < LENGTH; i++) {
-    if (strEq(word, KEYWORDS[i])) {
-      add(word, LXM_LET + i);
+  // Check whether it is a reserved identifier.
+  for (ptrdiff_t i = 0; i < KEYWORDS; i++) {
+    if (equalStrings(word, keywords[i])) {
+      push(word, KEYWORD_FIRST + i);
       return true;
     }
   }
 #undef LENGTH
 
-  add(word, LXM_ID);
+  push(word, LEXEME_IDENTIFIER);
   return true;
 }
 
 /* Whether the given character can be start of a decimal. */
-static bool decimalInit(char const c) { return digit(c); }
+static bool decimalInit(char c) { return digit10(c); }
 
 /* Whether the given character can be rest of a decimal. */
-static bool decimalRest(char const c) { return digit(c) || c == '_'; }
+static bool decimalRest(char c) { return digit10(c) || c == '_'; }
 
 /* Try to lex a decimal literal. */
-static bool decimal() {
-  char const* const old = lxr.cur;
+static bool decimal(Lexer* l) {
+  char const* old = l->current;
 
   // Whole part.
   // Optional sign.
-  take('+') || take('-');
-  if (!consume(&decimalInit, &decimalRest)) {
+  take(l, '+') || take(l, '-');
+  if (!consume(l, &decimalInit, &decimalRest)) {
     back(old);
     return false;
   }
 
   // Fraction.
-  char const* const frac = lxr.cur;
-  if (take('.') && !consume(&decimalInit, &decimalRest)) back(frac);
+  char const* frac = l->current;
+  if (take(l, '.') && !consume(l, &decimalInit, &decimalRest)) back(frac);
 
   // Exponent.
-  char const* const exp = lxr.cur;
-  if (take('e') || take('E')) {
+  char const* exp = l->current;
+  if (take(l, 'e') || take(l, 'E')) {
     // Optional sign.
-    take('+') || take('-');
-    if (!consume(&decimalInit, &decimalRest)) back(exp);
+    take(l, '+') || take(l, '-');
+    if (!consume(l, &decimalInit, &decimalRest)) back(exp);
   }
 
-  add(val(old), LXM_DEC);
+  push(section(old), LEXEME_DECIMAL);
   return true;
 }
 
 /* Try to skip or lex a separator. */
-static bool separator() { return whitespace() || comment() || mark(); }
+static bool separator(Lexer* l) {
+  return whitespace(l) || comment(l) || mark(l);
+}
 
-void lexerLex(Lex* const lex, Outcome* const otc, Source const src) {
-  lxr.lex = lex;
-  lxr.otc = otc;
-  lxr.src = src;
-  lxr.cur = srcBgn(src);
-
+/* Run the given lexer context. */
+static void run(Lexer* l) {
   while (has()) {
-    char const* const old = lxr.cur;
+    char const* old = l->current;
 
-    if (word() || decimal()) {
-      if (separator()) continue;
+    if (word(l) || decimal(l)) {
+      if (separator(l)) continue;
       // Roll back the word or decimal that was lexed because it is not
       // separated from what comes after it.
-      lxr.cur = old;
-      lexPop(lxr.lex);
+      back(old);
+      popLexeme(l->lex);
     }
 
-    if (separator()) continue;
+    if (separator(l)) continue;
 
     // Unknown character! Mark all characters until a separator is found.
     next();
-    String err = val(old);
-    while (!separator()) {
+    String err = section(old);
+    while (!separator(l)) {
       next();
-      err.end++;
+      err.after++;
     }
-    otcErr(
-      lxr.otc, err, "Could not recognize %s!",
-      strLen(err) > 1 ? "these characters" : "this character");
-    lexAdd(lxr.lex, (Lexeme){.val = err, .type = LXM_ERR});
+    highlightError(
+      l->source, err, "Could not recognize %s!",
+      characters(err) > 1 ? "these characters" : "this character");
+    push(err, LEXEME_ERROR);
   }
+}
+
+void lex(Lex* x, Source* s) {
+  Lexer l = {.lex = x, .source = s, .current = s->contents.first};
+  run(&l);
+}
+
+void initLexer() {
+  for (ptrdiff_t i = 0; i < MARKS; i++)
+    marks[i] = nullTerminated(lexemeName(MARK_FIRST + i));
+  for (ptrdiff_t i = 0; i < KEYWORDS; i++)
+    keywords[i] = nullTerminated(lexemeName(KEYWORD_FIRST + i));
 }

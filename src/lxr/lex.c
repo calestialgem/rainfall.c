@@ -4,53 +4,42 @@
 #include "dbg/api.h"
 #include "lxr/api.h"
 #include "lxr/mod.h"
-#include "otc/api.h"
 
-#include <stdlib.h>
+#include <stddef.h>
 
 /* Make sure the given amount of space exists at the end of the given lex.
  * When necessary, grows by at least half of the current capacity. */
-static void reserve(Lex* const lex, iptr const amount) {
-  iptr const cap   = lex->all - lex->bgn;
-  iptr const len   = lexLen(*lex);
-  iptr const space = cap - len;
+static void reserve(Lex* l, ptrdiff_t amount) {
+  ptrdiff_t capacity = l->bound - l->first;
+  ptrdiff_t elements = l->after - l->first;
+  ptrdiff_t space    = capacity - elements;
   if (space >= amount) return;
 
-  iptr const    growth    = amount - space;
-  iptr const    minGrowth = cap / 2;
-  iptr const    newCap    = cap + (growth < minGrowth ? minGrowth : growth);
-  Lexeme* const mem       = realloc(lex->bgn, newCap * sizeof(Lexeme));
-  dbgExpect(mem, "Could not reallocate!");
+  ptrdiff_t growth    = amount - space;
+  ptrdiff_t minGrowth = capacity / 2;
+  if (growth < minGrowth) growth = minGrowth;
+  capacity += growth;
 
-  lex->bgn = mem;
-  lex->end = mem + len;
-  lex->all = mem + newCap;
+  l->first = allocateArray(l->first, capacity, Lexeme);
+  l->after = l->first + elements;
+  l->bound = l->first + capacity;
 }
 
-Lex lexOf(Outcome* const otc, Source const src) {
-  Lex res = {0};
-  lexerLex(&res, otc, src);
-  return res;
+Lex lexOf(Source* s) {
+  Lex l = {.first = NULL, .after = NULL, .bound = NULL};
+  lex(&l, s);
+  return l;
 }
 
-void lexFree(Lex* const lex) {
-  free(lex->bgn);
-  lex->bgn = NULL;
-  lex->end = NULL;
-  lex->all = NULL;
+void disposeLex(Lex* l) {
+  l->first = allocateArray(l->first, 0, Lexeme);
+  l->after = l->first;
+  l->bound = l->after;
 }
 
-iptr lexLen(Lex const lex) { return lex.end - lex.bgn; }
-
-Lexeme lexAt(Lex const lex, iptr const i) { return lex.bgn[i]; }
-
-Lexeme const* lexBgn(Lex const lex) { return lex.bgn; }
-
-Lexeme const* lexEnd(Lex const lex) { return lex.end; }
-
-void lexAdd(Lex* const lex, Lexeme const lxm) {
-  reserve(lex, 1);
-  *lex->end++ = lxm;
+void pushLexeme(Lex* l, Lexeme x) {
+  reserve(l, 1);
+  *l->after++ = x;
 }
 
-void lexPop(Lex* const lex) { lex->end--; }
+void popLexeme(Lex* l) { l->after--; }

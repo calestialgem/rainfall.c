@@ -12,44 +12,44 @@
 /* Operators without operands. */
 typedef struct {
   /* Lexeme that is the only operator. */
-  LexemeType op;
+  LexemeTag op;
 } NullaryOperator;
 
 /* Operators with a operator that comes before the only operand. */
 typedef struct {
   /* Lexeme that comes before the operand. */
-  LexemeType op;
+  LexemeTag op;
 } PrenaryOperator;
 
 /* Operators with a operator that comes after the only operand. */
 typedef struct {
   /* Lexeme that comes after the operand. */
-  LexemeType op;
+  LexemeTag op;
 } PostaryOperator;
 
 /* Operators with two operators that surround the only operand. */
 typedef struct {
   /* Lexeme that comes before the operand. */
-  LexemeType lop;
+  LexemeTag lop;
   /* Lexeme that comes after the operand. */
-  LexemeType rop;
+  LexemeTag rop;
 } CirnaryOperator;
 
 /* Operators with an operator that comes between two operands. */
 typedef struct {
   /* Lexeme that comes between the operands. */
-  LexemeType op;
+  LexemeTag op;
 } BinaryOperator;
 
 /* Operators with two or more operators and one or more operands where the
  * total amount can vary. All operands are separated by an operator. */
 typedef struct {
   /* Lexeme that comes after the first operand. */
-  LexemeType lop;
+  LexemeTag lop;
   /* Lexeme that comes between the intermediary operands. */
-  LexemeType sep;
+  LexemeTag sep;
   /* Lexeme that comes after the last operand. */
-  LexemeType rop;
+  LexemeTag rop;
 } VariaryOperator;
 
 /* Type of an opertor. */

@@ -63,11 +63,11 @@ static Lexeme take() {
 }
 
 /* Whether the current lexeme is of the given type. */
-static bool check(LexemeType const type) { return has() && get().type == type; }
+static bool check(LexemeTag const type) { return has() && get().tag == type; }
 
 /* Return whether the current lexeme is of the given type. Goes to the next
  * lexeme if true. */
-static bool consume(LexemeType const type) {
+static bool consume(LexemeTag const type) {
   bool const res = check(type);
   if (res) next();
   return res;
@@ -122,7 +122,7 @@ expNodePre(PrenaryOperator const pre, iptr const lvl, bool const has) {
   case NO:
     otcErr(
       psr.otc, lxmJoin(old), "Expected an operand after the operator `%s`!",
-      lxmName(pre.op));
+      lexemeName(pre.op));
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
@@ -145,14 +145,14 @@ static Result expNodeCir(CirnaryOperator const cir, bool const has) {
   case NO:
     otcErr(
       psr.otc, lxmJoin(old), "Expected an operand after the opening `%s`!",
-      lxmName(cir.lop));
+      lexemeName(cir.lop));
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
   if (!consume(cir.rop)) {
     otcErr(
       psr.otc, lxmJoin(old), "Expected a closing `%s` for the opening `%s`!",
-      lxmName(cir.rop), lxmName(cir.lop));
+      lexemeName(cir.rop), lexemeName(cir.lop));
     otcInfo(*psr.otc, old.val, "Opened here.");
     return ERR;
   }
@@ -170,7 +170,7 @@ expNodeBin(BinaryOperator const bin, iptr const lvl, bool const has) {
   case NO:
     otcErr(
       psr.otc, expJoin(old), "Expected an operand after the operator `%s`!",
-      lxmName(bin.op));
+      lexemeName(bin.op));
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
   }
@@ -191,7 +191,7 @@ static Result expNodeVar(VariaryOperator const var, bool const has) {
     }
     otcErr(
       psr.otc, expJoin(old), "Expected a closing `%s` for the opening `%s`!",
-      lxmName(var.rop), lxmName(var.lop));
+      lexemeName(var.rop), lexemeName(var.lop));
     otcInfo(*psr.otc, open.val, "Opened here.");
   case ERR: return ERR;
   default: dbgUnexpected("Unknown parse result!");
@@ -202,7 +202,7 @@ static Result expNodeVar(VariaryOperator const var, bool const has) {
     if (!consume(var.sep)) {
       otcErr(
         psr.otc, expJoin(old), "Expected a closing `%s` for the opening `%s`!",
-        lxmName(var.rop), lxmName(var.lop));
+        lexemeName(var.rop), lexemeName(var.lop));
       otcInfo(*psr.otc, open.val, "Opened here.");
       return ERR;
     }
@@ -212,7 +212,7 @@ static Result expNodeVar(VariaryOperator const var, bool const has) {
     case NO:
       otcErr(
         psr.otc, expJoin(old), "Expected an operand after the separator `%s`!",
-        lxmName(var.sep));
+        lexemeName(var.sep));
     case ERR: return ERR;
     default: dbgUnexpected("Unknown parse result!");
     }
@@ -412,7 +412,7 @@ void parserParse(Parse* const prs, Outcome* const otc, Lex const lex) {
     Lexeme const last = get();
     Result const res  = statement();
     if (res == NO) {
-      if (last.type == LXM_SEMI) {
+      if (last.tag == LXM_SEMI) {
         // Show error and clear after a semicolon.
         unknown(err, last.val.end);
         err = (Lexeme){0};
@@ -438,7 +438,7 @@ void parserParse(Parse* const prs, Outcome* const otc, Lex const lex) {
     unknown(err, last.val.bgn);
     err = (Lexeme){0};
   }
-  dbgExpect(get().type == LXM_EOF, "Lex does not end with EOF!");
+  dbgExpect(get().tag == LXM_EOF, "Lex does not end with EOF!");
   // Show any error left if there was not a successful parse at the end.
   // Subtract one to get rid of the last new line.
   unknown(err, get().val.bgn - 1);

@@ -4,13 +4,30 @@
 #pragma once
 
 #include "lxr/api.h"
+#include "lxr/mod.h"
 #include "otc/api.h"
 
-/* Add the given lexeme to the end of the given lex. */
-void lexAdd(Lex* lex, Lexeme lxm);
-/* Remove the last added lexeme from the given lex. */
-void lexPop(Lex* lex);
+/* First mark tag. */
+#define MARK_FIRST LEXEME_COMMA
+/* Tag after the last mark tag. */
+#define MARK_AFTER LEXEME_EOF
+/* Amount of marks. */
+#define MARKS      (MARK_AFTER - MARK_FIRST)
+/* Names of mark lexeme variants. */
+extern String marks[MARKS];
 
-/* Lex the given source file into the given lex by reporting to the given
- * outcome. */
-void lexerLex(Lex* lex, Outcome* otc, Source src);
+/* First keyword tag. */
+#define KEYWORD_FIRST LEXEME_LET
+/* Tag after the last keyword tag. */
+#define KEYWORD_AFTER LEXEME_IDENTIFIER
+/* Amount of keywords. */
+#define KEYWORDS      (KEYWORD_AFTER - KEYWORD_FIRST)
+/* Names of keyword lexeme variants. */
+extern String keywords[KEYWORDS];
+
+/* Add the given lexeme to the end of the given lex. */
+void pushLexeme(Lex*, Lexeme);
+/* Remove the last lexeme from the given lex. */
+void popLexeme(Lex*);
+/* Lex the given source file into the given lex. */
+void lex(Lex*, Source*);

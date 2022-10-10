@@ -6,135 +6,121 @@
 #include "otc/api.h"
 #include "utl/api.h"
 
-#include <stdio.h>
-
-/* Type of a lexeme. */
+/* Variant of a lexeme. */
 typedef enum {
   /* Mark ",". */
-  LXM_COMMA,
+  LEXEME_COMMA,
   /* Mark ":". */
-  LXM_COLON,
+  LEXEME_COLON,
   /* Mark ";". */
-  LXM_SEMI,
+  LEXEME_SEMICOLON,
   /* Mark "(". */
-  LXM_OPAREN,
+  LEXEME_OPENING_PARENTHESIS,
   /* Mark ")". */
-  LXM_CPAREN,
+  LEXEME_CLOSING_PARENTHESIS,
   /* Mark "*=". */
-  LXM_STAREQ,
+  LEXEME_STAR_EQUAL,
   /* Mark "*". */
-  LXM_STAR,
+  LEXEME_STAR,
   /* Mark "/=". */
-  LXM_SLASHEQ,
+  LEXEME_SLASH_EQUAL,
   /* Mark "/". */
-  LXM_SLASH,
+  LEXEME_SLASH,
   /* Mark "%=". */
-  LXM_PERCEQ,
+  LEXEME_PERCENT_EQUAL,
   /* Mark "%". */
-  LXM_PERCENT,
+  LEXEME_PERCENT,
   /* Mark "+=". */
-  LXM_PLUSEQ,
+  LEXEME_PLUS_EQUAL,
   /* Mark "++". */
-  LXM_PLUSPLUS,
+  LEXEME_PLUS_PLUS,
   /* Mark "+". */
-  LXM_PLUS,
+  LEXEME_PLUS,
   /* Mark "-=". */
-  LXM_MINUSEQ,
+  LEXEME_MINUS_EQUAL,
   /* Mark "--". */
-  LXM_MINUSMINUS,
+  LEXEME_MINUS_MINUS,
   /* Mark "-". */
-  LXM_MINUS,
+  LEXEME_MINUS,
   /* Mark "&=". */
-  LXM_AMPEQ,
+  LEXEME_AMPERCENT_EQUAL,
   /* Mark "&&". */
-  LXM_AMPAMP,
+  LEXEME_AMPERCENT_AMPERCENT,
   /* Mark "&". */
-  LXM_AMP,
+  LEXEME_AMPERCENT,
   /* Mark "|=". */
-  LXM_PIPEEQ,
+  LEXEME_PIPE_EQUAL,
   /* Mark "||". */
-  LXM_PIPEPIPE,
+  LEXEME_PIPE_PIPE,
   /* Mark "|". */
-  LXM_PIPE,
+  LEXEME_PIPE,
   /* Mark "^=". */
-  LXM_CARETEQ,
+  LEXEME_CARET_EQUAL,
   /* Mark "^". */
-  LXM_CARET,
+  LEXEME_CARET,
   /* Mark "<<=". */
-  LXM_LARLAREQ,
+  LEXEME_LEFT_ARROW_LEFT_ARROW_EQUAL,
   /* Mark "<<". */
-  LXM_LARLAR,
+  LEXEME_LEFT_ARROW_LEFT_ARROW,
   /* Mark "<=". */
-  LXM_LAREQ,
+  LEXEME_LEFT_ARROW_EQUAL,
   /* Mark "<". */
-  LXM_LARROW,
+  LEXEME_LEFT_ARROW,
   /* Mark ">>=". */
-  LXM_RARRAREQ,
+  LEXEME_RIGHT_ARROW_RIGHT_ARROW_EQUAL,
   /* Mark ">>". */
-  LXM_RARRAR,
+  LEXEME_RIGHT_ARROW_RIGHT_ARROW,
   /* Mark ">=". */
-  LXM_RAREQ,
+  LEXEME_RIGHT_ARROW_EQUAL,
   /* Mark ">". */
-  LXM_RARROW,
+  LEXEME_RIGHT_ARROW,
   /* Mark "==". */
-  LXM_EQEQ,
+  LEXEME_EQUAL_EQUAL,
   /* Mark "=". */
-  LXM_EQUAL,
+  LEXEME_EQUAL,
   /* Mark "!=". */
-  LXM_EXCEQ,
+  LEXEME_EXCLAMETION_EQUAL,
   /* Mark "!". */
-  LXM_EXC,
+  LEXEME_EXCLAMETION,
   /* Mark "~". */
-  LXM_TILDE,
+  LEXEME_TILDE,
   /* Marks the end of the file. */
-  LXM_EOF,
+  LEXEME_EOF,
   /* Keyword "let". */
-  LXM_LET,
+  LEXEME_LET,
   /* Keyword "var". */
-  LXM_VAR,
+  LEXEME_VAR,
   /* Identifier. */
-  LXM_ID,
+  LEXEME_IDENTIFIER,
   /* Decimal number literal. */
-  LXM_DEC,
+  LEXEME_DECIMAL,
   /* Characters that could not be lexed. */
-  LXM_ERR
-} LexemeType;
+  LEXEME_ERROR
+} LexemeTag;
 
 /* Indivisible group of characters from the source file. */
 typedef struct {
-  /* View of the characters. */
-  String     val;
-  /* Type of the lexeme. */
-  LexemeType type;
+  /* Section of the source the lexeme occupies. */
+  String    section;
+  /* Variant of the lexeme. */
+  LexemeTag tag;
 } Lexeme;
 
 /* Result of lexing a source file. */
 typedef struct {
   /* Pointer to the first lexeme if it exists. */
-  Lexeme* bgn;
+  Lexeme* first;
   /* Pointer to one after the last lexeme. */
-  Lexeme* end;
+  Lexeme* after;
   /* Pointer to one after the last allocated lexeme. */
-  Lexeme* all;
+  Lexeme* bound;
 } Lex;
 
-/* Name of the given lexeme type. */
-char const* lxmName(LexemeType type);
-/* Stream out the name of the given lexeme type as string to the given stream.
- * Does not do anything if the stream is null. */
-void        lxmWrite(LexemeType type, FILE* stream);
-/* Print the given lexeme. */
-void        lxmPrint(Lexeme lxm);
-
-/* Lex the given source file. Reports to the given outcome. */
-Lex           lexOf(Outcome* otc, Source src);
+/* Initialize the module. */
+void        initLexer(void);
+/* Lex the given source file. */
+Lex         lexOf(Source*);
 /* Release the memory resources used by the given lex. */
-void          lexFree(Lex* lex);
-/* Amount of lexemes in the given lex. */
-iptr          lexLen(Lex lex);
-/* Lexeme at the given index in the given lex. */
-Lexeme        lexAt(Lex lex, iptr i);
-/* Pointer to the first lexeme of the given lex if it exits. */
-Lexeme const* lexBgn(Lex lex);
-/* Pointer to one after the last lexeme of the given lex. */
-Lexeme const* lexEnd(Lex lex);
+void        disposeLex(Lex*);
+/* Name of the given lexeme variant. */
+char const* lexemeName(LexemeTag);
