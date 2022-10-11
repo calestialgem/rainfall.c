@@ -18,21 +18,25 @@ String nullTerminated(char const* array) {
 
 String emptyString() { return stringOf(NULL, NULL); }
 
-ptrdiff_t characters(String string) { return string.after - string.first; }
+size_t characters(String source) { return source.after - source.first; }
 
 bool equalStrings(String left, String right) {
-  ptrdiff_t length = characters(left);
+  size_t length = characters(left);
   if (length != characters(right)) return false;
-  for (ptrdiff_t i = 0; i < length; i++)
-    if (left.first[i] != right.first[i]) return false;
+  for (size_t index = 0; index < length; index++)
+    if (left.first[index] != right.first[index]) return false;
   return true;
 }
 
+/* Prime number for combining hashes. `53` is selected because the English
+ * alphabet has 26 characters. Identifiers in the Thrice source are made out of
+ * upper and lower case English letters, and underscores; thus, the prime is
+ * the amount of different hashcodes there could be for a character. */
 #define PRIME 53
 
-ptrdiff_t hashcode(String string) {
-  ptrdiff_t hash = 0;
-  for (char const* i = string.first; i < string.after; i++) {
+size_t hashcode(String source) {
+  size_t hash = 0;
+  for (char const* i = source.first; i < source.after; i++) {
     hash *= PRIME;
     hash += *i;
   }

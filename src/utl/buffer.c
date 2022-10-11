@@ -10,63 +10,63 @@
 
 /* Make sure the given amount of space exists at the end of the given buffer.
  * When necessary, grows by at least half of the current capacity. */
-static void reserve(Buffer* buffer, ptrdiff_t amount) {
-  ptrdiff_t capacity = buffer->bound - buffer->first;
-  ptrdiff_t bytes    = buffer->after - buffer->first;
-  ptrdiff_t space    = capacity - bytes;
-  if (space >= amount) return;
+static void reserve(Buffer* expanded, size_t reserved) {
+  size_t capacity = expanded->bound - expanded->first;
+  size_t bytes    = expanded->after - expanded->first;
+  size_t space    = capacity - bytes;
+  if (space >= reserved) return;
 
-  ptrdiff_t growth    = amount - space;
-  ptrdiff_t minGrowth = capacity / 2;
+  size_t growth    = reserved - space;
+  size_t minGrowth = capacity / 2;
   if (growth < minGrowth) growth = minGrowth;
   capacity += growth;
 
-  buffer->first = allocateArray(buffer->first, capacity, char);
-  buffer->after = buffer->first + bytes;
-  buffer->bound = buffer->first + capacity;
+  expanded->first = allocateArray(expanded->first, capacity, char);
+  expanded->after = expanded->first + bytes;
+  expanded->bound = expanded->first + capacity;
 }
 
 Buffer emptyBuffer(void) {
   return (Buffer){.first = NULL, .after = NULL, .bound = NULL};
 }
 
-Buffer copyBuffer(Buffer buffer) {
-  ptrdiff_t bytes = buffer.after - buffer.first;
-  Buffer    copy  = emptyBuffer();
-  reserve(&copy, bytes);
-  memcpy(copy.first, buffer.first, bytes);
-  copy.after += bytes;
-  return copy;
+Buffer copyBuffer(Buffer source) {
+  size_t bytes  = source.after - source.first;
+  Buffer result = emptyBuffer();
+  reserve(&result, bytes);
+  memcpy(result.first, source.first, bytes);
+  result.after += bytes;
+  return result;
 }
 
-void disposeBuffer(Buffer* buffer) {
-  buffer->first = allocateArray(buffer->first, 0, char);
-  buffer->after = buffer->first;
-  buffer->bound = buffer->first;
+void disposeBuffer(Buffer* target) {
+  target->first = allocateArray(target->first, 0, char);
+  target->after = target->first;
+  target->bound = target->first;
 }
 
-ptrdiff_t bytes(Buffer buffer) { return buffer.after - buffer.first; }
+size_t bytes(Buffer source) { return source.after - source.first; }
 
-void put(Buffer* buffer, char character) {
-  reserve(buffer, 1);
-  *buffer->after++ = character;
+void put(Buffer* target, char putted) {
+  reserve(target, 1);
+  *target->after++ = putted;
 }
 
-void append(Buffer* buffer, String string) {
-  ptrdiff_t amount = characters(string);
-  reserve(buffer, amount);
-  memmove(buffer->after, string.first, amount * sizeof(char));
-  buffer->after += amount;
+void append(Buffer* target, String appended) {
+  size_t written = characters(appended);
+  reserve(target, written);
+  memmove(target->after, appended.first, written * sizeof(char));
+  target->after += written;
 }
 
 /* Amount of bytes to read from a stream at every step. */
 #define CHUNK 1024
 
-void read(Buffer* buffer, FILE* stream) {
-  for (ptrdiff_t written = CHUNK; written == CHUNK;) {
-    reserve(buffer, CHUNK);
-    written = fread(buffer->after, sizeof(char), CHUNK, stream);
-    buffer->after += written;
+void read(Buffer* target, FILE* read) {
+  for (size_t written = CHUNK; written == CHUNK;) {
+    reserve(target, CHUNK);
+    written = fread(target->after, sizeof(char), CHUNK, read);
+    target->after += written;
   }
-  expect(feof(stream), "Could not read the stream!");
+  expect(feof(read), "Could not read the stream!");
 }

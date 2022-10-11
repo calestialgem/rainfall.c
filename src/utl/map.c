@@ -8,10 +8,10 @@
 
 Map emptyMap(void) { return (Map){.first = NULL, .after = NULL, .entries = 0}; }
 
-void disposeMap(Map* map) {
-  map->first   = allocateArray(map->first, 0, MapEntry);
-  map->after   = map->first;
-  map->entries = 0;
+void disposeMap(Map* target) {
+  target->first   = allocateArray(target->first, 0, MapEntry);
+  target->after   = target->first;
+  target->entries = 0;
 }
 
 /* Lowest ratio of used capacity to total capacity thay is allowed. */
@@ -19,32 +19,32 @@ void disposeMap(Map* map) {
 /* Factor to scale the capacity in each growth. */
 #define MULTIPLIER 16
 
-void insertEntry(Map* map, String key, ptrdiff_t value) {
-  ptrdiff_t capacity = map->after - map->first;
+void insertEntry(Map* target, String insertedKey, size_t insertedValue) {
+  size_t capacity = target->after - target->first;
 
   // Grow if necessary.
-  if (capacity == 0 || (double)map->entries / capacity >= MIN_RATIO) {
-    ptrdiff_t newCapacity =
+  if (capacity == 0 || (double)target->entries / capacity >= MIN_RATIO) {
+    size_t newCapacity =
       capacity < MULTIPLIER ? MULTIPLIER : capacity * MULTIPLIER;
 
     Map new   = emptyMap();
     new.first = allocateArray(new.first, newCapacity, MapEntry);
     new.after = new.first + newCapacity;
 
-    for (MapEntry const* i = map->first; i < map->after; i++)
+    for (MapEntry const* i = target->first; i < target->after; i++)
       if (characters(i->key)) insertEntry(&new, i->key, i->value);
 
-    disposeMap(map);
-    *map = new;
+    disposeMap(target);
+    *target = new;
   }
 
-  ptrdiff_t hash = hashcode(key);
-  for (ptrdiff_t i = 0; i < capacity; i++) {
-    ptrdiff_t index = (hash + i) % capacity;
-    if (!characters(map->first[index].key)) {
-      map->first[index].key   = key;
-      map->first[index].value = value;
-      map->entries++;
+  size_t hash = hashcode(insertedKey);
+  for (size_t i = 0; i < capacity; i++) {
+    size_t index = (hash + i) % capacity;
+    if (!characters(target->first[index].key)) {
+      target->first[index].key   = insertedKey;
+      target->first[index].value = insertedValue;
+      target->entries++;
       return;
     }
   }
@@ -52,20 +52,21 @@ void insertEntry(Map* map, String key, ptrdiff_t value) {
   unexpected("Could not find an empty place in the map!");
 }
 
-MapEntry const* accessEntry(Map map, String key) {
-  ptrdiff_t capacity = map.after - map.first;
-  ptrdiff_t hash     = hashcode(key);
-  for (ptrdiff_t i = 0; i < capacity; i++) {
-    ptrdiff_t index = (hash + i) % capacity;
-    if (equalStrings(map.first[index].key, key)) return map.first + index;
+MapEntry const* accessEntry(Map source, String accessedKey) {
+  size_t capacity = source.after - source.first;
+  size_t hash     = hashcode(accessedKey);
+  for (size_t i = 0; i < capacity; i++) {
+    size_t index = (hash + i) % capacity;
+    if (equalStrings(source.first[index].key, accessedKey))
+      return source.first + index;
   }
   return NULL;
 }
 
-String const* accessKey(Map map, String key) {
-  return &accessEntry(map, key)->key;
+String const* accessKey(Map source, String accessedKey) {
+  return &accessEntry(source, accessedKey)->key;
 }
 
-ptrdiff_t const* accessValue(Map map, String key) {
-  return &accessEntry(map, key)->value;
+size_t const* accessValue(Map source, String accessedKey) {
+  return &accessEntry(source, accessedKey)->value;
 }

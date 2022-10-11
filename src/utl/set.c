@@ -8,10 +8,10 @@
 
 Set emptySet(void) { return (Set){.first = NULL, .after = NULL, .members = 0}; }
 
-void disposeSet(Set* set) {
-  set->first   = allocateArray(set->first, 0, String);
-  set->after   = set->first;
-  set->members = 0;
+void disposeSet(Set* target) {
+  target->first   = allocateArray(target->first, 0, String);
+  target->after   = target->first;
+  target->members = 0;
 }
 
 /* Lowest ratio of used capacity to total capacity thay is allowed. */
@@ -19,31 +19,31 @@ void disposeSet(Set* set) {
 /* Factor to scale the capacity in each growth. */
 #define MULTIPLIER 16
 
-void insertMember(Set* set, String member) {
-  ptrdiff_t capacity = set->after - set->first;
+void insertMember(Set* target, String inserted) {
+  size_t capacity = target->after - target->first;
 
   // Grow if necessary.
-  if (capacity == 0 || (double)set->members / capacity >= MIN_RATIO) {
-    ptrdiff_t newCapacity =
+  if (capacity == 0 || (double)target->members / capacity >= MIN_RATIO) {
+    size_t newCapacity =
       capacity < MULTIPLIER ? MULTIPLIER : capacity * MULTIPLIER;
 
     Set new   = emptySet();
     new.first = allocateArray(new.first, newCapacity, String);
     new.after = new.first + newCapacity;
 
-    for (String const* i = set->first; i < set->after; i++)
+    for (String const* i = target->first; i < target->after; i++)
       if (characters(*i)) insertMember(&new, *i);
 
-    disposeSet(set);
-    *set = new;
+    disposeSet(target);
+    *target = new;
   }
 
-  ptrdiff_t hash = hashcode(member);
-  for (ptrdiff_t i = 0; i < capacity; i++) {
-    ptrdiff_t index = (hash + i) % capacity;
-    if (!characters(set->first[index])) {
-      set->first[index] = member;
-      set->members++;
+  size_t hash = hashcode(inserted);
+  for (size_t i = 0; i < capacity; i++) {
+    size_t index = (hash + i) % capacity;
+    if (!characters(target->first[index])) {
+      target->first[index] = inserted;
+      target->members++;
       return;
     }
   }
@@ -51,12 +51,13 @@ void insertMember(Set* set, String member) {
   unexpected("Could not find an empty place in the set!");
 }
 
-String const* accessMember(Set set, String member) {
-  ptrdiff_t capacity = set.after - set.first;
-  ptrdiff_t hash     = hashcode(member);
-  for (ptrdiff_t i = 0; i < capacity; i++) {
-    ptrdiff_t index = (hash + i) % capacity;
-    if (equalStrings(set.first[index], member)) return set.first + index;
+String const* accessMember(Set source, String accessed) {
+  size_t capacity = source.after - source.first;
+  size_t hash     = hashcode(accessed);
+  for (size_t i = 0; i < capacity; i++) {
+    size_t index = (hash + i) % capacity;
+    if (equalStrings(source.first[index], accessed))
+      return source.first + index;
   }
   return NULL;
 }
