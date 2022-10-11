@@ -9,42 +9,47 @@
 #include <stddef.h>
 #include <stdio.h>
 
+/* Portion of the line at the given position. */
+static Portion linePortion(Location source) {
+  return (Portion){.first = lineStart(source), .last = lineEnd(source)};
+}
+
 /* Print the given portion, which is contained in a singe line, to the given
  * stream. Prints "..." as continuation marks according to given skip flag. */
-static void print(Portion p, FILE* f, bool skip) {
-  Portion line = {.first = lineStart(p.first), .last = lineEnd(p.last)};
+static void print(Portion source, FILE* target, bool skip) {
+  Portion line = linePortion(source.first);
 
-  fprintf(f, "%8s |\n", "");
-  fprintf(f, "%8i | ", line.first.line);
+  fprintf(target, "%8s |\n", "");
+  fprintf(target, "%8i | ", line.first.line);
 
   fwrite(
     line.first.position, sizeof(char),
-    line.last.position - line.first.position + 1, f);
+    line.last.position - line.first.position + 1, target);
 
-  fprintf(f, "\n%8s |", skip ? "..." : "");
+  fprintf(target, "\n%8s |", skip ? "..." : "");
 
-  for (ptrdiff_t i = 0; i <= p.last.column; i++)
-    fputc(i < p.first.column ? ' ' : '~', f);
+  for (int i = 0; i <= source.last.column; i++)
+    fputc(i < source.first.column ? ' ' : '~', target);
 
-  fputc('\n', f);
+  fputc('\n', target);
 }
 
-Portion portionOf(Source s, String section) {
+Portion portionAt(Source source, String section) {
   return (Portion){
-    .first = locationOf(s, section.first),
-    .last  = locationOf(s, section.after - 1)};
+    .first = locationAt(source, section.first),
+    .last  = locationAt(source, section.after - 1)};
 }
 
-void underline(Portion p, FILE* f) {
-  int span = p.last.line - p.first.line + 1;
+void underline(Portion source, FILE* target) {
+  int span = source.last.line - source.first.line + 1;
   // If the portion is contained in a single line.
   if (span == 1) {
-    print(p, f, false);
+    print(source, target, false);
   } else {
     // If there are lines skiped between the begining and end of the portion,
     // pass the flag as set.
-    print((Portion){.first = p.first, .last = lineEnd(p.first)}, f, span > 2);
-    print((Portion){.first = lineStart(p.last), .last = p.last}, f, false);
+    print(linePortion(source.first), target, span > 2);
+    print(linePortion(source.last), target, false);
   }
-  fputc('\n', f);
+  fputc('\n', target);
 }

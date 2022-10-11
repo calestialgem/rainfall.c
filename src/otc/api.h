@@ -20,21 +20,21 @@ typedef struct {
 /* Load the source file at the given name. */
 Source loadSource(char const* name);
 /* Dispose the contents of the given source file. */
-void   disposeSource(Source*);
-/* Report an error and highlight the given section of the given source file with
- * the given formatted message. */
-void   highlightError(Source*, String section, char const* format, ...);
-/* Report a warning and highlight the given section of the given source file
- * with the given formatted message. */
-void   highlightWarning(Source*, String section, char const* format, ...);
-/* Report an information and highlight the given section of the given source
- * file with the given formatted message. */
-void   highlightInfo(Source*, String section, char const* format, ...);
+void   disposeSource(Source* target);
 /* Report an error at the given source file with the given formatted message. */
-void   reportError(Source*, char const* format, ...);
+void   reportError(Source* target, char const* format, ...);
 /* Report a warning at the given source file with the given formatted message.
  */
-void   reportWarning(Source*, char const* format, ...);
+void   reportWarning(Source* target, char const* format, ...);
 /* Report an information at the given source file with the given formatted
  * message. */
-void   reportInfo(Source*, char const* format, ...);
+void   reportInfo(Source* target, char const* format, ...);
+/* Report an error and highlight the given section of the given source file with
+ * the given formatted message. */
+void   highlightError(Source* target, String section, char const* format, ...);
+/* Report a warning and highlight the given section of the given source file
+ * with the given formatted message. */
+void highlightWarning(Source* target, String section, char const* format, ...);
+/* Report an information and highlight the given section of the given source
+ * file with the given formatted message. */
+void highlightInfo(Source* target, String section, char const* format, ...);

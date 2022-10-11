@@ -30,12 +30,12 @@ typedef struct {
 } Portion;
 
 /* Location of the character at the given position in the given source file. */
-Location locationOf(Source, char const* position);
+Location locationAt(Source source, char const* position);
 /* Location of the start of the line of the given location. */
-Location lineStart(Location);
+Location lineStart(Location source);
 /* Location of the end of the line of the given location. */
-Location lineEnd(Location);
+Location lineEnd(Location source);
 /* Location of the given section of the given source file. */
-Portion  portionOf(Source, String section);
+Portion  portionAt(Source source, String section);
 /* Print and underline the given portion to the given stream. */
-void     underline(Portion, FILE*);
+void     underline(Portion source, FILE* target);

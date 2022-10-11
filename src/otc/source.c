@@ -11,48 +11,32 @@
 #include <stdio.h>
 #include <vadefs.h>
 
-/* Log the given formatted message at the given level for the given part of the
- * given source file to the given stream. */
-static void highlight(
-  Source s, FILE* f, char const* level, String section, char const* format,
-  va_list v) {
-  Portion p = portionOf(s, section);
-  fprintf(
-    f, "%s:%u:%u:%u:%u: %s: ", s.name, p.first.line, p.first.column,
-    p.last.line, p.last.column, level);
-
-  vfprintf(f, format, v);
-  fputc('\n', f);
-
-  underline(p, f);
-}
-
-/* Log the given formatted message at the given level for the given source file
- * to the given stream. */
-static void
-report(Source s, FILE* f, char const* level, char const* format, va_list v) {
-  fprintf(f, "%s: %s: ", s.name, level);
-
-  vfprintf(f, format, v);
-  fputc('\n', f);
-}
-
-/* Passes the varargs to `highlight` with the given stream and level. */
-#define highlightArgs(stream, level)                     \
-  do {                                                   \
-    va_list args = NULL;                                 \
-    va_start(args, format);                              \
-    highlight(*s, stream, level, section, format, args); \
-    va_end(args);                                        \
+/* Log the formatted message at the given level for the given source file to the
+ * given stream. */
+#define reportArguments(source, target, level)         \
+  do {                                                 \
+    va_list arguments = NULL;                          \
+    va_start(arguments, format);                       \
+    fprintf(target, "%s: %s: ", (source).name, level); \
+    vfprintf(target, format, arguments);               \
+    fputc('\n', target);                               \
+    va_end(arguments);                                 \
   } while (false)
 
-/* Passes the varargs to `report` with the given stream and level. */
-#define reportArgs(stream, level)            \
-  do {                                       \
-    va_list args = NULL;                     \
-    va_start(args, format);                  \
-    report(*s, stream, level, format, args); \
-    va_end(args);                            \
+/* Log the formatted message at the given level for the given part of the given
+ * source file and highlight it to the given stream. */
+#define highlightArguments(source, target, level)                           \
+  do {                                                                      \
+    va_list arguments = NULL;                                               \
+    va_start(arguments, format);                                            \
+    Portion portion = portionAt(source, section);                           \
+    fprintf(                                                                \
+      target, "%s:%u:%u:%u:%u: %s: ", (source).name, portion.first.line,    \
+      portion.first.column, portion.last.line, portion.last.column, level); \
+    vfprintf(target, format, arguments);                                    \
+    fputc('\n', target);                                                    \
+    underline(portion, target);                                             \
+    va_end(arguments);                                                      \
   } while (false)
 
 Source loadSource(char const* name) {
@@ -63,12 +47,12 @@ Source loadSource(char const* name) {
   append(&path, nullTerminated("tr"));
   put(&path, 0);
 
-  FILE* f = fopen(path.first, "r");
+  FILE* source = fopen(path.first, "r");
   disposeBuffer(&path);
-  expect(f, "Could not open file!");
+  expect(source, "Could not open file!");
 
   Buffer contents = emptyBuffer();
-  read(&contents, f);
+  read(&contents, source);
 
   // Put the null-terminator as end of file character, and a new line, which
   // makes sure that there is always a line that could be reported to user.
@@ -79,32 +63,32 @@ Source loadSource(char const* name) {
     .name = name, .contents = contents, .errors = 0, .warnings = 0};
 }
 
-void disposeSource(Source* s) { disposeBuffer(&s->contents); }
+void disposeSource(Source* target) { disposeBuffer(&target->contents); }
 
-void highlightError(Source* s, String section, char const* format, ...) {
-  highlightArgs(stderr, "error");
-  s->errors++;
+void reportError(Source* target, char const* format, ...) {
+  reportArguments(*target, stderr, "error");
+  target->errors++;
 }
 
-void highlightWarning(Source* s, String section, char const* format, ...) {
-  highlightArgs(stdout, "warning");
-  s->warnings++;
+void reportWarning(Source* target, char const* format, ...) {
+  reportArguments(*target, stdout, "warning");
+  target->warnings++;
 }
 
-void highlightInfo(Source* s, String section, char const* format, ...) {
-  highlightArgs(stdout, "info");
+void reportInfo(Source* target, char const* format, ...) {
+  reportArguments(*target, stdout, "info");
 }
 
-void reportError(Source* s, char const* format, ...) {
-  reportArgs(stderr, "error");
-  s->errors++;
+void highlightError(Source* target, String section, char const* format, ...) {
+  highlightArguments(*target, stderr, "error");
+  target->errors++;
 }
 
-void reportWarning(Source* s, char const* format, ...) {
-  reportArgs(stdout, "warning");
-  s->warnings++;
+void highlightWarning(Source* target, String section, char const* format, ...) {
+  highlightArguments(*target, stdout, "warning");
+  target->warnings++;
 }
 
-void reportInfo(Source* s, char const* format, ...) {
-  reportArgs(stdout, "info");
+void highlightInfo(Source* target, String section, char const* format, ...) {
+  highlightArguments(*target, stdout, "info");
 }
