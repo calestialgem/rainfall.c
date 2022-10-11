@@ -10,46 +10,53 @@
 #include <stdio.h>
 
 /* Portion of the line at the given position. */
-static Portion linePortion(Location source) {
-  return (Portion){.first = lineStart(source), .last = lineEnd(source)};
+static Portion findLine(Location inLine) {
+  return (Portion){.first = findLineStart(inLine), .last = finLineEnd(inLine)};
 }
 
 /* Print the given portion, which is contained in a singe line, to the given
  * stream. Prints "..." as continuation marks according to given skip flag. */
-static void print(Portion source, FILE* target, bool skip) {
-  Portion line = linePortion(source.first);
-
+static void underlineLine(Portion underlined, FILE* target, bool skippedLines) {
+  // Print the line number and bars.
+  Portion containingLine = findLine(underlined.first);
   fprintf(target, "%8s |\n", "");
-  fprintf(target, "%8i | ", line.first.line);
+  fprintf(target, "%8i | ", containingLine.first.line);
 
+  // Print the line that contains the portion.
   fwrite(
-    line.first.position, sizeof(char),
-    line.last.position - line.first.position + 1, target);
+    containingLine.first.position, sizeof(char),
+    containingLine.last.position - containingLine.first.position + 1, target);
 
-  fprintf(target, "\n%8s |", skip ? "..." : "");
+  // Print continuation characters if there is skipping.
+  fprintf(target, "\n%8s |", skippedLines ? "..." : "");
 
-  for (int i = 0; i <= source.last.column; i++)
-    fputc(i < source.first.column ? ' ' : '~', target);
+  // Print the underline by printing spaces upto the start of the underlined
+  // portion. Use '~' after that, up to the end of the underlined portion.
+  for (int i = 0; i <= underlined.last.column; i++)
+    fputc(i < underlined.first.column ? ' ' : '~', target);
 
   fputc('\n', target);
 }
 
-Portion portionAt(Source source, String section) {
+Portion createPortion(Source containing, String coresponding) {
+  // Conver the both ends of the string to locations. The `after` pointer in the
+  // string is excluded while the `last` location of the portion is included.
+  // Thus, a 1 is subtracted from the `after` pointer.
   return (Portion){
-    .first = locationAt(source, section.first),
-    .last  = locationAt(source, section.after - 1)};
+    .first = createLocation(containing, coresponding.first),
+    .last  = createLocation(containing, coresponding.after - 1)};
 }
 
-void underline(Portion source, FILE* target) {
-  int span = source.last.line - source.first.line + 1;
+void underlinePortion(Portion underlined, FILE* target) {
+  int span = underlined.last.line - underlined.first.line + 1;
   // If the portion is contained in a single line.
   if (span == 1) {
-    print(source, target, false);
+    underlineLine(underlined, target, false);
   } else {
     // If there are lines skiped between the begining and end of the portion,
     // pass the flag as set.
-    print(linePortion(source.first), target, span > 2);
-    print(linePortion(source.last), target, false);
+    underlineLine(findLine(underlined.first), target, span > 2);
+    underlineLine(findLine(underlined.last), target, false);
   }
   fputc('\n', target);
 }

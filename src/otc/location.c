@@ -5,10 +5,14 @@
 #include "otc/api.h"
 #include "otc/mod.h"
 
-Location locationAt(Source source, char const* position) {
+Location createLocation(Source containing, char const* coresponding) {
   Location result = {
-    .source = source, .position = position, .line = 1, .column = 1};
-  for (char const* before = source.contents.first; before < position; before++)
+    .source = containing, .position = coresponding, .line = 1, .column = 1};
+  // Count the columns by looking at the characters that come before the
+  // location.
+  for (char const* before = containing.contents.first; before < coresponding;
+       before++)
+    // Count the line if a newline is found.
     if (*before == '\n') {
       result.line++;
       result.column = 1;
@@ -18,23 +22,27 @@ Location locationAt(Source source, char const* position) {
   return result;
 }
 
-Location lineStart(Location source) {
+Location findLineStart(Location inLine) {
+  // Calculate the position of the line start by using the column number.
   return (Location){
-    .source   = source.source,
-    .position = source.position - source.column + 1,
-    .line     = source.line,
+    .source   = inLine.source,
+    .position = inLine.position - inLine.column + 1,
+    .line     = inLine.line,
     .column   = 1};
 }
 
-Location lineEnd(Location source) {
-  for (char const* position = source.position;
-       position < source.source.contents.after; position++)
-    if (*position == '\n')
+Location finLineEnd(Location inLine) {
+  // Find the line end by looking  at the characters that come after the
+  // location.
+  for (char const* after = inLine.position;
+       after < inLine.source.contents.after; after++)
+    // If a new line is found, the line end is the position before that.
+    if (*after == '\n')
       return (Location){
-        .source   = source.source,
-        .position = position - 1,
-        .line     = source.line,
-        .column   = source.column + position - 1 - source.position};
+        .source   = inLine.source,
+        .position = after - 1,
+        .line     = inLine.line,
+        .column   = inLine.column + after - 1 - inLine.position};
 
   // Above loop should find a new line at worst at the end of the file.
   unexpected("File does not end with a new line!");

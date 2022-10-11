@@ -18,23 +18,26 @@ typedef struct {
 } Source;
 
 /* Load the source file at the given name. */
-Source loadSource(char const* name);
+Source loadSource(char const* loadedFileName);
 /* Dispose the contents of the given source file. */
-void   disposeSource(Source* target);
+void   disposeSource(Source* disposed);
 /* Report an error at the given source file with the given formatted message. */
-void   reportError(Source* target, char const* format, ...);
+void   reportError(Source* reported, char const* format, ...);
 /* Report a warning at the given source file with the given formatted message.
  */
-void   reportWarning(Source* target, char const* format, ...);
+void   reportWarning(Source* reported, char const* format, ...);
 /* Report an information at the given source file with the given formatted
  * message. */
-void   reportInfo(Source* target, char const* format, ...);
+void   reportInfo(Source* reported, char const* format, ...);
 /* Report an error and highlight the given section of the given source file with
  * the given formatted message. */
-void   highlightError(Source* target, String section, char const* format, ...);
+void   highlightError(
+    Source* reported, String highlighted, char const* format, ...);
 /* Report a warning and highlight the given section of the given source file
  * with the given formatted message. */
-void highlightWarning(Source* target, String section, char const* format, ...);
+void highlightWarning(
+  Source* reported, String highlighted, char const* format, ...);
 /* Report an information and highlight the given section of the given source
  * file with the given formatted message. */
-void highlightInfo(Source* target, String section, char const* format, ...);
+void highlightInfo(
+  Source* reported, String highlighted, char const* format, ...);

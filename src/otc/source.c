@@ -9,86 +9,99 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <vadefs.h>
 
 /* Log the formatted message at the given level for the given source file to the
- * given stream. */
-#define reportArguments(source, target, level)         \
-  do {                                                 \
-    va_list arguments = NULL;                          \
-    va_start(arguments, format);                       \
-    fprintf(target, "%s: %s: ", (source).name, level); \
-    vfprintf(target, format, arguments);               \
-    fputc('\n', target);                               \
-    va_end(arguments);                                 \
+ * given stream. Prints the message by passing the variable arguments and the
+ * format string to `fprintf`. */
+#define reportArguments(reportedSource, targetStream, logLevelString)         \
+  do {                                                                        \
+    /* Transfer the variable amount of arguments to `fprintf`. */             \
+    va_list arguments = NULL;                                                 \
+    va_start(arguments, format);                                              \
+    /* First print the file information; then, the message. */                \
+    fprintf(targetStream, "%s: %s: ", (reportedSource).name, logLevelString); \
+    vfprintf(targetStream, format, arguments);                                \
+    fputc('\n', targetStream);                                                \
+    va_end(arguments);                                                        \
   } while (false)
 
 /* Log the formatted message at the given level for the given part of the given
- * source file and highlight it to the given stream. */
-#define highlightArguments(source, target, level)                           \
-  do {                                                                      \
-    va_list arguments = NULL;                                               \
-    va_start(arguments, format);                                            \
-    Portion portion = portionAt(source, section);                           \
-    fprintf(                                                                \
-      target, "%s:%u:%u:%u:%u: %s: ", (source).name, portion.first.line,    \
-      portion.first.column, portion.last.line, portion.last.column, level); \
-    vfprintf(target, format, arguments);                                    \
-    fputc('\n', target);                                                    \
-    underline(portion, target);                                             \
-    va_end(arguments);                                                      \
+ * source file and highlight it to the given stream. Prints the message by
+ * passing the variable arguments and the format string to `fprintf`. */
+#define highlightArguments(reportedSource, targetStream, logLevelString)      \
+  do {                                                                        \
+    /* Transfer the variable amount of arguments to `fprintf`. */             \
+    va_list arguments = NULL;                                                 \
+    va_start(arguments, format);                                              \
+    Portion portion = portionAt(reportedSource, highlighted);                 \
+    /* First print the file and line information; then, the message. */       \
+    fprintf(                                                                  \
+      targetStream, "%s:%u:%u:%u:%u: %s: ", (reportedSource).name,            \
+      portion.first.line, portion.first.column, portion.last.line,            \
+      portion.last.column, logLevelString);                                   \
+    vfprintf(targetStream, format, arguments);                                \
+    fputc('\n', targetStream);                                                \
+    /* Underline the portion that should be highlighted after the message. */ \
+    underline(portion, targetStream);                                         \
+    va_end(arguments);                                                        \
   } while (false)
 
 Source loadSource(char const* name) {
   // Join the name with the extension.
-  Buffer path = emptyBuffer();
-  append(&path, nullTerminated(name));
-  put(&path, '.');
-  append(&path, nullTerminated("tr"));
-  put(&path, 0);
+  Buffer path = createBuffer(strlen(name) + 4);
+  appendString(&path, viewTerminated(name));
+  appendCharacter(&path, '.');
+  appendString(&path, viewTerminated("tr"));
+  appendCharacter(&path, 0);
 
+  // Open and buffer the source file contents.
   FILE* source = fopen(path.first, "r");
   disposeBuffer(&path);
   expect(source, "Could not open file!");
 
-  Buffer contents = emptyBuffer();
-  read(&contents, source);
+  Buffer contents = createBuffer(0);
+  appendStream(&contents, source);
 
   // Put the null-terminator as end of file character, and a new line, which
   // makes sure that there is always a line that could be reported to user.
-  put(&contents, 0);
-  put(&contents, '\n');
+  appendCharacter(&contents, 0);
+  appendCharacter(&contents, '\n');
 
   return (Source){
     .name = name, .contents = contents, .errors = 0, .warnings = 0};
 }
 
-void disposeSource(Source* target) { disposeBuffer(&target->contents); }
+void disposeSource(Source* disposed) { disposeBuffer(&disposed->contents); }
 
-void reportError(Source* target, char const* format, ...) {
-  reportArguments(*target, stderr, "error");
-  target->errors++;
+void reportError(Source* reported, char const* format, ...) {
+  reportArguments(*reported, stderr, "error");
+  reported->errors++;
 }
 
-void reportWarning(Source* target, char const* format, ...) {
-  reportArguments(*target, stdout, "warning");
-  target->warnings++;
+void reportWarning(Source* reported, char const* format, ...) {
+  reportArguments(*reported, stdout, "warning");
+  reported->warnings++;
 }
 
-void reportInfo(Source* target, char const* format, ...) {
-  reportArguments(*target, stdout, "info");
+void reportInfo(Source* reported, char const* format, ...) {
+  reportArguments(*reported, stdout, "info");
 }
 
-void highlightError(Source* target, String section, char const* format, ...) {
-  highlightArguments(*target, stderr, "error");
-  target->errors++;
+void highlightError(
+  Source* reported, String highlighted, char const* format, ...) {
+  highlightArguments(*reported, stderr, "error");
+  reported->errors++;
 }
 
-void highlightWarning(Source* target, String section, char const* format, ...) {
-  highlightArguments(*target, stdout, "warning");
-  target->warnings++;
+void highlightWarning(
+  Source* reported, String highlighted, char const* format, ...) {
+  highlightArguments(*reported, stdout, "warning");
+  reported->warnings++;
 }
 
-void highlightInfo(Source* target, String section, char const* format, ...) {
-  highlightArguments(*target, stdout, "info");
+void highlightInfo(
+  Source* reported, String highlighted, char const* format, ...) {
+  highlightArguments(*reported, stdout, "info");
 }
