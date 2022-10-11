@@ -47,26 +47,26 @@ void disposeBuffer(Buffer* target) {
 
 size_t bytes(Buffer source) { return source.after - source.first; }
 
-void put(Buffer* target, char putted) {
+void put(Buffer* target, char source) {
   reserve(target, 1);
-  *target->after++ = putted;
+  *target->after++ = source;
 }
 
-void append(Buffer* target, String appended) {
-  size_t written = characters(appended);
+void append(Buffer* target, String source) {
+  size_t written = characters(source);
   reserve(target, written);
-  memmove(target->after, appended.first, written * sizeof(char));
+  memmove(target->after, source.first, written * sizeof(char));
   target->after += written;
 }
 
 /* Amount of bytes to read from a stream at every step. */
 #define CHUNK 1024
 
-void read(Buffer* target, FILE* read) {
+void read(Buffer* target, FILE* source) {
   for (size_t written = CHUNK; written == CHUNK;) {
     reserve(target, CHUNK);
-    written = fread(target->after, sizeof(char), CHUNK, read);
+    written = fread(target->after, sizeof(char), CHUNK, source);
     target->after += written;
   }
-  expect(feof(read), "Could not read the stream!");
+  expect(feof(source), "Could not read the stream!");
 }

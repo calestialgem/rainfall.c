@@ -48,11 +48,11 @@ void   disposeBuffer(Buffer* target);
 /* Amount of bytes in the given buffer. */
 size_t bytes(Buffer source);
 /* Insert the given byte to the end of the given buffer. */
-void   put(Buffer* target, char putted);
+void   put(Buffer* target, char source);
 /* Insert the bytes in the given string to the end of the given buffer. */
-void   append(Buffer* target, String appended);
+void   append(Buffer* target, String source);
 /* Insert all the bytes from the given stream to the end of the given buffer. */
-void   read(Buffer* target, FILE* read);
+void   read(Buffer* target, FILE* source);
 
 /* Dynamicly allocated array of strings that uses hashcode for fast element
  * existance checking. */
