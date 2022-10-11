@@ -7,33 +7,36 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-void* allocate(void* target, size_t bytes) {
-  if (!bytes) {
-    free(target);
+void* allocate(void* reallocatedBlock, size_t allocatedSize) {
+  // Free the allocation if the size is zero.
+  if (!allocatedSize) {
+    free(reallocatedBlock);
     return NULL;
   }
-  target = realloc(target, bytes);
-  expect(target, "Could not allocate!");
-  return target;
+
+  // Allocate and check before returning.
+  reallocatedBlock = realloc(reallocatedBlock, allocatedSize);
+  expect(reallocatedBlock, "Could not allocate!");
+  return reallocatedBlock;
 }
 
-char const* trimPath(char const* fullPath) {
-  String      root     = nullTerminated("src");
-  String      asString = nullTerminated(fullPath);
-  char const* previous = NULL;
+char const* trimRainfallSourcePath(char const* fullPath) {
+  String      rootFolder       = nullTerminated("src");
+  String      fullPathAsString = nullTerminated(fullPath);
+  char const* previousPosition = NULL;
 
   // Last "src" is the source folder; remove the path upto that.
-  for (char const* position = asString.first; position < asString.after;
-       position++) {
+  for (char const* position = fullPathAsString.first;
+       position < fullPathAsString.after; position++) {
     // If not positioned right after a folder, continue.
     if (*position != '\\' && *position != '/') continue;
     // If there is a previous position after a folder saved, check.
-    if (previous) {
-      String folder = stringOf(position + 1, previous);
-      if (equalStrings(folder, root)) return previous + 1;
+    if (previousPosition) {
+      String folder = stringOf(position + 1, previousPosition);
+      if (equalStrings(folder, rootFolder)) return previousPosition + 1;
     }
     // Save this position if failed to match.
-    previous = position;
+    previousPosition = position;
   }
 
   return fullPath;
