@@ -15,18 +15,19 @@ typedef struct {
   char const* after;
 } String;
 
+/* String without any characters in it. */
+extern String const EMPTY_STRING;
+
 /* View of the characters between the given pointers. */
-String stringOf(char const* first, char const* after);
+String createString(char const* first, char const* after);
 /* View of the given null-terminated array. */
-String nullTerminated(char const* array);
-/* String without any characters. */
-String emptyString(void);
+String viewTerminated(char const* terminatedArray);
 /* Amount of characters in the given string. */
-size_t characters(String source);
+size_t countCharacters(String counted);
 /* Whether the given strings are equal. */
-bool   equalStrings(String left, String right);
+bool   compareStringEquality(String leftChecked, String rightChecked);
 /* Hashcode of the given string. */
-size_t hashcode(String source);
+size_t calculateHashcode(String calculated);
 
 /* Dynamicly allocated array of bytes. Allocation costs are amortized by growing
  * at least the half of the current capacity. */
@@ -39,20 +40,20 @@ typedef struct {
   char* bound;
 } Buffer;
 
-/* Clean buffer that does not allocate any memory. */
-Buffer emptyBuffer(void);
+/* Empty buffer with the given initial capacity. */
+Buffer createBuffer(size_t initialCapacity);
 /* Copy of the given buffer. */
-Buffer copyBuffer(Buffer source);
+Buffer copyBuffer(Buffer copied);
 /* Release the memory used by the given buffer. */
-void   disposeBuffer(Buffer* target);
+void   disposeBuffer(Buffer* disposed);
 /* Amount of bytes in the given buffer. */
-size_t bytes(Buffer source);
+size_t countBytes(Buffer counted);
 /* Insert the given byte to the end of the given buffer. */
-void   put(Buffer* target, char source);
+void   appendCharacter(Buffer* target, char appended);
 /* Insert the bytes in the given string to the end of the given buffer. */
-void   append(Buffer* target, String source);
+void   appendString(Buffer* target, String appended);
 /* Insert all the bytes from the given stream to the end of the given buffer. */
-void   read(Buffer* target, FILE* source);
+void   appendStream(Buffer* target, FILE* appended);
 
 /* Dynamicly allocated array of strings that uses hashcode for fast element
  * existance checking. */
@@ -65,10 +66,10 @@ typedef struct {
   size_t  members;
 } Set;
 
-/* Set without any elements. */
-Set           emptySet(void);
+/* Empty set with the given initial capacity. */
+Set           createSet(size_t initialCapacity);
 /* Release the memory used by the given set. */
-void          disposeSet(Set* target);
+void          disposeSet(Set* disposed);
 /* Put the given string to the given set as a new member. String should not be a
  * member, it sould be a new string! */
 void          insertMember(Set* target, String inserted);
@@ -95,19 +96,19 @@ typedef struct {
   size_t    entries;
 } Map;
 
-/* Map without any entries. */
-Map  emptyMap(void);
+/* Empty map with the given initial capacity. */
+Map  createMap(size_t initialCapacity);
 /* Release the memory used by the given map. */
-void disposeMap(Map* target);
+void disposeMap(Map* disposed);
 /* Put the given index with the given string as the key to the given map. String
  * should not be a member, it sould be a new string! */
 void insertEntry(Map* target, String insertedKey, size_t insertedValue);
 /* Pointer to the entry in the given map that corresponds to the given key.
  * Returns null if there is no entry with the given key. */
-MapEntry const* accessEntry(Map source, String accessed);
+MapEntry const* accessEntry(Map source, String accessedKey);
 /* Pointer to the string in the given map that corresponds to the given key.
  * Returns null if there is no entry with the given key. */
-String const*   accessKey(Map source, String accessed);
+String const*   accessKey(Map source, String accessedKey);
 /* Pointer to the index in the given map that corresponds to the given key.
  * Returns null if there is no entry with the given key. */
-size_t const*   accessValue(Map source, String accessed);
+size_t const*   accessValue(Map source, String accessedKey);

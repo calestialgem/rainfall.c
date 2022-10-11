@@ -6,25 +6,29 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-String stringOf(char const* first, char const* after) {
+String const EMPTY_STRING = {.first = NULL, .after = NULL};
+
+String createString(char const* first, char const* after) {
   return (String){.first = first, .after = after};
 }
 
-String nullTerminated(char const* array) {
-  char const* null = array;
-  while (*null) null++;
-  return stringOf(array, null);
+String viewTerminated(char const* terminatedArray) {
+  // Find the null character, and create a string upto it.
+  char const* termination = terminatedArray;
+  while (*termination) termination++;
+  return createString(terminatedArray, termination);
 }
 
-String emptyString() { return stringOf(NULL, NULL); }
+size_t countCharacters(String counted) { return counted.after - counted.first; }
 
-size_t characters(String source) { return source.after - source.first; }
+bool compareStringEquality(String leftChecked, String rightChecked) {
+  // First compare whether the sizes are equal.
+  size_t count = countCharacters(leftChecked);
+  if (count != countCharacters(rightChecked)) return false;
 
-bool equalStrings(String left, String right) {
-  size_t length = characters(left);
-  if (length != characters(right)) return false;
-  for (size_t index = 0; index < length; index++)
-    if (left.first[index] != right.first[index]) return false;
+  // If at any index the characters do not match, they are not equal.
+  for (size_t index = 0; index < count; index++)
+    if (leftChecked.first[index] != rightChecked.first[index]) return false;
   return true;
 }
 
@@ -32,13 +36,14 @@ bool equalStrings(String left, String right) {
  * alphabet has 26 characters. Identifiers in the Thrice source are made out of
  * upper and lower case English letters, and underscores; thus, the prime is
  * the amount of different hashcodes there could be for a character. */
-#define PRIME 53
+#define HASHCODE_PRIME_FACTOR 53
 
-size_t hashcode(String source) {
-  size_t hash = 0;
-  for (char const* i = source.first; i < source.after; i++) {
-    hash *= PRIME;
-    hash += *i;
+size_t calculateHashcode(String calculated) {
+  // Combine and accumulate the hashcodes for all the characters.
+  size_t hashcode = 0;
+  for (char const* i = calculated.first; i < calculated.after; i++) {
+    hashcode *= HASHCODE_PRIME_FACTOR;
+    hashcode += *i;
   }
-  return hash;
+  return hashcode;
 }
