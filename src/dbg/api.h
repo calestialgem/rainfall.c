@@ -11,15 +11,15 @@
 /* Allocate a memory block with the given amount of bytes. If a previous memory
  * block is given tries to change its size. If the bytes are zero, frees the
  * previous block. */
-void*       allocate(void* previous, ptrdiff_t bytes);
+void*       allocate(void* target, ptrdiff_t bytes);
 /* Path to the Rainfall source file at the given path relative to the root
  * source folder. Returns the full path if it cannot find the root. */
 char const* trimPath(char const* fullPath);
 
 /* Call `allocate` with amount of bytes enough to have the given amount of
  * elements of the given type. */
-#define allocateArray(previous, elements, Element) \
-  (Element*)allocate(previous, (elements) * sizeof(Element))
+#define allocateArray(target, elements, ElementType) \
+  (ElementType*)allocate(target, (elements) * sizeof(ElementType))
 
 /* Aborts if the given condition does not hold, after printing the given
  * message with the file and line information of the Rainfall source file. */
