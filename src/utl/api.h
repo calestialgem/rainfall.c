@@ -104,10 +104,10 @@ void disposeMap(Map* target);
 void insertEntry(Map* target, String insertedKey, size_t insertedValue);
 /* Pointer to the entry in the given map that corresponds to the given key.
  * Returns null if there is no entry with the given key. */
-MapEntry const* accessEntry(Map source, String accessedKey);
+MapEntry const* accessEntry(Map source, String accessed);
 /* Pointer to the string in the given map that corresponds to the given key.
  * Returns null if there is no entry with the given key. */
-String const*   accessKey(Map source, String accessedKey);
+String const*   accessKey(Map source, String accessed);
 /* Pointer to the index in the given map that corresponds to the given key.
  * Returns null if there is no entry with the given key. */
-size_t const*   accessValue(Map source, String accessedKey);
+size_t const*   accessValue(Map source, String accessed);

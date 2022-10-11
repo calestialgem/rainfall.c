@@ -52,21 +52,21 @@ void insertEntry(Map* target, String insertedKey, size_t insertedValue) {
   unexpected("Could not find an empty place in the map!");
 }
 
-MapEntry const* accessEntry(Map source, String accessedKey) {
+MapEntry const* accessEntry(Map source, String accessed) {
   size_t capacity = source.after - source.first;
-  size_t hash     = hashcode(accessedKey);
+  size_t hash     = hashcode(accessed);
   for (size_t i = 0; i < capacity; i++) {
     size_t index = (hash + i) % capacity;
-    if (equalStrings(source.first[index].key, accessedKey))
+    if (equalStrings(source.first[index].key, accessed))
       return source.first + index;
   }
   return NULL;
 }
 
-String const* accessKey(Map source, String accessedKey) {
-  return &accessEntry(source, accessedKey)->key;
+String const* accessKey(Map source, String accessed) {
+  return &accessEntry(source, accessed)->key;
 }
 
-size_t const* accessValue(Map source, String accessedKey) {
-  return &accessEntry(source, accessedKey)->value;
+size_t const* accessValue(Map source, String accessed) {
+  return &accessEntry(source, accessed)->value;
 }
