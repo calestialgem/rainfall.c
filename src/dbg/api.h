@@ -11,7 +11,7 @@
 /* Allocate a memory block with the given amount of bytes. If a previous memory
  * block is given tries to change its size. If the bytes are zero, frees the
  * previous block. */
-void*       allocate(void* target, ptrdiff_t bytes);
+void*       allocate(void* target, size_t bytes);
 /* Path to the Rainfall source file at the given path relative to the root
  * source folder. Returns the full path if it cannot find the root. */
 char const* trimPath(char const* fullPath);

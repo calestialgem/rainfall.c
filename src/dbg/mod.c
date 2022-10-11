@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-void* allocate(void* target, ptrdiff_t bytes) {
+void* allocate(void* target, size_t bytes) {
   if (!bytes) {
     free(target);
     return NULL;
