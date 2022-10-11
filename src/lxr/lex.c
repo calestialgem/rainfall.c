@@ -9,37 +9,37 @@
 
 /* Make sure the given amount of space exists at the end of the given lex.
  * When necessary, grows by at least half of the current capacity. */
-static void reserve(Lex* l, ptrdiff_t amount) {
-  ptrdiff_t capacity = l->bound - l->first;
-  ptrdiff_t elements = l->after - l->first;
-  ptrdiff_t space    = capacity - elements;
-  if (space >= amount) return;
+static void reserve(Lex* targetLex, size_t reservedAmount) {
+  size_t capacity = targetLex->bound - targetLex->first;
+  size_t elements = targetLex->after - targetLex->first;
+  size_t space    = capacity - elements;
+  if (space >= reservedAmount) return;
 
-  ptrdiff_t growth    = amount - space;
-  ptrdiff_t minGrowth = capacity / 2;
+  size_t growth    = reservedAmount - space;
+  size_t minGrowth = capacity / 2;
   if (growth < minGrowth) growth = minGrowth;
   capacity += growth;
 
-  l->first = allocateArray(l->first, capacity, Lexeme);
-  l->after = l->first + elements;
-  l->bound = l->first + capacity;
+  targetLex->first = allocateArray(targetLex->first, capacity, Lexeme);
+  targetLex->after = targetLex->first + elements;
+  targetLex->bound = targetLex->first + capacity;
 }
 
-Lex lexOf(Source* s) {
-  Lex l = {.first = NULL, .after = NULL, .bound = NULL};
-  lex(&l, s);
-  return l;
+Lex lexOf(Source* source) {
+  Lex result = {.first = NULL, .after = NULL, .bound = NULL};
+  lex(&result, source);
+  return result;
 }
 
-void disposeLex(Lex* l) {
-  l->first = allocateArray(l->first, 0, Lexeme);
-  l->after = l->first;
-  l->bound = l->after;
+void disposeLex(Lex* targetLex) {
+  targetLex->first = allocateArray(targetLex->first, 0, Lexeme);
+  targetLex->after = targetLex->first;
+  targetLex->bound = targetLex->after;
 }
 
-void pushLexeme(Lex* l, Lexeme x) {
-  reserve(l, 1);
-  *l->after++ = x;
+void pushLexeme(Lex* targetLex, Lexeme pushedLexeme) {
+  reserve(targetLex, 1);
+  *targetLex->after++ = pushedLexeme;
 }
 
-void popLexeme(Lex* l) { l->after--; }
+void popLexeme(Lex* targetLex) { targetLex->after--; }

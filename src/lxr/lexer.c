@@ -19,8 +19,8 @@ typedef struct {
   char const* current;
 } Lexer;
 
-String marks[MARKS];
-String keywords[KEYWORDS];
+String markNames[MARK_COUNT];
+String keywordNames[KEYWORD_COUNT];
 
 /* Add a lexeme with the given value and type. */
 #define push(section_, tag_) \
@@ -57,7 +57,7 @@ static bool take(Lexer* l, char c) {
 /* Whether the next characters are the same as the given string. Consumes the
  * characters if true. */
 static bool check(Lexer* l, String s) {
-  for (ptrdiff_t i = 0; i < characters(s); i++)
+  for (size_t i = 0; i < characters(s); i++)
     if (!has() || l->current[i] != s.first[i]) return false;
   l->current += characters(s);
   return true;
@@ -103,8 +103,8 @@ static bool mark(Lexer* l) {
   char const* old = l->current;
 
   // Check whether there is a mark.
-  for (ptrdiff_t i = 0; i < MARKS; i++) {
-    if (check(l, marks[i])) {
+  for (size_t i = 0; i < MARK_COUNT; i++) {
+    if (check(l, markNames[i])) {
       push(section(old), MARK_FIRST + i);
       return true;
     }
@@ -134,8 +134,8 @@ static bool word(Lexer* l) {
   String word = section(old);
 
   // Check whether it is a reserved identifier.
-  for (ptrdiff_t i = 0; i < KEYWORDS; i++) {
-    if (equalStrings(word, keywords[i])) {
+  for (size_t i = 0; i < KEYWORD_COUNT; i++) {
+    if (equalStrings(word, keywordNames[i])) {
       push(word, KEYWORD_FIRST + i);
       return true;
     }
@@ -220,8 +220,8 @@ void lex(Lex* x, Source* s) {
 }
 
 void initLexer() {
-  for (ptrdiff_t i = 0; i < MARKS; i++)
-    marks[i] = nullTerminated(lexemeName(MARK_FIRST + i));
-  for (ptrdiff_t i = 0; i < KEYWORDS; i++)
-    keywords[i] = nullTerminated(lexemeName(KEYWORD_FIRST + i));
+  for (size_t i = 0; i < MARK_COUNT; i++)
+    markNames[i] = nullTerminated(lexemeName(MARK_FIRST + i));
+  for (size_t i = 0; i < KEYWORD_COUNT; i++)
+    keywordNames[i] = nullTerminated(lexemeName(KEYWORD_FIRST + i));
 }

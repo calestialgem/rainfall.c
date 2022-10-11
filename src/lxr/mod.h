@@ -12,22 +12,22 @@
 /* Tag after the last mark tag. */
 #define MARK_AFTER LEXEME_EOF
 /* Amount of marks. */
-#define MARKS      (MARK_AFTER - MARK_FIRST)
+#define MARK_COUNT (MARK_AFTER - MARK_FIRST)
 /* Names of mark lexeme variants. */
-extern String marks[MARKS];
+extern String markNames[MARK_COUNT];
 
 /* First keyword tag. */
 #define KEYWORD_FIRST LEXEME_LET
 /* Tag after the last keyword tag. */
 #define KEYWORD_AFTER LEXEME_IDENTIFIER
 /* Amount of keywords. */
-#define KEYWORDS      (KEYWORD_AFTER - KEYWORD_FIRST)
+#define KEYWORD_COUNT (KEYWORD_AFTER - KEYWORD_FIRST)
 /* Names of keyword lexeme variants. */
-extern String keywords[KEYWORDS];
+extern String keywordNames[KEYWORD_COUNT];
 
 /* Add the given lexeme to the end of the given lex. */
-void pushLexeme(Lex*, Lexeme);
+void pushLexeme(Lex* targetLex, Lexeme pushedLexeme);
 /* Remove the last lexeme from the given lex. */
-void popLexeme(Lex*);
+void popLexeme(Lex* targetLex);
 /* Lex the given source file into the given lex. */
-void lex(Lex*, Source*);
+void lex(Lex* targetLex, Source* lexedSource);

@@ -10,9 +10,9 @@
 
 /* Make sure the given amount of space exists at the end of the given buffer.
  * When necessary, grows by at least half of the current capacity. */
-static void reserve(Buffer* expanded, size_t reserved) {
-  size_t capacity = expanded->bound - expanded->first;
-  size_t bytes    = expanded->after - expanded->first;
+static void reserve(Buffer* target, size_t reserved) {
+  size_t capacity = target->bound - target->first;
+  size_t bytes    = target->after - target->first;
   size_t space    = capacity - bytes;
   if (space >= reserved) return;
 
@@ -21,9 +21,9 @@ static void reserve(Buffer* expanded, size_t reserved) {
   if (growth < minGrowth) growth = minGrowth;
   capacity += growth;
 
-  expanded->first = allocateArray(expanded->first, capacity, char);
-  expanded->after = expanded->first + bytes;
-  expanded->bound = expanded->first + capacity;
+  target->first = allocateArray(target->first, capacity, char);
+  target->after = target->first + bytes;
+  target->bound = target->first + capacity;
 }
 
 Buffer emptyBuffer(void) {
