@@ -3,99 +3,112 @@
 
 #include "dbg/api.h"
 #include "lxr/api.h"
+#include "otc/api.h"
 #include "psr/api.h"
 #include "psr/mod.h"
-#include "utl/api.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-
-/* Make sure the given amount of space exists at the end of the given parse.
- * When necessary, grows by at least half of the current capacity. */
-static void reserve(Parse* const prs, iptr const amount) {
-  iptr const cap   = prs->all - prs->bgn;
-  iptr const len   = prsLen(*prs);
-  iptr const space = cap - len;
-  if (space >= amount) return;
-
-  iptr const       growth    = amount - space;
-  iptr const       minGrowth = cap / 2;
-  iptr const       newCap    = cap + (growth < minGrowth ? minGrowth : growth);
-  Statement* const mem       = realloc(prs->bgn, newCap * sizeof(Statement));
-  dbgExpect(mem, "Could not reallocate!");
-
-  prs->bgn = mem;
-  prs->end = mem + len;
-  prs->all = mem + newCap;
+Parse createParse(Source* reported, Lex parsed) {
+  Parse created = {.first = NULL, .after = NULL, .bound = NULL};
+  parseLex(&created, reported, parsed);
+  return created;
 }
 
-Parse prsOf(Outcome* const otc, Lex const lex) {
-  Parse res = {0};
-  parserParse(&res, otc, lex);
-  return res;
-}
-
-void prsFree(Parse* const prs) {
-  for (Statement* i = prs->bgn; i < prs->end; i++) {
-    switch (i->tag) {
-    case STT_LET:
-      expFree(&i->let.type);
-      expFree(&i->let.val);
+void disposeParse(Parse* disposed) {
+  for (Statement* statement = disposed->first; statement < disposed->after;
+       statement++) {
+    switch (statement->tag) {
+    case STATEMENT_BINDING_DEFINITION:
+      disposeExpression(&statement->asBindingDefinition.type);
+      disposeExpression(&statement->asBindingDefinition.value);
       break;
-    case STT_VAR:
-      expFree(&i->var.type);
-      expFree(&i->var.val);
+    case STATEMENT_INFERRED_BINDING_DEFINITION:
+      disposeExpression(&statement->asInferredBindingDefinition.value);
       break;
-    case STT_EXP: expFree(&i->exp.exp); break;
-    default: dbgUnexpected("Unknown statement tag!");
+    case STATEMENT_VARIABLE_DEFINITION:
+      disposeExpression(&statement->asVariableDefinition.type);
+      disposeExpression(&statement->asVariableDefinition.initialValue);
+      break;
+    case STATEMENT_INFERRED_VARIABLE_DEFINITION:
+      disposeExpression(&statement->asInferredVariableDefinition.initialValue);
+      break;
+    case STATEMENT_DEFAULTED_VARIABLE_DEFINITION:
+      disposeExpression(&statement->asDefaultedVariableDefinition.type);
+      break;
+    case STATEMENT_DISCARDED_EXPRESSION:
+      disposeExpression(&statement->asDiscardedExpression.discarded);
+      break;
+    default: unexpected("Unknown statement variant!");
     }
   }
-  free(prs->bgn);
-  prs->bgn = NULL;
-  prs->end = NULL;
-  prs->all = NULL;
+  disposed->first = allocateArray(disposed->first, 0, Statement);
+  disposed->after = disposed->first;
+  disposed->bound = disposed->first;
 }
 
-iptr prsLen(Parse const prs) { return prs.end - prs.bgn; }
-
-Statement prsAt(Parse const prs, iptr const i) { return prs.bgn[i]; }
-
-void prsWrite(Parse const prs, FILE* const stream) {
-  for (Statement const* i = prs.bgn; i < prs.end; i++) {
-    switch (i->tag) {
-    case STT_LET:
-      fprintf(stream, "let ");
-      strWrite(i->let.name, stream);
-      fprintf(stream, ": ");
-      expWrite(i->let.type, stream);
-      fprintf(stream, " = ");
-      expWrite(i->let.val, stream);
-      fprintf(stream, ";");
-      break;
-    case STT_VAR:
-      fprintf(stream, "var ");
-      strWrite(i->var.name, stream);
-      fprintf(stream, ": ");
-      expWrite(i->var.type, stream);
-      if (expLen(i->var.val)) {
-        fprintf(stream, " = ");
-        expWrite(i->var.val, stream);
-      }
-      fprintf(stream, ";");
-      break;
-    case STT_EXP:
-      expWrite(i->exp.exp, stream);
-      fprintf(stream, ";");
-      break;
-    default: dbgUnexpected("Unknown statement tag!");
-    }
-    fprintf(stream, "\n");
-  }
+static void pushStatement(Parse* target, Statement pushed) {
+  reserveArray(target, 1, Statement);
+  *target->after++ = pushed;
 }
 
-void prsAdd(Parse* const prs, Statement const stt) {
-  reserve(prs, 1);
-  *prs->end++ = stt;
+void pushBindingDefinition(
+  Parse* target, String pushedName, Expression pushedType,
+  Expression pushedValue) {
+  pushStatement(
+    target, (Statement){
+              .asBindingDefinition =
+                {.name = pushedName, .type = pushedType, .value = pushedValue},
+              .tag = STATEMENT_BINDING_DEFINITION
+  });
 }
 
-void prsPop(Parse* const prs) { prs->end--; }
+void pushInferredBindingDefinition(
+  Parse* target, String pushedName, Expression pushedValue) {
+  pushStatement(
+    target,
+    (Statement){
+      .asInferredBindingDefinition = {.name = pushedName, .value = pushedValue},
+      .tag                         = STATEMENT_INFERRED_BINDING_DEFINITION
+  });
+}
+
+void pushVariableDefinition(
+  Parse* target, String pushedName, Expression pushedType,
+  Expression pushedInitialValue) {
+  pushStatement(
+    target, (Statement){
+              .asVariableDefinition =
+                {.name         = pushedName,
+                                       .type         = pushedType,
+                                       .initialValue = pushedInitialValue},
+              .tag = STATEMENT_VARIABLE_DEFINITION
+  });
+}
+
+void pushInferredVariableDefinition(
+  Parse* target, String pushedName, Expression pushedInitialValue) {
+  pushStatement(
+    target, (Statement){
+              .asInferredVariableDefinition =
+                {.name = pushedName, .initialValue = pushedInitialValue},
+              .tag = STATEMENT_VARIABLE_DEFINITION
+  });
+}
+
+void pushDefaultedVariableDefinition(
+  Parse* target, String pushedName, Expression pushedType) {
+  pushStatement(
+    target,
+    (Statement){
+      .asDefaultedVariableDefinition = {.name = pushedName, .type = pushedType},
+      .tag                           = STATEMENT_VARIABLE_DEFINITION
+  });
+}
+
+void pushDiscardedExpression(Parse* target, Expression pushedDiscarded) {
+  pushStatement(
+    target, (Statement){
+              .asDiscardedExpression = {.discarded = pushedDiscarded},
+              .tag                   = STATEMENT_DISCARDED_EXPRESSION});
+}
+
+void popStatement(Parse* target) { target->after--; }

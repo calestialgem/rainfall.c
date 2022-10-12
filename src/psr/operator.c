@@ -4,241 +4,418 @@
 #include "dbg/api.h"
 #include "lxr/api.h"
 #include "psr/api.h"
-#include "utl/api.h"
 
-/* Definition of a nullary operator with the given operator. */
-#define null(lxm) \
-  { .null = {.op = lxm}, .tag = OP_NULL }
-/* Definition of a prenary operator with the given operator. */
-#define pre(lxm) \
-  { .pre = {.op = lxm}, .tag = OP_PRE }
-/* Definition of a postary operator with the given operator. */
-#define post(lxm) \
-  { .post = {.op = lxm}, .tag = OP_POST }
-/* Definition of a cirnary operator with the given operators. */
-#define cir(llxm, rlxm) \
-  { .cir = {.lop = llxm, .rop = rlxm}, .tag = OP_CIR }
-/* Definition of a binary operator with the given operator. */
-#define bin(lxm) \
-  { .pre = {.op = lxm}, .tag = OP_BIN }
-/* Definition of a variary operator with the given operators. */
-#define var(llxm, slxm, rlxm) \
-  { .var = {.lop = llxm, .sep = slxm, .rop = rlxm}, .tag = OP_VAR }
+#include <stdbool.h>
+#include <stddef.h>
 
-// Definitions are in macros because macros can be used inside array
-// initializers as well.
-#define dec null(LXM_DEC)
-#define acs null(LXM_ID)
-#define grp cir(LXM_OPAREN, LXM_CPAREN)
-#define cll var(LXM_OPAREN, LXM_COMMA, LXM_CPAREN)
+/* Create a nullary operator with the given only lexeme. */
+#define createNullaryOperator(precedenceLevel, inLevelIndex, onlyLexeme) \
+  {                                                                      \
+    .asNullary = {.only = onlyLexeme}, .tag = OPERATOR_NULLARY,          \
+    .precedence = precedenceLevel, .inLevel = inLevelIndex               \
+  }
 
-#define pos pre(LXM_PLUS)
-#define neg pre(LXM_MINUS)
-#define sin post(LXM_PLUSPLUS)
-#define sde post(LXM_MINUSMINUS)
-#define pin pre(LXM_PLUSPLUS)
-#define pde pre(LXM_MINUSMINUS)
-#define not pre(LXM_EXC)
-#define bnt pre(LXM_TILDE)
+/* Create a prenary operator with the given before lexeme. */
+#define createPrenaryOperator(precedenceLevel, inLevelIndex, lexemeBefore) \
+  {                                                                        \
+    .asPrenary = {.before = lexemeBefore}, .tag = OPERATOR_PRENARY,        \
+    .precedence = precedenceLevel, .inLevel = inLevelIndex                 \
+  }
 
-#define mul bin(LXM_STAR)
-#define div bin(LXM_SLASH)
-#define rem bin(LXM_PERCENT)
+/* Create a postary operator with the given after lexeme. */
+#define createPostaryOperator(precedenceLevel, inLevelIndex, lexemeAfter) \
+  {                                                                       \
+    .asPostary = {.after = lexemeAfter}, .tag = OPERATOR_POSTARY,         \
+    .precedence = precedenceLevel, .inLevel = inLevelIndex                \
+  }
 
-#define add bin(LXM_PLUS)
-#define sub bin(LXM_MINUS)
+/* Create a cirnary operator with the given opening and closing lexemes. */
+#define createCirnaryOperator(                                         \
+  precedenceLevel, inLevelIndex, openingLexeme, closingLexeme)         \
+  {                                                                    \
+    .asCirnary = {.opening = openingLexeme, .closing = closingLexeme}, \
+    .tag = OPERATOR_CIRNARY, .precedence = precedenceLevel,            \
+    .inLevel = inLevelIndex                                            \
+  }
 
-#define lsh bin(LXM_LARLAR)
-#define rsh bin(LXM_RARRAR)
+/* Create a binary operator with the given lexeme between. */
+#define createBinaryOperator(precedenceLevel, inLevelIndex, lexemeBetween) \
+  {                                                                        \
+    .asBinary = {.between = lexemeBetween}, .tag = OPERATOR_BINARY,        \
+    .precedence = precedenceLevel, .inLevel = inLevelIndex                 \
+  }
 
-#define and bin(LXM_AMP)
+/* Create a variary operator with the given opening, separating, and closing
+ * lexemes. */
+#define createVariaryOperator(                                    \
+  precedenceLevel, inLevelIndex, openingLexeme, separatingLexeme, \
+  closingLexeme)                                                  \
+  {                                                               \
+    .asVariary =                                                  \
+      {.opening    = openingLexeme,                               \
+       .separating = separatingLexeme,                            \
+       .closing    = closingLexeme},                                 \
+    .tag = OPERATOR_VARIARY, .precedence = precedenceLevel,       \
+    .inLevel = inLevelIndex                                       \
+  }
 
-#define xor bin(LXM_CARET)
+Operator const DECIMAL_LITERAL =
+  createNullaryOperator(OPERATOR_PRIMARY, 0, LEXEME_DECIMAL);
+Operator const SYMBOL_ACCESS =
+  createNullaryOperator(OPERATOR_PRIMARY, 1, LEXEME_IDENTIFIER);
+Operator const GROUP = createCirnaryOperator(
+  OPERATOR_PRIMARY, 2, LEXEME_OPENING_PARENTHESIS, LEXEME_CLOSING_PARENTHESIS);
+Operator const FUNCTION_CALL = createVariaryOperator(
+  OPERATOR_PRIMARY, 3, LEXEME_OPENING_PARENTHESIS, LEXEME_COMMA,
+  LEXEME_CLOSING_PARENTHESIS);
 
-#define orr bin(LXM_PIPE)
+/* Amount of primary operators. */
+#define PRIMARY_OPERATORS 4
 
-#define smt bin(LXM_LARROW)
-#define ste bin(LXM_LAREQ)
-#define lgt bin(LXM_RARROW)
-#define lte bin(LXM_RAREQ)
+Operator const POSATE = createPrenaryOperator(OPERATOR_UNARY, 0, LEXEME_PLUS);
+Operator const NEGATE = createPrenaryOperator(OPERATOR_UNARY, 1, LEXEME_MINUS);
+Operator const POSTFIX_INCREMENT =
+  createPostaryOperator(OPERATOR_UNARY, 2, LEXEME_PLUS_PLUS);
+Operator const POSTFIX_DECREMENT =
+  createPostaryOperator(OPERATOR_UNARY, 3, LEXEME_MINUS_MINUS);
+Operator const PREFIX_INCREMENT =
+  createPrenaryOperator(OPERATOR_UNARY, 4, LEXEME_PLUS_PLUS);
+Operator const PREFIX_DECREMENT =
+  createPrenaryOperator(OPERATOR_UNARY, 5, LEXEME_MINUS_MINUS);
+Operator const LOGICAL_NOT =
+  createPrenaryOperator(OPERATOR_UNARY, 6, LEXEME_EXCLAMETION);
+Operator const COMPLEMENT =
+  createPrenaryOperator(OPERATOR_UNARY, 7, LEXEME_TILDE);
 
-#define equ bin(LXM_EQEQ)
-#define neq bin(LXM_EXCEQ)
+/* Amount of unary operators. */
+#define UNARY_OPERATORS 8
 
-#define lan bin(LXM_AMPAMP)
+Operator const MULTIPLICATION =
+  createBinaryOperator(OPERATOR_FACTOR, 0, LEXEME_STAR);
+Operator const DIVISION =
+  createBinaryOperator(OPERATOR_FACTOR, 1, LEXEME_SLASH);
+Operator const REMINDER =
+  createBinaryOperator(OPERATOR_FACTOR, 2, LEXEME_PERCENT);
 
-#define lor bin(LXM_PIPEPIPE)
+/* Amount of factor operators. */
+#define FACTOR_OPERATORS 3
 
-#define ass bin(LXM_EQUAL)
-#define mla bin(LXM_STAREQ)
-#define dva bin(LXM_SLASHEQ)
-#define rma bin(LXM_PERCEQ)
-#define ada bin(LXM_PLUSEQ)
-#define sba bin(LXM_MINUSEQ)
-#define lsa bin(LXM_LARLAREQ)
-#define rsa bin(LXM_RARRAREQ)
-#define ana bin(LXM_AMPEQ)
-#define xra bin(LXM_CARETEQ)
-#define ora bin(LXM_PIPEEQ)
+Operator const ADDITION = createBinaryOperator(OPERATOR_TERM, 0, LEXEME_PLUS);
+Operator const SUBTRACTION =
+  createBinaryOperator(OPERATOR_TERM, 1, LEXEME_MINUS);
 
-Operator const OP_DEC = dec;
-Operator const OP_ACS = acs;
-Operator const OP_GRP = grp;
-Operator const OP_CLL = cll;
+/* Amount of term operators. */
+#define TERM_OPERATORS 2
 
-Operator const OP_POS = pos;
-Operator const OP_NEG = neg;
-Operator const OP_SIN = sin;
-Operator const OP_SDE = sde;
-Operator const OP_PIN = pin;
-Operator const OP_PDE = pde;
-Operator const OP_NOT = not ;
-Operator const OP_BNT = bnt;
+Operator const LEFT_SHIFT =
+  createBinaryOperator(OPERATOR_SHIFT, 0, LEXEME_LEFT_ARROW_LEFT_ARROW);
+Operator const RIGHT_SHIFT =
+  createBinaryOperator(OPERATOR_SHIFT, 1, LEXEME_RIGHT_ARROW_RIGHT_ARROW);
 
-Operator const OP_MUL = mul;
-Operator const OP_DIV = div;
-Operator const OP_REM = rem;
+/* Amount of shift operators. */
+#define SHIFT_OPERATORS 2
 
-Operator const OP_ADD = add;
-Operator const OP_SUB = sub;
+Operator const BITWISE_AND =
+  createBinaryOperator(OPERATOR_BITWISE_AND, 0, LEXEME_AMPERCENT);
 
-Operator const OP_LSH = lsh;
-Operator const OP_RSH = rsh;
+/* Amount of bitwise AND operators. */
+#define BITWISE_AND_OPERATORS 1
 
-Operator const OP_AND = and;
+Operator const BITWISE_XOR =
+  createBinaryOperator(OPERATOR_BITWISE_XOR, 0, LEXEME_CARET);
 
-Operator const OP_XOR = xor;
+/* Amount of bitwise XOR operators. */
+#define BITWISE_XOR_OPERATORS 1
 
-Operator const OP_ORR = orr;
+Operator const BITWISE_OR =
+  createBinaryOperator(OPERATOR_BITWISE_OR, 0, LEXEME_PIPE);
 
-Operator const OP_SMT = smt;
-Operator const OP_STE = ste;
-Operator const OP_LGT = lgt;
-Operator const OP_LTE = lte;
+/* Amount of bitwise OR operators. */
+#define BITWISE_OR_OPERATORS 1
 
-Operator const OP_EQU = equ;
-Operator const OP_NEQ = neq;
+Operator const SMALLER_THAN =
+  createBinaryOperator(OPERATOR_ORDER_COMPARISON, 0, LEXEME_LEFT_ARROW);
+Operator const SMALLER_THAN_OR_EQUAL_TO =
+  createBinaryOperator(OPERATOR_ORDER_COMPARISON, 1, LEXEME_LEFT_ARROW_EQUAL);
+Operator const GREATER_THAN =
+  createBinaryOperator(OPERATOR_ORDER_COMPARISON, 2, LEXEME_LEFT_ARROW);
+Operator const GREATER_THAN_OR_EQUAL_TO =
+  createBinaryOperator(OPERATOR_ORDER_COMPARISON, 3, LEXEME_LEFT_ARROW_EQUAL);
 
-Operator const OP_LAN = lan;
+/* Amount of order comparison operators. */
+#define ORDER_COMPARISON_OPERATORS 4
 
-Operator const OP_LOR = lor;
+Operator const EQUAL_TO =
+  createBinaryOperator(OPERATOR_EQUALITY_COMPARISON, 0, LEXEME_EQUAL_EQUAL);
+Operator const NOT_EQUAL_TO = createBinaryOperator(
+  OPERATOR_EQUALITY_COMPARISON, 1, LEXEME_EXCLAMETION_EQUAL);
 
-Operator const OP_ASS = ass;
-Operator const OP_MLA = mla;
-Operator const OP_DVA = dva;
-Operator const OP_RMA = rma;
-Operator const OP_ADA = ada;
-Operator const OP_SBA = sba;
-Operator const OP_LSA = lsa;
-Operator const OP_RSA = rsa;
-Operator const OP_ANA = ana;
-Operator const OP_XRA = xra;
-Operator const OP_ORA = ora;
+/* Amount of equality comparison operators. */
+#define EQUALITY_COMPARISON_OPERATORS 2
 
-Operator const OP_PRIMARY[OP_PRIMARY_LEN]       = {dec, acs, grp, cll};
-Operator const OP_UNARY[OP_UNARY_LEN]           = {pos, neg, sin, sde,
-                                                   pin, pde, not, bnt};
-Operator const OP_FACTOR[OP_FACTOR_LEN]         = {mul, div, rem};
-Operator const OP_TERM[OP_TERM_LEN]             = {add, sub};
-Operator const OP_SHIFT[OP_SHIFT_LEN]           = {lsh, rsh};
-Operator const OP_BITAND[OP_BITAND_LEN]         = {and};
-Operator const OP_BITXOR[OP_BITXOR_LEN]         = {xor};
-Operator const OP_BITOR[OP_BITOR_LEN]           = {orr};
-Operator const OP_COMPARISON[OP_COMPARISON_LEN] = {smt, ste, lgt, lte};
-Operator const OP_EQUALITY[OP_EQUALITY_LEN]     = {equ, neq};
-Operator const OP_LOGAND[OP_LOGAND_LEN]         = {lan};
-Operator const OP_LOGOR[OP_LOGOR_LEN]           = {lor};
-Operator const OP_ASSIGNMENT[OP_ASSIGNMENT_LEN] = {ass, mla, dva, rma, ada, sba,
-                                                   lsa, rsa, ana, xra, ora};
+Operator const LOGICAL_AND =
+  createBinaryOperator(OPERATOR_LOGICAL_AND, 0, LEXEME_AMPERCENT_AMPERCENT);
 
-iptr const OP_LEVEL_LEN[OP_ORDER_LEN] = {
-  OP_ASSIGNMENT_LEN, OP_LOGOR_LEN, OP_LOGAND_LEN, OP_EQUALITY_LEN,
-  OP_COMPARISON_LEN, OP_BITOR_LEN, OP_BITXOR_LEN, OP_BITAND_LEN,
-  OP_SHIFT_LEN,      OP_TERM_LEN,  OP_FACTOR_LEN, OP_UNARY_LEN,
-  OP_PRIMARY_LEN};
-Operator const* const OP_ORDER[OP_ORDER_LEN] = {
-  OP_ASSIGNMENT, OP_LOGOR,  OP_LOGAND, OP_EQUALITY, OP_COMPARISON,
-  OP_BITOR,      OP_BITXOR, OP_BITAND, OP_SHIFT,    OP_TERM,
-  OP_FACTOR,     OP_UNARY,  OP_PRIMARY};
+/* Amount of logical AND operators. */
+#define LOGICAL_AND_OPERATORS 1
 
-Operator opOfNull(NullaryOperator const null) {
-  return (Operator){.null = null, .tag = OP_NULL};
+Operator const LOGICAL_OR =
+  createBinaryOperator(OPERATOR_LOGICAL_OR, 0, LEXEME_PIPE_PIPE);
+
+/* Amount of logical OR operators. */
+#define LOGICAL_OR_OPERATORS 1
+
+Operator const ASSIGNMENT =
+  createBinaryOperator(OPERATOR_ASSIGNMENT, 0, LEXEME_EQUAL);
+Operator const MUTIPLICATION_ASSIGNMENT =
+  createBinaryOperator(OPERATOR_ASSIGNMENT, 1, LEXEME_STAR_EQUAL);
+Operator const DIVISION_ASSIGNMENT =
+  createBinaryOperator(OPERATOR_ASSIGNMENT, 2, LEXEME_SLASH_EQUAL);
+Operator const REMINDER_ASSIGNMENT =
+  createBinaryOperator(OPERATOR_ASSIGNMENT, 3, LEXEME_PERCENT_EQUAL);
+Operator const ADDITION_ASSIGNMENT =
+  createBinaryOperator(OPERATOR_ASSIGNMENT, 4, LEXEME_PLUS_EQUAL);
+Operator const SUBTRACTION_ASSIGNMENT =
+  createBinaryOperator(OPERATOR_ASSIGNMENT, 5, LEXEME_MINUS_EQUAL);
+Operator const LEFT_SHIFT_ASSIGNMENT = createBinaryOperator(
+  OPERATOR_ASSIGNMENT, 6, LEXEME_LEFT_ARROW_LEFT_ARROW_EQUAL);
+Operator const RIGHT_SHIFT_ASSIGNMENT = createBinaryOperator(
+  OPERATOR_ASSIGNMENT, 7, LEXEME_RIGHT_ARROW_RIGHT_ARROW_EQUAL);
+Operator const BITWISE_AND_ASSIGNMENT =
+  createBinaryOperator(OPERATOR_ASSIGNMENT, 8, LEXEME_AMPERCENT_EQUAL);
+Operator const BITWISE_XOR_ASSIGNMENT =
+  createBinaryOperator(OPERATOR_ASSIGNMENT, 9, LEXEME_CARET_EQUAL);
+Operator const BITWISE_OR_ASSIGNMENT =
+  createBinaryOperator(OPERATOR_ASSIGNMENT, 10, LEXEME_PIPE_EQUAL);
+
+/* Amount of assignment operators. */
+#define ASSIGNMENT_OPERATORS 11
+
+/* Maximum amount of operators in any level. */
+#define MAX_LEVEL_COUNT ASSIGNMENT_OPERATORS
+
+bool compareOperatorEquality(Operator left, Operator right) {
+  return left.precedence == right.precedence && left.inLevel == right.inLevel;
 }
 
-Operator opOfPre(PrenaryOperator const pre) {
-  return (Operator){.pre = pre, .tag = OP_PRE};
+size_t hashOperator(Operator hashed) {
+  return (size_t)hashed.precedence * MAX_LEVEL_COUNT + hashed.inLevel;
 }
 
-Operator opOfPost(PostaryOperator const post) {
-  return (Operator){.post = post, .tag = OP_POST};
-}
-
-Operator opOfCir(CirnaryOperator const cir) {
-  return (Operator){.cir = cir, .tag = OP_CIR};
-}
-
-Operator opOfBin(BinaryOperator const bin) {
-  return (Operator){.bin = bin, .tag = OP_BIN};
-}
-
-Operator opOfVar(VariaryOperator const var) {
-  return (Operator){.var = var, .tag = OP_VAR};
-}
-
-bool opEq(Operator const lhs, Operator const rhs) {
-  if (lhs.tag != rhs.tag) return false;
-  switch (lhs.tag) {
-  case OP_NULL: return lhs.null.op == rhs.null.op;
-  case OP_PRE: return lhs.pre.op == rhs.pre.op;
-  case OP_POST: return lhs.post.op == rhs.post.op;
-  case OP_CIR: return lhs.cir.lop == rhs.cir.lop;
-  case OP_BIN: return lhs.bin.op == rhs.bin.op;
-  case OP_VAR: return lhs.var.lop == rhs.var.lop;
-  default: dbgUnexpected("Unknown operator tag!");
+size_t countInLevelOperators(OperatorPrecedence counted) {
+  switch (counted) {
+  case OPERATOR_ASSIGNMENT: return ASSIGNMENT_OPERATORS;
+  case OPERATOR_LOGICAL_OR: return LOGICAL_OR_OPERATORS;
+  case OPERATOR_LOGICAL_AND: return LOGICAL_AND_OPERATORS;
+  case OPERATOR_EQUALITY_COMPARISON: return EQUALITY_COMPARISON_OPERATORS;
+  case OPERATOR_ORDER_COMPARISON: return ORDER_COMPARISON_OPERATORS;
+  case OPERATOR_BITWISE_OR: return BITWISE_OR_OPERATORS;
+  case OPERATOR_BITWISE_XOR: return BITWISE_XOR_OPERATORS;
+  case OPERATOR_BITWISE_AND: return BITWISE_AND_OPERATORS;
+  case OPERATOR_SHIFT: return SHIFT_OPERATORS;
+  case OPERATOR_TERM: return TERM_OPERATORS;
+  case OPERATOR_FACTOR: return FACTOR_OPERATORS;
+  case OPERATOR_UNARY: return UNARY_OPERATORS;
+  case OPERATOR_PRIMARY: return PRIMARY_OPERATORS;
+  default: unexpected("Unknown operator precedence!");
   }
 }
 
-char const* opName(Operator const op) {
-  if (opEq(op, OP_DEC)) return "decimal literal";
-  if (opEq(op, OP_ACS)) return "symbol access";
-  if (opEq(op, OP_GRP)) return "group";
-  if (opEq(op, OP_CLL)) return "function call";
-  if (opEq(op, OP_POS)) return "posate";
-  if (opEq(op, OP_NEG)) return "negate";
-  if (opEq(op, OP_SIN)) return "suffix increment";
-  if (opEq(op, OP_SDE)) return "suffix decrement";
-  if (opEq(op, OP_PIN)) return "prefix increment";
-  if (opEq(op, OP_PDE)) return "prefix decrement";
-  if (opEq(op, OP_NOT)) return "not";
-  if (opEq(op, OP_BNT)) return "bitwise not";
-  if (opEq(op, OP_MUL)) return "multiply";
-  if (opEq(op, OP_DIV)) return "divide";
-  if (opEq(op, OP_REM)) return "reminder";
-  if (opEq(op, OP_ADD)) return "add";
-  if (opEq(op, OP_SUB)) return "subtract";
-  if (opEq(op, OP_LSH)) return "left shift";
-  if (opEq(op, OP_RSH)) return "right shift";
-  if (opEq(op, OP_AND)) return "bitwise and";
-  if (opEq(op, OP_XOR)) return "bitwise xor";
-  if (opEq(op, OP_ORR)) return "bitwise or";
-  if (opEq(op, OP_SMT)) return "smaller";
-  if (opEq(op, OP_STE)) return "smaller or equal";
-  if (opEq(op, OP_LGT)) return "larger";
-  if (opEq(op, OP_LTE)) return "larger or equal";
-  if (opEq(op, OP_EQU)) return "equal";
-  if (opEq(op, OP_NEQ)) return "not equal";
-  if (opEq(op, OP_LAN)) return "and";
-  if (opEq(op, OP_LOR)) return "or";
-  if (opEq(op, OP_ASS)) return "assignment";
-  if (opEq(op, OP_MLA)) return "multiply assign";
-  if (opEq(op, OP_DVA)) return "divide assign";
-  if (opEq(op, OP_RMA)) return "reminder assign";
-  if (opEq(op, OP_ADA)) return "add assign";
-  if (opEq(op, OP_SBA)) return "subtract assign";
-  if (opEq(op, OP_LSA)) return "left shift assign";
-  if (opEq(op, OP_RSA)) return "right shift assign";
-  if (opEq(op, OP_ANA)) return "bitwise and assign";
-  if (opEq(op, OP_XRA)) return "bitwise xor assign";
-  if (opEq(op, OP_ORA)) return "bitwise or assign";
-  dbgUnexpected("Unknown operator!");
+Operator
+getOperatorAt(OperatorPrecedence gottenPrecedence, size_t gottenInLevelIndex) {
+  switch (gottenPrecedence) {
+  case OPERATOR_ASSIGNMENT:
+    switch (gottenInLevelIndex) {
+    case 0: return ASSIGNMENT;
+    case 1: return MUTIPLICATION_ASSIGNMENT;
+    case 2: return DIVISION_ASSIGNMENT;
+    case 3: return REMINDER_ASSIGNMENT;
+    case 4: return ADDITION_ASSIGNMENT;
+    case 5: return SUBTRACTION_ASSIGNMENT;
+    case 6: return LEFT_SHIFT_ASSIGNMENT;
+    case 7: return RIGHT_SHIFT_ASSIGNMENT;
+    case 8: return BITWISE_AND_ASSIGNMENT;
+    case 9: return BITWISE_XOR_ASSIGNMENT;
+    case 10: return BITWISE_OR_ASSIGNMENT;
+    default: unexpected("Unknown assignment level operator!");
+    };
+  case OPERATOR_LOGICAL_OR:
+    switch (gottenInLevelIndex) {
+    case 0: return LOGICAL_OR;
+    default: unexpected("Unknown logical OR level operator!");
+    };
+  case OPERATOR_LOGICAL_AND:
+    switch (gottenInLevelIndex) {
+    case 0: return LOGICAL_AND;
+    default: unexpected("Unknown logical AND level operator!");
+    };
+  case OPERATOR_EQUALITY_COMPARISON:
+    switch (gottenInLevelIndex) {
+    case 0: return EQUAL_TO;
+    case 1: return NOT_EQUAL_TO;
+    default: unexpected("Unknown equality comparison level operator!");
+    };
+  case OPERATOR_ORDER_COMPARISON:
+    switch (gottenInLevelIndex) {
+    case 0: return SMALLER_THAN;
+    case 1: return SMALLER_THAN_OR_EQUAL_TO;
+    case 2: return GREATER_THAN;
+    case 3: return GREATER_THAN_OR_EQUAL_TO;
+    default: unexpected("Unknown order comparison level operator!");
+    };
+  case OPERATOR_BITWISE_OR:
+    switch (gottenInLevelIndex) {
+    case 0: return BITWISE_OR;
+    default: unexpected("Unknown bitwise OR level operator!");
+    };
+  case OPERATOR_BITWISE_XOR:
+    switch (gottenInLevelIndex) {
+    case 0: return BITWISE_XOR;
+    default: unexpected("Unknown bitwise XOR level operator!");
+    };
+  case OPERATOR_BITWISE_AND:
+    switch (gottenInLevelIndex) {
+    case 0: return BITWISE_AND;
+    default: unexpected("Unknown bitwise AND level operator!");
+    };
+  case OPERATOR_SHIFT:
+    switch (gottenInLevelIndex) {
+    case 0: return LEFT_SHIFT;
+    case 1: return RIGHT_SHIFT;
+    default: unexpected("Unknown shift level operator!");
+    };
+  case OPERATOR_TERM:
+    switch (gottenInLevelIndex) {
+    case 0: return ADDITION;
+    case 1: return SUBTRACTION;
+    default: unexpected("Unknown term level operator!");
+    };
+  case OPERATOR_FACTOR:
+    switch (gottenInLevelIndex) {
+    case 0: return MULTIPLICATION;
+    case 1: return DIVISION;
+    case 2: return REMINDER;
+    default: unexpected("Unknown factor level operator!");
+    };
+  case OPERATOR_UNARY:
+    switch (gottenInLevelIndex) {
+    case 0: return POSATE;
+    case 1: return NEGATE;
+    case 2: return POSTFIX_INCREMENT;
+    case 3: return POSTFIX_DECREMENT;
+    case 4: return PREFIX_INCREMENT;
+    case 5: return PREFIX_DECREMENT;
+    case 6: return LOGICAL_NOT;
+    case 7: return COMPLEMENT;
+    default: unexpected("Unknown unary level operator!");
+    };
+  case OPERATOR_PRIMARY:
+    switch (gottenInLevelIndex) {
+    case 0: return DECIMAL_LITERAL;
+    case 1: return SYMBOL_ACCESS;
+    case 2: return GROUP;
+    case 3: return FUNCTION_CALL;
+    default: unexpected("Unknown primary level operator!");
+    };
+  default: unexpected("Unknown operator precedence!");
+  }
+}
+
+char const* nameOperator(Operator named) {
+  switch (named.precedence) {
+  case OPERATOR_ASSIGNMENT:
+    switch (named.inLevel) {
+    case 0: return "assignment";
+    case 1: return "multiplication assignment";
+    case 2: return "division assignment";
+    case 3: return "reminder assignment";
+    case 4: return "addition assignment";
+    case 5: return "subtraction assignment";
+    case 6: return "left shift assignment";
+    case 7: return "right shift assignment";
+    case 8: return "bitwise and assignment";
+    case 9: return "bitwise xor assignment";
+    case 10: return "bitwise or assignment";
+    default: unexpected("Unknown assignment level operator!");
+    };
+  case OPERATOR_LOGICAL_OR:
+    switch (named.inLevel) {
+    case 0: return "logical or";
+    default: unexpected("Unknown logical OR level operator!");
+    };
+  case OPERATOR_LOGICAL_AND:
+    switch (named.inLevel) {
+    case 0: return "logical and";
+    default: unexpected("Unknown logical AND level operator!");
+    };
+  case OPERATOR_EQUALITY_COMPARISON:
+    switch (named.inLevel) {
+    case 0: return "equal to";
+    case 1: return "not equal to";
+    default: unexpected("Unknown equality comparison level operator!");
+    };
+  case OPERATOR_ORDER_COMPARISON:
+    switch (named.inLevel) {
+    case 0: return "smaller than";
+    case 1: return "smaller than or equal to";
+    case 2: return "greater than";
+    case 3: return "greater than or equal to";
+    default: unexpected("Unknown order comparison level operator!");
+    };
+  case OPERATOR_BITWISE_OR:
+    switch (named.inLevel) {
+    case 0: return "bitwise or";
+    default: unexpected("Unknown bitwise OR level operator!");
+    };
+  case OPERATOR_BITWISE_XOR:
+    switch (named.inLevel) {
+    case 0: return "bitwise xor";
+    default: unexpected("Unknown bitwise XOR level operator!");
+    };
+  case OPERATOR_BITWISE_AND:
+    switch (named.inLevel) {
+    case 0: return "bitwise and";
+    default: unexpected("Unknown bitwise AND level operator!");
+    };
+  case OPERATOR_SHIFT:
+    switch (named.inLevel) {
+    case 0: return "left shift";
+    case 1: return "right shift";
+    default: unexpected("Unknown shift level operator!");
+    };
+  case OPERATOR_TERM:
+    switch (named.inLevel) {
+    case 0: return "addition";
+    case 1: return "subtraction";
+    default: unexpected("Unknown term level operator!");
+    };
+  case OPERATOR_FACTOR:
+    switch (named.inLevel) {
+    case 0: return "multiplication";
+    case 1: return "division";
+    case 2: return "reminder";
+    default: unexpected("Unknown factor level operator!");
+    };
+  case OPERATOR_UNARY:
+    switch (named.inLevel) {
+    case 0: return "posate";
+    case 1: return "negate";
+    case 2: return "postfix increment";
+    case 3: return "postfix decrement";
+    case 4: return "prefix increment";
+    case 5: return "prefix decrement";
+    case 6: return "logical not";
+    case 7: return "complement";
+    default: unexpected("Unknown unary level operator!");
+    };
+  case OPERATOR_PRIMARY:
+    switch (named.inLevel) {
+    case 0: return "decimal literal";
+    case 1: return "symbol access";
+    case 2: return "group";
+    case 3: return "function call";
+    default: unexpected("Unknown primary level operator!");
+    };
+  default: unexpected("Unknown operator precedence!");
+  }
 }

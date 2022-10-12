@@ -4,111 +4,266 @@
 #pragma once
 
 #include "lxr/api.h"
+#include "otc/api.h"
 #include "utl/api.h"
 
 #include <stdbool.h>
-#include <stdio.h>
+#include <stddef.h>
 
 /* Operators without operands. */
 typedef struct {
   /* Lexeme that is the only operator. */
-  LexemeTag op;
+  LexemeTag only;
 } NullaryOperator;
 
 /* Operators with a operator that comes before the only operand. */
 typedef struct {
   /* Lexeme that comes before the operand. */
-  LexemeTag op;
+  LexemeTag before;
 } PrenaryOperator;
 
 /* Operators with a operator that comes after the only operand. */
 typedef struct {
   /* Lexeme that comes after the operand. */
-  LexemeTag op;
+  LexemeTag after;
 } PostaryOperator;
 
 /* Operators with two operators that surround the only operand. */
 typedef struct {
   /* Lexeme that comes before the operand. */
-  LexemeTag lop;
+  LexemeTag opening;
   /* Lexeme that comes after the operand. */
-  LexemeTag rop;
+  LexemeTag closing;
 } CirnaryOperator;
 
 /* Operators with an operator that comes between two operands. */
 typedef struct {
   /* Lexeme that comes between the operands. */
-  LexemeTag op;
+  LexemeTag between;
 } BinaryOperator;
 
 /* Operators with two or more operators and one or more operands where the
  * total amount can vary. All operands are separated by an operator. */
 typedef struct {
   /* Lexeme that comes after the first operand. */
-  LexemeTag lop;
+  LexemeTag opening;
   /* Lexeme that comes between the intermediary operands. */
-  LexemeTag sep;
+  LexemeTag separating;
   /* Lexeme that comes after the last operand. */
-  LexemeTag rop;
+  LexemeTag closing;
 } VariaryOperator;
 
-/* Type of an opertor. */
+/* Variant of an opertor. */
 typedef enum {
   /* Nullary operator. */
-  OP_NULL,
+  OPERATOR_NULLARY,
   /* Prenary operator. */
-  OP_PRE,
+  OPERATOR_PRENARY,
   /* Postary operator. */
-  OP_POST,
+  OPERATOR_POSTARY,
   /* Cirnary operator. */
-  OP_CIR,
+  OPERATOR_CIRNARY,
   /* Binary operator. */
-  OP_BIN,
+  OPERATOR_BINARY,
   /* Variary operator. */
-  OP_VAR
+  OPERATOR_VARIARY
 } OperatorTag;
+
+/* Levels of operators that decide which operator can have operands of which.
+ * Higher level operators bind thighter; thus, they cannot have operands that
+ * are formed of lower level operators. This is not the case for cirnary
+ * operators because they have clear start and end, and for the operands of the
+ * variary operators after the first one, those also have a clear start,
+ * separator and end. */
+typedef enum {
+  /* Operators that change a variable. */
+  OPERATOR_ASSIGNMENT,
+  /* Operators that OR Booleans and short circuit. */
+  OPERATOR_LOGICAL_OR,
+  /* Operators that AND Booleans and short circuit. */
+  OPERATOR_LOGICAL_AND,
+  /* Operators that compare equality. */
+  OPERATOR_EQUALITY_COMPARISON,
+  /* Operators that compare order. */
+  OPERATOR_ORDER_COMPARISON,
+  /* Operators that OR the bits of an integer. */
+  OPERATOR_BITWISE_OR,
+  /* Operators that XOR the bits of an integer. */
+  OPERATOR_BITWISE_XOR,
+  /* Operators that AND the bits of an integer. */
+  OPERATOR_BITWISE_AND,
+  /* Operators that shift the bits of an integer. */
+  OPERATOR_SHIFT,
+  /* Operators that combine the terms in a calculation. */
+  OPERATOR_TERM,
+  /* Operators that combine the factors in a calculation. */
+  OPERATOR_FACTOR,
+  /* Operators that bound thightly to a single operand. */
+  OPERATOR_UNARY,
+  /* Operators that are indivisable building blocks of expressions. */
+  OPERATOR_PRIMARY,
+  /* Amount of operator precedence levels. */
+  OPERATOR_LEVELS
+} OperatorPrecedence;
 
 /* Rules of an operation that result in calculation of a value. */
 typedef struct {
   union {
     /* Operator as nullary operator. */
-    NullaryOperator null;
+    NullaryOperator asNullary;
     /* Operator as prenary operator. */
-    PrenaryOperator pre;
+    PrenaryOperator asPrenary;
     /* Operator as postary operator. */
-    PostaryOperator post;
+    PostaryOperator asPostary;
     /* Operator as cirnary operator. */
-    CirnaryOperator cir;
+    CirnaryOperator asCirnary;
     /* Operator as binary operator. */
-    BinaryOperator  bin;
+    BinaryOperator  asBinary;
     /* Operator as variary operator. */
-    VariaryOperator var;
+    VariaryOperator asVariary;
   };
 
-  /* Type of the operator. */
-  OperatorTag tag;
+  /* Variant of the operator. */
+  OperatorTag        tag;
+  /* Precedence of the operator. */
+  OperatorPrecedence precedence;
+  /* Index of the operator in its own precedence level. */
+  size_t             inLevel;
 } Operator;
+
+/* Number literal with decimal digits. */
+extern Operator const DECIMAL_LITERAL;
+/* Access to a symbol with its id. */
+extern Operator const SYMBOL_ACCESS;
+/* Expression grouped with parentheses. */
+extern Operator const GROUP;
+/* Call to a function. */
+extern Operator const FUNCTION_CALL;
+
+/* Posate. */
+extern Operator const POSATE;
+/* Negate. */
+extern Operator const NEGATE;
+/* Increment after returning. */
+extern Operator const POSTFIX_INCREMENT;
+/* Decrement after returning. */
+extern Operator const POSTFIX_DECREMENT;
+/* Increment before returning. */
+extern Operator const PREFIX_INCREMENT;
+/* Decrement before returning. */
+extern Operator const PREFIX_DECREMENT;
+/* Invert truthiness value. */
+extern Operator const LOGICAL_NOT;
+/* Invert bits. */
+extern Operator const COMPLEMENT;
+
+/* Multiply. */
+extern Operator const MULTIPLICATION;
+/* Divide. */
+extern Operator const DIVISION;
+/* Reminder after division. */
+extern Operator const REMINDER;
+
+/* Add. */
+extern Operator const ADDITION;
+/* Subtract. */
+extern Operator const SUBTRACTION;
+
+/* Shift bits to left. */
+extern Operator const LEFT_SHIFT;
+/* Shift bits to right. */
+extern Operator const RIGHT_SHIFT;
+
+/* Bitwise AND. */
+extern Operator const BITWISE_AND;
+
+/* Bitwise XOR */
+extern Operator const BITWISE_XOR;
+
+/* Bitwise OR. */
+extern Operator const BITWISE_OR;
+
+/* Whether the left is smaller than the right. */
+extern Operator const SMALLER_THAN;
+/* Whether the left is smaller than or equal to the right. */
+extern Operator const SMALLER_THAN_OR_EQUAL_TO;
+/* Whether the left is grater than the right. */
+extern Operator const GREATER_THAN;
+/* Whether the left is grater than or equal to the right. */
+extern Operator const GREATER_THAN_OR_EQUAL_TO;
+
+/* Whether the left is equal to right. */
+extern Operator const EQUAL_TO;
+/* Wherhet the left is not equal to right. */
+extern Operator const NOT_EQUAL_TO;
+
+/* Logical AND. */
+extern Operator const LOGICAL_AND;
+
+/* Logical OR. */
+extern Operator const LOGICAL_OR;
+
+/* Assignment. */
+extern Operator const ASSIGNMENT;
+/* Assignment after multiplication. */
+extern Operator const MUTIPLICATION_ASSIGNMENT;
+/* Assignment after division. */
+extern Operator const DIVISION_ASSIGNMENT;
+/* Assignment after reminder. */
+extern Operator const REMINDER_ASSIGNMENT;
+/* Assignment after addition. */
+extern Operator const ADDITION_ASSIGNMENT;
+/* Assignment after subtraction. */
+extern Operator const SUBTRACTION_ASSIGNMENT;
+/* Assignment after left shift. */
+extern Operator const LEFT_SHIFT_ASSIGNMENT;
+/* Assignment after right shift. */
+extern Operator const RIGHT_SHIFT_ASSIGNMENT;
+/* Assignment after bitwise and. */
+extern Operator const BITWISE_AND_ASSIGNMENT;
+/* Assignment after bitwise xor. */
+extern Operator const BITWISE_XOR_ASSIGNMENT;
+/* Assignment after bitwise or. */
+extern Operator const BITWISE_OR_ASSIGNMENT;
+
+/* Whether the given operators are the same. */
+bool   compareOperatorEquality(Operator left, Operator right);
+/* Hashcode of the given operator. */
+size_t hashOperator(Operator hashed);
+/* Amount of operators in the given precedence and given index in the precedence
+ * level. */
+size_t countInLevelOperators(OperatorPrecedence counted);
+/* Operator at the given prececence and index. */
+Operator
+getOperatorAt(OperatorPrecedence gottenPrecedence, size_t gottenInLevelIndex);
+/* Name of the given operator. */
+char const* nameOperator(Operator named);
 
 /* Instantiation of an operator. */
 typedef struct {
   /* Operator. */
-  Operator op;
+  Operator operator;
   /* Amount of operands, which are the nodes that come before this one in the
    * expression's array. */
-  iptr     ary;
-  /* Combined value of all the lexemes of the expression. */
-  String   val;
+  size_t   arity;
+  /* Combined source section of all the lexemes of the expression. */
+  String   section;
 } ExpressionNode;
 
 /* Operations that result in calculation of a value. */
 typedef struct {
   /* Pointer to the first node if it exists. */
-  ExpressionNode* bgn;
+  ExpressionNode* first;
   /* Pointer to one after the last node. */
-  ExpressionNode* end;
+  ExpressionNode* after;
   /* Pointer to one after the last allocated node. */
-  ExpressionNode* all;
+  ExpressionNode* bound;
 } Expression;
+
+/* Amount of nodes in the given expression. */
+size_t countExpressionNodes(Expression counted);
+/* Section of the source file that has the given expression. */
+String getExpressionSection(Expression gotten);
 
 /* Creation of an immutable binding with its type and value. */
 typedef struct {
@@ -117,8 +272,17 @@ typedef struct {
   /* Expression that gives the type of the defined binding. */
   Expression type;
   /* Expression that gives the value of the defined binding. */
-  Expression val;
-} LetDefinition;
+  Expression value;
+} BindingDefinition;
+
+/* Binding definition with the type not provided. The type is inferred from the
+ * bound value. */
+typedef struct {
+  /* Identifier of the defined binding. */
+  String     name;
+  /* Expression that gives the value of the defined binding. */
+  Expression value;
+} InferredBindingDefinition;
 
 /* Creation of a mutable vairable with its type and initial value. */
 typedef struct {
@@ -127,247 +291,82 @@ typedef struct {
   /* Expression that gives the type of the defined variable. */
   Expression type;
   /* Expression that gives the initial value of the defined variable. */
-  Expression val;
-} VarDefinition;
+  Expression initialValue;
+} VariableDefinition;
+
+/* Variable definition with the type not provided. The type is inferred from the
+ * initial value. */
+typedef struct {
+  /* Identifier of the defined variable. */
+  String     name;
+  /* Expression that gives the initial value of the defined variable. */
+  Expression initialValue;
+} InferredVariableDefinition;
+
+/* Variable definition with the initial value not provided. The initial value
+ * becomes the default value of the type. */
+typedef struct {
+  /* Identifier of the defined variable. */
+  String     name;
+  /* Expression that gives the type of the defined variable. */
+  Expression type;
+} DefaultedVariableDefinition;
 
 /* Expression whose resulting value is discarded. These are calculated for the
  * side effects. */
 typedef struct {
   /* Expression that is calculated, but discarded. */
-  Expression exp;
-} ExpressionStatement;
+  Expression discarded;
+} DiscardedExpression;
 
-/* Type of a statement. */
+/* Variant of a statement. */
 typedef enum {
-  /* Let definition statement. */
-  STT_LET,
-  /* Var definition statement. */
-  STT_VAR,
-  /* Expression statement. */
-  STT_EXP
+  /* Binding definition statement. */
+  STATEMENT_BINDING_DEFINITION,
+  /* Inferred binding definition statement. */
+  STATEMENT_INFERRED_BINDING_DEFINITION,
+  /* Variable definition statement. */
+  STATEMENT_VARIABLE_DEFINITION,
+  /* Inferred variable definition statement. */
+  STATEMENT_INFERRED_VARIABLE_DEFINITION,
+  /* Defaulted variable definition statement. */
+  STATEMENT_DEFAULTED_VARIABLE_DEFINITION,
+  /* Discarded expression statement. */
+  STATEMENT_DISCARDED_EXPRESSION
 } StatementTag;
 
 /* Directives that are given for the computer to execute. */
 typedef struct {
   union {
-    /* Statement as let definition statement. */
-    LetDefinition       let;
-    /* Statement as var definition statement. */
-    VarDefinition       var;
-    /* Statement as expression statement. */
-    ExpressionStatement exp;
+    /* Statement as binding definition. */
+    BindingDefinition           asBindingDefinition;
+    /* Statement as inferred binding definition. */
+    InferredBindingDefinition   asInferredBindingDefinition;
+    /* Statement as variable definition. */
+    VariableDefinition          asVariableDefinition;
+    /* Statement as inferred variable definition. */
+    InferredVariableDefinition  asInferredVariableDefinition;
+    /* Statement as defaulted variable definition. */
+    DefaultedVariableDefinition asDefaultedVariableDefinition;
+    /* Statement as discarded expression. */
+    DiscardedExpression         asDiscardedExpression;
   };
 
-  /* Type of the statement. */
+  /* Variant of the statement. */
   StatementTag tag;
 } Statement;
 
 /* Result of parsing a lex. */
 typedef struct {
   /* Pointer to the first statement if it exists. */
-  Statement* bgn;
+  Statement* first;
   /* Pointer to one after the last statement. */
-  Statement* end;
+  Statement* after;
   /* Pointer to one after the last allocated statement. */
-  Statement* all;
+  Statement* bound;
 } Parse;
 
-/* Number literal with decimal digits. */
-extern Operator const OP_DEC;
-/* Access to a symbol with its id. */
-extern Operator const OP_ACS;
-/* Expression grouped with parentheses. */
-extern Operator const OP_GRP;
-/* Call to a function. */
-extern Operator const OP_CLL;
-
-/* Posate. */
-extern Operator const OP_POS;
-/* Negate. */
-extern Operator const OP_NEG;
-/* Increment after returning. */
-extern Operator const OP_SIN;
-/* Decrement after returning. */
-extern Operator const OP_SDE;
-/* Increment before returning. */
-extern Operator const OP_PIN;
-/* Decrement before returning. */
-extern Operator const OP_PDE;
-/* Invert truthiness value. */
-extern Operator const OP_NOT;
-/* Invert bits. */
-extern Operator const OP_BNT;
-
-/* Multiply. */
-extern Operator const OP_MUL;
-/* Divide. */
-extern Operator const OP_DIV;
-/* Reminder after division. */
-extern Operator const OP_REM;
-
-/* Add. */
-extern Operator const OP_ADD;
-/* Subtract. */
-extern Operator const OP_SUB;
-
-/* Shift bits to left. */
-extern Operator const OP_LSH;
-/* Shift bits to right. */
-extern Operator const OP_RSH;
-
-/* Bitwise AND. */
-extern Operator const OP_AND;
-
-/* Bitwise XOR */
-extern Operator const OP_XOR;
-
-/* Bitwise OR. */
-extern Operator const OP_ORR;
-
-/* Whether the left is smaller than the right. */
-extern Operator const OP_SMT;
-/* Whether the left is smaller than or equal to the right. */
-extern Operator const OP_STE;
-/* Whether the left is larger than the right. */
-extern Operator const OP_LGT;
-/* Whether the left is larger than or equal to the right. */
-extern Operator const OP_LTE;
-
-/* Whether the left is equal to right. */
-extern Operator const OP_EQU;
-/* Wherhet the left is not equal to right. */
-extern Operator const OP_NEQ;
-
-/* Logical AND. */
-extern Operator const OP_LAN;
-
-/* Logical OR. */
-extern Operator const OP_LOR;
-
-/* Assignment. */
-extern Operator const OP_ASS;
-/* Assignment after multiplication. */
-extern Operator const OP_MLA;
-/* Assignment after division. */
-extern Operator const OP_DVA;
-/* Assignment after reminder. */
-extern Operator const OP_RMA;
-/* Assignment after addition. */
-extern Operator const OP_ADA;
-/* Assignment after subtraction. */
-extern Operator const OP_SBA;
-/* Assignment after left shift. */
-extern Operator const OP_LSA;
-/* Assignment after right shift. */
-extern Operator const OP_RSA;
-/* Assignment after bitwise and. */
-extern Operator const OP_ANA;
-/* Assignment after bitwise xor. */
-extern Operator const OP_XRA;
-/* Assignment after bitwise or. */
-extern Operator const OP_ORA;
-
-/* Amount of primary operators. */
-#define OP_PRIMARY_LEN 4
-/* Operators that are the indivisible parts of an expression. */
-extern Operator const OP_PRIMARY[OP_PRIMARY_LEN];
-
-/* Amount of unary operators. */
-#define OP_UNARY_LEN 8
-/* Operators that are bound strongly to a single operand. */
-extern Operator const OP_UNARY[OP_UNARY_LEN];
-
-/* Amount of factor operators. */
-#define OP_FACTOR_LEN 3
-/* Operators between the factors in calculations. */
-extern Operator const OP_FACTOR[OP_FACTOR_LEN];
-
-/* Amount of term operators. */
-#define OP_TERM_LEN 2
-/* Operators between the terms in calculations. */
-extern Operator const OP_TERM[OP_TERM_LEN];
-
-/* Amount of shift operators. */
-#define OP_SHIFT_LEN 2
-/* Operators that shift bits. */
-extern Operator const OP_SHIFT[OP_SHIFT_LEN];
-
-/* Amount of bitwise AND operators. */
-#define OP_BITAND_LEN 1
-/* Operators that AND bits. */
-extern Operator const OP_BITWISE_AND[OP_BITAND_LEN];
-
-/* Amount of bitwise XOR operators. */
-#define OP_BITXOR_LEN 1
-/* Operators that XOR bits. */
-extern Operator const OP_BITWISE_XOR[OP_BITXOR_LEN];
-
-/* Amount of bitwise OR operators. */
-#define OP_BITOR_LEN 1
-/* Operators that OR bits. */
-extern Operator const OP_BITWISE_OR[OP_BITOR_LEN];
-
-/* Amount of comparison operators. */
-#define OP_COMPARISON_LEN 4
-/* Operators that compare order. */
-extern Operator const OP_COMPARISON[OP_COMPARISON_LEN];
-
-/* Amount of equality operators. */
-#define OP_EQUALITY_LEN 4
-/* Operators that compare equality. */
-extern Operator const OP_EQUALITY[OP_EQUALITY_LEN];
-
-/* Amount of logical AND operators. */
-#define OP_LOGAND_LEN 1
-/* Operators that AND logically. */
-extern Operator const OP_LOGAND[OP_LOGAND_LEN];
-
-/* Amount of logical OR operators. */
-#define OP_LOGOR_LEN 1
-/* Operators that OR logically. */
-extern Operator const OP_SHORT_OR[OP_LOGOR_LEN];
-
-/* Amount of assignment operators. */
-#define OP_ASSIGNMENT_LEN 11
-/* Operators that change a variable. */
-extern Operator const OP_ASSIGNMENT[OP_ASSIGNMENT_LEN];
-
-/* Amount of operator precedence levels. */
-#define OP_ORDER_LEN 13
-/* Amounts of operators in precedence levels. */
-extern iptr const            OP_LEVEL_LEN[OP_ORDER_LEN];
-/* Precedence levels of operators from low to high. */
-extern Operator const* const OP_ORDER[OP_ORDER_LEN];
-
-/* Flatten the given nullary operator. */
-Operator    opOfNull(NullaryOperator null);
-/* Flatten the given prenary operator. */
-Operator    opOfPre(PrenaryOperator pre);
-/* Flatten the given postary operator. */
-Operator    opOfPost(PostaryOperator post);
-/* Flatten the given cirnary operator. */
-Operator    opOfCir(CirnaryOperator cir);
-/* Flatten the given binary operator. */
-Operator    opOfBin(BinaryOperator bin);
-/* Flatten the given variary operator. */
-Operator    opOfVar(VariaryOperator var);
-/* Whether the given operators are the same. */
-bool        opEq(Operator lhs, Operator rhs);
-/* Name of the given operator. */
-char const* opName(Operator op);
-
-/* Amount of nodes in the given expression. */
-iptr   expLen(Expression exp);
-/* Given expression as string. */
-String expStr(Expression exp);
-
 /* Parse the given lex. Reports to the given outcome. */
-Parse     prsOf(Outcome* otc, Lex lex);
+Parse createParse(Source* reported, Lex parsed);
 /* Release the memory resources used by the given parse. */
-void      prsFree(Parse* prs);
-/* Amount of statements in the given parse. */
-iptr      prsLen(Parse prs);
-/* Statement at the given index in the given parse. */
-Statement prsAt(Parse prs, iptr i);
-/* Stream out the given parse as string to the given stream. */
-void      prsWrite(Parse prs, FILE* stream);
+void  disposeParse(Parse* disposed);
