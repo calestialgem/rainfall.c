@@ -26,8 +26,8 @@ extern String markNames[MARK_COUNT];
 extern String keywordNames[KEYWORD_COUNT];
 
 /* Add the given lexeme to the end of the given lex. */
-void pushLexeme(Lex* targetLex, Lexeme pushedLexeme);
+void pushLexeme(Lex* target, Lexeme pushed);
 /* Remove the last lexeme from the given lex. */
-void popLexeme(Lex* targetLex);
+void popLexeme(Lex* target);
 /* Lex the given source file into the given lex. */
-void lex(Lex* targetLex, Source* lexedSource);
+void lexSource(Lex* target, Source* lexed);

@@ -4,8 +4,8 @@
 #include "dbg/api.h"
 #include "lxr/api.h"
 
-char const* lexemeName(LexemeTag const t) {
-  switch (t) {
+char const* nameLexeme(LexemeTag named) {
+  switch (named) {
   case LEXEME_COMMA: return ",";
   case LEXEME_COLON: return ":";
   case LEXEME_SEMICOLON: return ";";

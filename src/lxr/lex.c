@@ -7,39 +7,21 @@
 
 #include <stddef.h>
 
-/* Make sure the given amount of space exists at the end of the given lex.
- * When necessary, grows by at least half of the current capacity. */
-static void reserve(Lex* targetLex, size_t reservedAmount) {
-  size_t capacity = targetLex->bound - targetLex->first;
-  size_t elements = targetLex->after - targetLex->first;
-  size_t space    = capacity - elements;
-  if (space >= reservedAmount) return;
-
-  size_t growth    = reservedAmount - space;
-  size_t minGrowth = capacity / 2;
-  if (growth < minGrowth) growth = minGrowth;
-  capacity += growth;
-
-  targetLex->first = allocateArray(targetLex->first, capacity, Lexeme);
-  targetLex->after = targetLex->first + elements;
-  targetLex->bound = targetLex->first + capacity;
-}
-
-Lex lexOf(Source* source) {
+Lex createLex(Source* lexed) {
   Lex result = {.first = NULL, .after = NULL, .bound = NULL};
-  lex(&result, source);
+  lexSource(&result, lexed);
   return result;
 }
 
-void disposeLex(Lex* targetLex) {
-  targetLex->first = allocateArray(targetLex->first, 0, Lexeme);
-  targetLex->after = targetLex->first;
-  targetLex->bound = targetLex->after;
+void disposeLex(Lex* disposed) {
+  disposed->first = allocateArray(disposed->first, 0, Lexeme);
+  disposed->after = disposed->first;
+  disposed->bound = disposed->after;
 }
 
-void pushLexeme(Lex* targetLex, Lexeme pushedLexeme) {
-  reserve(targetLex, 1);
-  *targetLex->after++ = pushedLexeme;
+void pushLexeme(Lex* target, Lexeme pushed) {
+  reserveArray(target, 1, Lexeme);
+  *target->after++ = pushed;
 }
 
-void popLexeme(Lex* targetLex) { targetLex->after--; }
+void popLexeme(Lex* target) { target->after--; }

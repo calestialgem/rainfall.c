@@ -119,8 +119,8 @@ typedef struct {
 /* Initialize the module. */
 void        initLexer(void);
 /* Lex the given source file. */
-Lex         lexOf(Source* source);
+Lex         createLex(Source* lexed);
 /* Release the memory resources used by the given lex. */
-void        disposeLex(Lex* target);
+void        disposeLex(Lex* disposed);
 /* Name of the given lexeme variant. */
-char const* lexemeName(LexemeTag source);
+char const* nameLexemeTag(LexemeTag named);
