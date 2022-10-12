@@ -120,7 +120,7 @@ typedef struct {
 void        initLexer(void);
 /* Lex the given source file. */
 Lex         createLex(Source* lexed);
-/* Release the memory resources used by the given lex. */
+/* Release the memory used by the given lex. */
 void        disposeLex(Lex* disposed);
 /* Name of the given lexeme variant. */
 char const* nameLexemeTag(LexemeTag named);
