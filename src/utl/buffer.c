@@ -8,30 +8,9 @@
 #include <stdio.h>
 #include <string.h>
 
-/* Make sure the given amount of space exists at the end of the given buffer.
- * When necessary, grows by at least half of the current capacity. */
-static void reserve(Buffer* target, size_t reserved) {
-  // Find whether growth is necessary.
-  size_t capacity = target->bound - target->first;
-  size_t count    = countBytes(*target);
-  size_t space    = capacity - count;
-  if (space >= reserved) return;
-
-  // Calculate necessary growth amount.
-  size_t growth    = reserved - space;
-  size_t minGrowth = capacity / 2;
-  if (growth < minGrowth) growth = minGrowth;
-  capacity += growth;
-
-  // Grow the underlying dynamic array.
-  target->first = allocateArray(target->first, capacity, char);
-  target->after = target->first + count;
-  target->bound = target->first + capacity;
-}
-
 Buffer createBuffer(size_t initialCapacity) {
   Buffer created = {.first = NULL, .after = NULL, .bound = NULL};
-  reserve(&created, initialCapacity);
+  reserveArray(&created, initialCapacity, char);
   return created;
 }
 
@@ -55,7 +34,7 @@ void disposeBuffer(Buffer* disposed) {
 size_t countBytes(Buffer counted) { return counted.after - counted.first; }
 
 void appendCharacter(Buffer* target, char appended) {
-  reserve(target, 1);
+  reserveArray(target, 1, char);
   *target->after++ = appended;
 }
 
@@ -63,7 +42,7 @@ void appendString(Buffer* target, String appended) {
   // Reserve necessary space and use `memmove` on them, because the string might
   // point into the target buffer, which would break `memcpy`.
   size_t written = countCharacters(appended);
-  reserve(target, written);
+  reserveArray(target, written, char);
   memmove(target->after, appended.first, written * sizeof(char));
   target->after += written;
 }
@@ -76,7 +55,7 @@ void read(Buffer* target, FILE* appended) {
   // is less than a chunk (not equal to chunk as it cannot be bigger,) which
   // indicates the stream is completely read.
   for (size_t written = CHUNK; written == CHUNK;) {
-    reserve(target, CHUNK);
+    reserveArray(target, CHUNK, char);
     written = fread(target->after, sizeof(char), CHUNK, appended);
     target->after += written;
   }
