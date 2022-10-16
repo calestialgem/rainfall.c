@@ -15,16 +15,17 @@
 /* Log the formatted message at the given level for the given source file to the
  * given stream. Prints the message by passing the variable arguments and the
  * format string to `fprintf`. */
-#define reportArguments(reportedSource, targetStream, logLevelString)         \
-  do {                                                                        \
-    /* Transfer the variable amount of arguments to `fprintf`. */             \
-    va_list arguments = NULL;                                                 \
-    va_start(arguments, format);                                              \
-    /* First print the file information; then, the message. */                \
-    fprintf(targetStream, "%s: %s: ", (reportedSource).name, logLevelString); \
-    vfprintf(targetStream, format, arguments);                                \
-    fputc('\n', targetStream);                                                \
-    va_end(arguments);                                                        \
+#define reportArguments(reportedSource, targetStream, logLevelString)      \
+  do {                                                                     \
+    /* Transfer the variable amount of arguments to `fprintf`. */          \
+    va_list arguments = NULL;                                              \
+    va_start(arguments, format);                                           \
+    /* First print the file information; then, the message. */             \
+    fprintf(                                                               \
+      targetStream, "%s.tr: %s: ", (reportedSource).name, logLevelString); \
+    vfprintf(targetStream, format, arguments);                             \
+    fputc('\n', targetStream);                                             \
+    va_end(arguments);                                                     \
   } while (false)
 
 /* Log the formatted message at the given level for the given part of the given
@@ -38,7 +39,7 @@
     Portion portion = createPortion(reportedSource, highlighted);             \
     /* First print the file and line information; then, the message. */       \
     fprintf(                                                                  \
-      targetStream, "%s:%u:%u:%u:%u: %s: ", (reportedSource).name,            \
+      targetStream, "%s.tr:%u:%u:%u:%u: %s: ", (reportedSource).name,         \
       portion.first.line, portion.first.column, portion.last.line,            \
       portion.last.column, logLevelString);                                   \
     vfprintf(targetStream, format, arguments);                                \

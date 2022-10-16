@@ -3,13 +3,54 @@
 {
   "version": "2.0.0",
   "tasks": [
-    /// Rebuild the project using cmake.
+    // Rebuild the project using cmake.
     {
       "type": "cmake",
       "label": "rebuild",
       "command": "cleanRebuild",
       "group": {
         "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    // Compile the test Thrice file.
+    {
+      "type": "shell",
+      "label": "compileTest",
+      "command": "${workspaceRoot}/build/rainfall-c",
+      "options": {
+        "cwd": "${workspaceRoot}/res"
+      },
+      "args": [
+        "test"
+      ],
+      "problemMatcher": {
+        "owner": "rainfall",
+        "fileLocation": [
+          "relative",
+          "${workspaceRoot}/res"
+        ],
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):(\\d+):(\\d+):\\s+(error|warning|info):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "endLine": 4,
+          "endColumn": 5,
+          "severity": 6,
+          "message": 7,
+        }
+      },
+      "group": {
+        "kind": "test",
         "isDefault": true
       },
       "presentation": {
