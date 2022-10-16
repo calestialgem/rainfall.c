@@ -28,7 +28,7 @@ void disposeExpression(Expression* disposed) {
   disposed->bound = disposed->first;
 }
 
-void pushNode(Expression* target, ExpressionNode pushed) {
+void pushExpressionNode(Expression* target, ExpressionNode pushed) {
   reserveArray(target, 1, ExpressionNode);
   *target->after++ = pushed;
 }

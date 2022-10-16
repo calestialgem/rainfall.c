@@ -70,7 +70,7 @@ Evaluation createEvaluation(size_t initialCapacity);
 /* Release the resources used by the given evaluation. */
 void       disposeEvaluation(Evaluation* disposed);
 /* Add the given node to the end of the given evaluation. */
-void       pushNode(Evaluation* target, EvaluationNode pushed);
+void       pushEvaluationNode(Evaluation* target, EvaluationNode pushed);
 
 /* Add the given symbol to the end of the given table. */
 void pushSymbol(Table* target, Symbol pushed);

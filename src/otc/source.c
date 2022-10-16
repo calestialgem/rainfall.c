@@ -44,7 +44,7 @@
     vfprintf(targetStream, format, arguments);                                \
     fputc('\n', targetStream);                                                \
     /* Underline the portion that should be highlighted after the message. */ \
-    underline(portion, targetStream);                                         \
+    underlinePortion(portion, targetStream);                                  \
     va_end(arguments);                                                        \
   } while (false)
 

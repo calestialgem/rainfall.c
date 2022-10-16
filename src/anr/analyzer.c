@@ -294,7 +294,8 @@ static bool checkNullaryNode(
         convertValue(accessed.object.type, expected, accessed.object.value);
       object.known = true;
     }
-    pushNode(built, (EvaluationNode){.evaluated = checked, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = checked, .object = object});
     return true;
   }
 
@@ -336,7 +337,8 @@ static bool checkNullaryNode(
     switch (
       convertNumberToArithmetic(expected, &object.value, decimal, negative)) {
     case NUMBER_CONVERSION_SUCCESS:
-      pushNode(built, (EvaluationNode){.evaluated = checked, .object = object});
+      pushEvaluationNode(
+        built, (EvaluationNode){.evaluated = checked, .object = object});
       disposeNumber(&decimal);
       return true;
     case NUMBER_CONVERSION_NOT_INTEGER:
@@ -380,7 +382,8 @@ static bool checkPrenaryNode(
       !checkNode(context, built, pointer, expected))
       return false;
     Object object = {.type = expected};
-    pushNode(built, (EvaluationNode){.evaluated = checked, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = checked, .object = object});
     return true;
   }
 
@@ -391,7 +394,8 @@ static bool checkPrenaryNode(
       !checkIntegerNode(context, built, pointer, expected))
       return false;
     Object object = {.type = expected};
-    pushNode(built, (EvaluationNode){.evaluated = checked, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = checked, .object = object});
     return true;
   }
 
@@ -493,7 +497,8 @@ static bool checkCirnaryNode(
   case GROUP: {
     if (!checkNode(context, built, pointer, expected)) return false;
     Object object = {.type = expected};
-    pushNode(built, (EvaluationNode){.evaluated = checked, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = checked, .object = object});
     return true;
   }
   default: unexpected("Unknown cirnary operator!");
@@ -520,7 +525,8 @@ static bool checkBinaryNode(
        !checkNode(context, built, pointer, expected)))      // Left operand.
       return false;
     Object object = {.type = expected};
-    pushNode(built, (EvaluationNode){.evaluated = checked, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = checked, .object = object});
     return true;
   }
 
@@ -538,7 +544,8 @@ static bool checkBinaryNode(
        !checkIntegerNode(context, built, pointer, expected))) // Left operand.
       return false;
     Object object = {.type = expected};
-    pushNode(built, (EvaluationNode){.evaluated = checked, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = checked, .object = object});
     return true;
   }
 
@@ -559,7 +566,8 @@ static bool checkBinaryNode(
       !evaluateArithmeticNode(context, built, pointer))  // Left operand.
       return false;
     Object object = {.type = expected};
-    pushNode(built, (EvaluationNode){.evaluated = checked, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = checked, .object = object});
     return true;
   }
 
@@ -670,7 +678,7 @@ static bool evaluateNullaryNode(
 
     // Create with the the accessed object.
     Symbol accessed = context->target->first[entry->value];
-    pushNode(
+    pushEvaluationNode(
       built,
       (EvaluationNode){.evaluated = evaluated, .object = accessed.object});
     return true;
@@ -710,7 +718,8 @@ static bool evaluateNullaryNode(
         "Failed to convert to a double!");
       object.type = DOUBLE_TYPE_INSTANCE;
     }
-    pushNode(built, (EvaluationNode){.evaluated = evaluated, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = evaluated, .object = object});
     disposeNumber(&decimal);
     return true;
   }
@@ -734,7 +743,8 @@ static bool evaluatePrenaryNode(
     // Do integer promotion.
     Object object = {
       .type = findCombination(operand.object.type, INT_TYPE_INSTANCE)};
-    pushNode(built, (EvaluationNode){.evaluated = evaluated, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
 
@@ -745,7 +755,8 @@ static bool evaluatePrenaryNode(
 
     // Result is always bool.
     Object object = {.type = BOOL_TYPE_INSTANCE};
-    pushNode(built, (EvaluationNode){.evaluated = evaluated, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
 
@@ -758,7 +769,8 @@ static bool evaluatePrenaryNode(
     // Do integer promotion.
     Object object = {
       .type = findCombination(operand.object.type, INT_TYPE_INSTANCE)};
-    pushNode(built, (EvaluationNode){.evaluated = evaluated, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
 
@@ -770,7 +782,8 @@ static bool evaluatePrenaryNode(
 
     // Result is always void.
     Object object = {.type = VOID_TYPE_INSTANCE};
-    pushNode(built, (EvaluationNode){.evaluated = evaluated, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
   default: unexpected("Unknown prenary operator!");
@@ -791,7 +804,8 @@ static bool evaluatePostaryNode(
 
     // Result is always void.
     Object object = {.type = VOID_TYPE_INSTANCE};
-    pushNode(built, (EvaluationNode){.evaluated = evaluated, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
   default: unexpected("Unknown postary operator!");
@@ -811,7 +825,7 @@ static bool evaluateCirnaryNode(
     EvaluationNode operand = built->after[-1];
 
     // Create with the the surrounded object.
-    pushNode(
+    pushEvaluationNode(
       built,
       (EvaluationNode){.evaluated = evaluated, .object = operand.object});
     return true;
@@ -851,7 +865,8 @@ static bool evaluateBinaryNode(
 
     // Do integer promotion.
     object.type = findCombination(object.type, INT_TYPE_INSTANCE);
-    pushNode(built, (EvaluationNode){.evaluated = evaluated, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
 
@@ -880,7 +895,8 @@ static bool evaluateBinaryNode(
 
     // Do integer promotion.
     object.type = findCombination(object.type, INT_TYPE_INSTANCE);
-    pushNode(built, (EvaluationNode){.evaluated = evaluated, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
 
@@ -902,7 +918,8 @@ static bool evaluateBinaryNode(
 
     // Result is always bool.
     Object object = {.type = BOOL_TYPE_INSTANCE};
-    pushNode(built, (EvaluationNode){.evaluated = evaluated, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
 
@@ -928,7 +945,8 @@ static bool evaluateBinaryNode(
 
     // Result is always void.
     Object object = {.type = VOID_TYPE_INSTANCE};
-    pushNode(built, (EvaluationNode){.evaluated = evaluated, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
 
@@ -963,7 +981,8 @@ static bool evaluateBinaryNode(
 
     // Result is always void.
     Object object = {.type = VOID_TYPE_INSTANCE};
-    pushNode(built, (EvaluationNode){.evaluated = evaluated, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
 
@@ -998,7 +1017,8 @@ static bool evaluateBinaryNode(
 
     // Result is always void.
     Object object = {.type = VOID_TYPE_INSTANCE};
-    pushNode(built, (EvaluationNode){.evaluated = evaluated, .object = object});
+    pushEvaluationNode(
+      built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
   default: unexpected("Unknown binary operator!");

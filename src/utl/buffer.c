@@ -50,7 +50,7 @@ void appendString(Buffer* target, String appended) {
 /* Amount of bytes to read from a stream at every step. */
 #define CHUNK 1024
 
-void read(Buffer* target, FILE* appended) {
+void appendStream(Buffer* target, FILE* appended) {
   // Reserve space and read from the stream in chunks until the written amount
   // is less than a chunk (not equal to chunk as it cannot be bigger,) which
   // indicates the stream is completely read.

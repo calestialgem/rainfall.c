@@ -14,13 +14,13 @@ Evaluation createEvaluation(size_t initialCapacity) {
   return created;
 }
 
-void disposeExpression(Expression* disposed) {
-  disposed->first = allocateArray(disposed->first, 0, ExpressionNode);
+void disposeEvaluation(Evaluation* disposed) {
+  disposed->first = allocateArray(disposed->first, 0, EvaluationNode);
   disposed->after = disposed->first;
   disposed->bound = disposed->first;
 }
 
-void pushNode(Expression* target, ExpressionNode pushed) {
-  reserveArray(target, 1, ExpressionNode);
+void pushEvaluationNode(Evaluation* target, EvaluationNode pushed) {
+  reserveArray(target, 1, EvaluationNode);
   *target->after++ = pushed;
 }

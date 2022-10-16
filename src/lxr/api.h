@@ -123,4 +123,4 @@ Lex         createLex(Source* lexed);
 /* Release the memory used by the given lex. */
 void        disposeLex(Lex* disposed);
 /* Name of the given lexeme variant. */
-char const* nameLexemeTag(LexemeTag named);
+char const* nameLexeme(LexemeTag named);

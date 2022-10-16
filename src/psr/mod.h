@@ -14,7 +14,7 @@ Expression createExpression(size_t initialCapacity);
 /* Release the memory used by the given expression. */
 void       disposeExpression(Expression* disposed);
 /* Add the given node to the end of the given expression. */
-void       pushNode(Expression* target, ExpressionNode pushed);
+void       pushExpressionNode(Expression* target, ExpressionNode pushed);
 /* Add a binding definition statement with the given name, type and value to the
  * given parse. */
 void       pushBindingDefinition(

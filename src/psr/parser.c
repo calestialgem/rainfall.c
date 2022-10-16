@@ -85,7 +85,7 @@ static String createSectionFromNode(Context* context, ExpressionNode node) {
 static void buildNode(
   Context* context, Operator builtOperator, size_t builtArity,
   String builtSection) {
-  pushNode(
+  pushExpressionNode(
     &context->built, (ExpressionNode){
                        .operator= builtOperator.hash,
                        .arity   = builtArity,
@@ -155,7 +155,7 @@ parsePrenaryNode(Context* context, Operator parsed, bool cleanParse) {
     highlightError(
       context->reported, createSectionFromLexeme(context, start),
       "Expected an operand after the operator `%s`!",
-      nameLexemeTag(parsed.asPrenary.before));
+      nameLexeme(parsed.asPrenary.before));
   case FAILURE: return FAILURE;
   default: unexpected("Unknown parse result!");
   }
@@ -194,7 +194,7 @@ parseCirnaryNode(Context* context, Operator parsed, bool cleanParse) {
     highlightError(
       context->reported, createSectionFromLexeme(context, start),
       "Expected an operand after the opening `%s`!",
-      nameLexemeTag(parsed.asCirnary.opening));
+      nameLexeme(parsed.asCirnary.opening));
   case FAILURE: return FAILURE;
   default: unexpected("Unknown parse result!");
   }
@@ -204,11 +204,11 @@ parseCirnaryNode(Context* context, Operator parsed, bool cleanParse) {
     highlightError(
       context->reported, createSectionFromLexeme(context, start),
       "Expected a closing `%s` for the opening `%s`!",
-      nameLexemeTag(parsed.asCirnary.closing),
-      nameLexemeTag(parsed.asCirnary.opening));
+      nameLexeme(parsed.asCirnary.closing),
+      nameLexeme(parsed.asCirnary.opening));
     highlightInfo(
       context->reported, start.section, "Opening `%s` was here.",
-      nameLexemeTag(parsed.asCirnary.opening));
+      nameLexeme(parsed.asCirnary.opening));
     return FAILURE;
   }
 
@@ -236,7 +236,7 @@ parseBinaryNode(Context* context, Operator parsed, bool cleanParse) {
     highlightError(
       context->reported, createSectionFromNode(context, leftOperand),
       "Expected an operand after the operator `%s`!",
-      nameLexemeTag(parsed.asBinary.between));
+      nameLexeme(parsed.asBinary.between));
   case FAILURE: return FAILURE;
   default: unexpected("Unknown parse result!");
   }
@@ -270,11 +270,11 @@ parseVariaryNode(Context* context, Operator parsed, bool cleanParse) {
     highlightError(
       context->reported, section,
       "Expected a closing `%s` for the opening `%s`!",
-      nameLexemeTag(parsed.asVariary.closing),
-      nameLexemeTag(parsed.asVariary.opening));
+      nameLexeme(parsed.asVariary.closing),
+      nameLexeme(parsed.asVariary.opening));
     highlightInfo(
       context->reported, start.section, "Opening `%s` was here.",
-      nameLexemeTag(parsed.asVariary.opening));
+      nameLexeme(parsed.asVariary.opening));
   case FAILURE: return FAILURE;
   default: unexpected("Unknown parse result!");
   }
@@ -292,11 +292,11 @@ parseVariaryNode(Context* context, Operator parsed, bool cleanParse) {
       highlightError(
         context->reported, createSectionFromNode(context, firstOperand),
         "Expected a closing `%s` for the opening `%s`!",
-        nameLexemeTag(parsed.asVariary.closing),
-        nameLexemeTag(parsed.asVariary.opening));
+        nameLexeme(parsed.asVariary.closing),
+        nameLexeme(parsed.asVariary.opening));
       highlightInfo(
         context->reported, start.section, "Opening `%s` was here.",
-        nameLexemeTag(parsed.asVariary.opening));
+        nameLexeme(parsed.asVariary.opening));
       return FAILURE;
     }
 
@@ -308,7 +308,7 @@ parseVariaryNode(Context* context, Operator parsed, bool cleanParse) {
       highlightError(
         context->reported, createSectionFromNode(context, firstOperand),
         "Expected an operand after the separating `%s`!",
-        nameLexemeTag(parsed.asVariary.separating));
+        nameLexeme(parsed.asVariary.separating));
     case FAILURE: return FAILURE;
     default: unexpected("Unknown parse result!");
     }

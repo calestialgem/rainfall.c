@@ -285,7 +285,7 @@ void initLexer() {
   // Cache lexeme tag names of lexemes that equal to a fixed pattern of
   // characters like marks and keywords.
   for (size_t i = 0; i < MARK_COUNT; i++)
-    markNames[i] = viewTerminated(nameLexemeTag(MARK_FIRST + i));
+    markNames[i] = viewTerminated(nameLexeme(MARK_FIRST + i));
   for (size_t i = 0; i < KEYWORD_COUNT; i++)
-    keywordNames[i] = viewTerminated(nameLexemeTag(KEYWORD_FIRST + i));
+    keywordNames[i] = viewTerminated(nameLexeme(KEYWORD_FIRST + i));
 }
