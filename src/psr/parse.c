@@ -53,62 +53,59 @@ static void pushStatement(Parse* target, Statement pushed) {
 void pushBindingDefinition(
   Parse* target, String pushedName, Expression pushedType,
   Expression pushedValue) {
+  BindingDefinition pushed = {
+    .name = pushedName, .type = pushedType, .value = pushedValue};
   pushStatement(
-    target, (Statement){
-              .asBindingDefinition =
-                {.name = pushedName, .type = pushedType, .value = pushedValue},
-              .tag = STATEMENT_BINDING_DEFINITION
-  });
+    target,
+    (Statement){
+      .asBindingDefinition = pushed, .tag = STATEMENT_BINDING_DEFINITION});
 }
 
 void pushInferredBindingDefinition(
   Parse* target, String pushedName, Expression pushedValue) {
+  InferredBindingDefinition pushed = {.name = pushedName, .value = pushedValue};
   pushStatement(
-    target,
-    (Statement){
-      .asInferredBindingDefinition = {.name = pushedName, .value = pushedValue},
-      .tag                         = STATEMENT_INFERRED_BINDING_DEFINITION
-  });
+    target, (Statement){
+              .asInferredBindingDefinition = pushed,
+              .tag = STATEMENT_INFERRED_BINDING_DEFINITION});
 }
 
 void pushVariableDefinition(
   Parse* target, String pushedName, Expression pushedType,
   Expression pushedInitialValue) {
+  VariableDefinition pushed = {
+    .name = pushedName, .type = pushedType, .initialValue = pushedInitialValue};
   pushStatement(
-    target, (Statement){
-              .asVariableDefinition =
-                {.name         = pushedName,
-                                       .type         = pushedType,
-                                       .initialValue = pushedInitialValue},
-              .tag = STATEMENT_VARIABLE_DEFINITION
-  });
+    target,
+    (Statement){
+      .asVariableDefinition = pushed, .tag = STATEMENT_VARIABLE_DEFINITION});
 }
 
 void pushInferredVariableDefinition(
   Parse* target, String pushedName, Expression pushedInitialValue) {
+  InferredVariableDefinition pushed = {
+    .name = pushedName, .initialValue = pushedInitialValue};
   pushStatement(
     target, (Statement){
-              .asInferredVariableDefinition =
-                {.name = pushedName, .initialValue = pushedInitialValue},
-              .tag = STATEMENT_VARIABLE_DEFINITION
-  });
+              .asInferredVariableDefinition = pushed,
+              .tag = STATEMENT_INFERRED_VARIABLE_DEFINITION});
 }
 
 void pushDefaultedVariableDefinition(
   Parse* target, String pushedName, Expression pushedType) {
+  DefaultedVariableDefinition pushed = {.name = pushedName, .type = pushedType};
   pushStatement(
-    target,
-    (Statement){
-      .asDefaultedVariableDefinition = {.name = pushedName, .type = pushedType},
-      .tag                           = STATEMENT_VARIABLE_DEFINITION
-  });
+    target, (Statement){
+              .asDefaultedVariableDefinition = pushed,
+              .tag = STATEMENT_DEFAULTED_VARIABLE_DEFINITION});
 }
 
 void pushDiscardedExpression(Parse* target, Expression pushedDiscarded) {
+  DiscardedExpression pushed = {.discarded = pushedDiscarded};
   pushStatement(
-    target, (Statement){
-              .asDiscardedExpression = {.discarded = pushedDiscarded},
-              .tag                   = STATEMENT_DISCARDED_EXPRESSION});
+    target,
+    (Statement){
+      .asDiscardedExpression = pushed, .tag = STATEMENT_DISCARDED_EXPRESSION});
 }
 
 void popStatement(Parse* target) { target->after--; }
