@@ -49,7 +49,8 @@ bool checkConvertability(Type source, Type destination) {
 }
 
 bool checkArithmeticConvertability(Type source, Type destination) {
-  return source.tag <= destination.tag;
+  return destination.tag == BOOL_TYPE_INSTANCE.tag ||
+         source.tag <= destination.tag;
 }
 
 bool checkArithmeticity(Type checked) {
@@ -58,10 +59,10 @@ bool checkArithmeticity(Type checked) {
 
 bool checkIntegerness(Type checked) {
   switch (checked.tag) {
+  case TYPE_BOOL:
   case TYPE_BYTE:
   case TYPE_INT:
   case TYPE_UXS: return true;
-  case TYPE_BOOL:
   case TYPE_FLOAT:
   case TYPE_DOUBLE: return false;
   case TYPE_META:
@@ -74,8 +75,8 @@ bool checkSignedness(Type checked) {
   switch (checked.tag) {
   case TYPE_BYTE:
   case TYPE_INT: return true;
-  case TYPE_UXS: return false;
   case TYPE_BOOL:
+  case TYPE_UXS: return false;
   case TYPE_FLOAT:
   case TYPE_DOUBLE: unexpected("Not an integer type!");
   case TYPE_META:
@@ -121,10 +122,10 @@ Value defaultValue(Type defaulted) {
 
 uint64_t getMaximumValue(Type gotten) {
   switch (gotten.tag) {
+  case TYPE_BOOL: return true;
   case TYPE_BYTE: return CHAR_MAX;
   case TYPE_INT: return INT_MAX;
   case TYPE_UXS: return SIZE_MAX;
-  case TYPE_BOOL:
   case TYPE_FLOAT:
   case TYPE_DOUBLE: unexpected("Not an integer type!");
   case TYPE_META:
@@ -157,23 +158,23 @@ Value convertArithmetic(Type source, Type destination, Value converted) {
     };
   case TYPE_BYTE:
     switch (destination.tag) {
+    case TYPE_BOOL: return (Value){.asBool = converted.asByte};
     case TYPE_BYTE: return converted;
     case TYPE_INT: return (Value){.asInt = converted.asByte};
     case TYPE_UXS: return (Value){.asUxs = converted.asByte};
     case TYPE_FLOAT: return (Value){.asFloat = converted.asByte};
     case TYPE_DOUBLE: return (Value){.asDouble = converted.asByte};
-    case TYPE_BOOL: unexpected("Narrowing arithmetic conversion!");
     case TYPE_META:
     case TYPE_VOID: unexpected("Not an arithmetic type!");
     default: unexpected("Unknown type variant!");
     };
   case TYPE_INT:
     switch (destination.tag) {
+    case TYPE_BOOL: return (Value){.asBool = converted.asInt};
     case TYPE_INT: return converted;
     case TYPE_UXS: return (Value){.asUxs = converted.asInt};
     case TYPE_FLOAT: return (Value){.asFloat = converted.asInt};
     case TYPE_DOUBLE: return (Value){.asDouble = converted.asInt};
-    case TYPE_BOOL:
     case TYPE_BYTE: unexpected("Narrowing arithmetic conversion!");
     case TYPE_META:
     case TYPE_VOID: unexpected("Not an arithmetic type!");
@@ -181,10 +182,10 @@ Value convertArithmetic(Type source, Type destination, Value converted) {
     };
   case TYPE_UXS:
     switch (destination.tag) {
+    case TYPE_BOOL: return (Value){.asBool = converted.asUxs};
     case TYPE_UXS: return converted;
     case TYPE_FLOAT: return (Value){.asFloat = converted.asUxs};
     case TYPE_DOUBLE: return (Value){.asDouble = converted.asUxs};
-    case TYPE_BOOL:
     case TYPE_BYTE:
     case TYPE_INT: unexpected("Narrowing arithmetic conversion!");
     case TYPE_META:
@@ -193,9 +194,9 @@ Value convertArithmetic(Type source, Type destination, Value converted) {
     };
   case TYPE_FLOAT:
     switch (destination.tag) {
+    case TYPE_BOOL: return (Value){.asBool = converted.asFloat};
     case TYPE_FLOAT: return converted;
     case TYPE_DOUBLE: return (Value){.asDouble = converted.asFloat};
-    case TYPE_BOOL:
     case TYPE_BYTE:
     case TYPE_INT:
     case TYPE_UXS: unexpected("Narrowing arithmetic conversion!");
@@ -205,8 +206,8 @@ Value convertArithmetic(Type source, Type destination, Value converted) {
     };
   case TYPE_DOUBLE:
     switch (destination.tag) {
+    case TYPE_BOOL: return (Value){.asBool = converted.asDouble};
     case TYPE_DOUBLE: return converted;
-    case TYPE_BOOL:
     case TYPE_BYTE:
     case TYPE_INT:
     case TYPE_UXS:
@@ -225,8 +226,8 @@ Value convertSignedArithmetic(Type destination, int64_t converted) {
   switch (destination.tag) {
   case TYPE_BYTE: return (Value){.asByte = converted};
   case TYPE_INT: return (Value){.asInt = converted};
-  case TYPE_UXS: unexpected("Not a signed integer type!");
   case TYPE_BOOL:
+  case TYPE_UXS: unexpected("Not a signed integer type!");
   case TYPE_FLOAT:
   case TYPE_DOUBLE: unexpected("Not an integer type!");
   case TYPE_META:
@@ -237,10 +238,10 @@ Value convertSignedArithmetic(Type destination, int64_t converted) {
 
 Value convertUnsignedArithmetic(Type destination, uint64_t converted) {
   switch (destination.tag) {
+  case TYPE_BOOL: return (Value){.asBool = converted};
   case TYPE_UXS: return (Value){.asUxs = converted};
   case TYPE_BYTE:
   case TYPE_INT: unexpected("Not an unsigned integer type!");
-  case TYPE_BOOL:
   case TYPE_FLOAT:
   case TYPE_DOUBLE: unexpected("Not an integer type!");
   case TYPE_META:

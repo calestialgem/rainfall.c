@@ -320,8 +320,11 @@ static bool checkNullaryNode(
 
     Object object = {.known = true};
 
-    // Check whether the expected type is an arithmetic type.
-    if (!checkArithmeticity(expected)) {
+    // Check whether the expected type is an arithmetic type and it is not a
+    // Boolean algebra arithmetic.
+    if (
+      !checkArithmeticity(expected) ||
+      compareTypeEquality(expected, BOOL_TYPE_INSTANCE)) {
       highlightError(
         context->reported, checked.section,
         "Expected a `%s`, but found a number!", nameType(expected));
