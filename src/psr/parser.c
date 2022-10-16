@@ -428,7 +428,8 @@ static Result parseBindingDefinition(Context* context) {
   // If there are not any nodes in the type expression, it is inferred.
   if (countExpressionNodes(type))
     pushBindingDefinition(context->target, identifier.section, type, value);
-  else pushInferredBindingDefinition(context->target, identifier.section, type);
+  else
+    pushInferredBindingDefinition(context->target, identifier.section, value);
   return SUCCESS;
 }
 
