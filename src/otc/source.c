@@ -41,7 +41,7 @@
     fprintf(                                                                  \
       targetStream, "%s.tr:%u:%u:%u:%u: %s: ", (reportedSource).name,         \
       portion.first.line, portion.first.column, portion.last.line,            \
-      portion.last.column, logLevelString);                                   \
+      portion.last.column + 1, logLevelString);                               \
     vfprintf(targetStream, format, arguments);                                \
     fputc('\n', targetStream);                                                \
     /* Underline the portion that should be highlighted after the message. */ \
