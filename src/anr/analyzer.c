@@ -706,7 +706,7 @@ static bool evaluateNullaryNode(
     // Default to an int.
     if (
       convertNumberToArithmetic(
-        INT_TYPE_INSTANCE, &object.value, decimal, negative) !=
+        INT_TYPE_INSTANCE, &object.value, decimal, negative) ==
       NUMBER_CONVERSION_SUCCESS) {
       object.type = INT_TYPE_INSTANCE;
     } else {
