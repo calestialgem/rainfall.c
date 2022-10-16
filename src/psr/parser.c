@@ -258,17 +258,16 @@ parseVariaryNode(Context* context, Operator parsed, bool cleanParse) {
   switch (parseExpression(context, OPERATOR_ASSIGNMENT + 1)) {
   case SUCCESS: break;
   case NOT_THERE:
-    String section = createSectionFromNode(context, firstOperand);
-
     // If the closing lexeme is found, the expression is complete.
     if (consumeOnce(context, parsed.asVariary.closing)) {
-      buildNode(context, parsed, 1, section);
+      buildNode(
+        context, parsed, 1, createSectionFromNode(context, firstOperand));
       return SUCCESS;
     }
 
     // If there is not an operator or a closing lexeme, there is an error.
     highlightError(
-      context->reported, section,
+      context->reported, createSectionFromNode(context, firstOperand),
       "Expected a closing `%s` for the opening `%s`!",
       nameLexeme(parsed.asVariary.closing),
       nameLexeme(parsed.asVariary.opening));
