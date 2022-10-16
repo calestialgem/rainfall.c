@@ -1304,25 +1304,25 @@ static void resolve(Context* context) {
     switch (statement->tag) {
     case STATEMENT_BINDING_DEFINITION:
       resolveBindingDefinition(context, statement->asBindingDefinition);
-      return;
+      break;
     case STATEMENT_INFERRED_BINDING_DEFINITION:
       resolveInferredBindingDefinition(
         context, statement->asInferredBindingDefinition);
-      return;
+      break;
     case STATEMENT_VARIABLE_DEFINITION:
       resolveVariableDefinition(context, statement->asVariableDefinition);
-      return;
+      break;
     case STATEMENT_INFERRED_VARIABLE_DEFINITION:
       resolveInferredVariableDefinition(
         context, statement->asInferredVariableDefinition);
-      return;
+      break;
     case STATEMENT_DEFAULTED_VARIABLE_DEFINITION:
       resolveDefaultedVariableDefinition(
         context, statement->asDefaultedVariableDefinition);
-      return;
+      break;
     case STATEMENT_DISCARDED_EXPRESSION:
       resolveDiscardedExpression(context, statement->asDiscardedExpression);
-      return;
+      break;
     default: unexpected("Unknown statement variant!");
     }
   }
