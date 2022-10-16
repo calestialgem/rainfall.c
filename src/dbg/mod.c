@@ -26,8 +26,8 @@ char const* trimRainfallSourcePath(char const* fullPath) {
   char const* previousPosition = NULL;
 
   // Last "src" is the source folder; remove the path upto that.
-  for (char const* position = fullPathAsString.first;
-       position < fullPathAsString.after; position++) {
+  for (char const* position = fullPathAsString.after - 1;
+       position >= fullPathAsString.first; position--) {
     // If not positioned right after a folder, continue.
     if (*position != '\\' && *position != '/') continue;
     // If there is a previous position after a folder saved, check.
