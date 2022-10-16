@@ -620,8 +620,7 @@ static bool checkVariaryNode(
   switch (checked.operator) {
   case FUNCTION_CALL:
     highlightWarning(
-      context->reported, checked.section,
-      "Function call is not yet implemented.");
+      context->reported, checked.section, "Function call is not implemented.");
     return false;
   default: unexpected("Unknown variary operator!");
   }
@@ -1037,7 +1036,7 @@ static bool evaluateVariaryNode(
   case FUNCTION_CALL:
     highlightWarning(
       context->reported, evaluated.section,
-      "Function call is not yet implemented.");
+      "Function call is not implemented.");
     return false;
   default: unexpected("Unknown variary operator!");
   }
@@ -1295,8 +1294,7 @@ resolveDiscardedExpression(Context* context, DiscardedExpression resolved) {
 
   highlightWarning(
     context->reported, getExpressionSection(resolved.discarded),
-    "Expression statement in the global scope is skipped for now. Later it "
-    "will not be allowed.");
+    "Expression statement in the global scope is skipped.");
 }
 
 /* Check the symbol accesses and types of the expressions in the user-defined
