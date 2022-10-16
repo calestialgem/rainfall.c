@@ -20,6 +20,8 @@ int main(int const argumentCount, char const* const* const arguments) {
     return -1;
   }
 
+  initLexer();
+
   Source source = createSource(arguments[1]);
   Lex    lex    = createLex(&source);
   Parse  parse  = createParse(&source, lex);

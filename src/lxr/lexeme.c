@@ -16,7 +16,7 @@ char const* nameLexeme(LexemeTag named) {
   case LEXEME_SLASH_EQUAL: return "/=";
   case LEXEME_SLASH: return "/";
   case LEXEME_PERCENT_EQUAL: return "%=";
-  case LEXEME_PERCENT: return "=";
+  case LEXEME_PERCENT: return "%";
   case LEXEME_PLUS_EQUAL: return "+=";
   case LEXEME_PLUS_PLUS: return "++";
   case LEXEME_PLUS: return "+";
