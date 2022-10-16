@@ -4,133 +4,127 @@
 #pragma once
 
 #include "anr/api.h"
+#include "otc/api.h"
 #include "psr/api.h"
 #include "utl/api.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 
-/* Rank of an arithmetic operand. */
-typedef struct {
-  /* Type. */
-  Type type;
-  /* Rank. */
-  iptr rank;
-} Arithmetic;
+/* Instance of meta type. */
+extern Type const META_TYPE_INSTANCE;
+/* Instance of void type. */
+extern Type const VOID_TYPE_INSTANCE;
+/* Instance of bool type. */
+extern Type const BOOL_TYPE_INSTANCE;
+/* Instance of byte type. */
+extern Type const BYTE_TYPE_INSTANCE;
+/* Instance of int type. */
+extern Type const INT_TYPE_INSTANCE;
+/* Instance of uxs type. */
+extern Type const UXS_TYPE_INSTANCE;
+/* Instance of float type. */
+extern Type const FLOAT_TYPE_INSTANCE;
+/* Instance of double type. */
+extern Type const DOUBLE_TYPE_INSTANCE;
+
+/* Whether the given types are equal. */
+bool        compareTypeEquality(Type left, Type right);
+/* Whether the given type has a default value. */
+bool        checkDefaultability(Type checked);
+/* Whether the given source type can be converted to given destination type. */
+bool        checkConvertability(Type source, Type destination);
+/* Whether the a value of the given source type can be fit inside a value
+ * of the given destination type. */
+bool        checkArithmeticConvertability(Type source, Type destination);
+/* Whether the given type is a valid arithmetic type. */
+bool        checkArithmeticity(Type checked);
+/* Whether the given type is an integer. */
+bool        checkIntegerness(Type checked);
+/* Whether the given integer type is signed. */
+bool        checkSignedness(Type checked);
+/* Type that can hold the result of an arithmetic operation between the
+ * given types. */
+Type        findCombination(Type left, Type right);
+/* Name of the given type. */
+char const* nameType(Type named);
+/* Default value of the given type. */
+Value       defaultValue(Type defaulted);
+/* Maximum value of the given integer type. */
+uint64_t    getMaximumValue(Type gotten);
+/* Value of the given destination type that is the converted version of the
+ * given value that has the given source type. */
+Value       convertValue(Type source, Type destination, Value converted);
+/* Value of the given destination type that is the converted version of
+ * the given value that has the given source type. */
+Value       convertArithmetic(Type source, Type destination, Value converted);
+/* Value of the given signed integer as the given signed integer type. */
+Value       convertSignedArithmetic(Type destination, int64_t converted);
+/* Value of the given unsigned integer as the given unsigned integer
+ * type. */
+Value       convertUnsignedArithmetic(Type destination, uint64_t converted);
+
+/* Empty evaluation with the given initial capacity. */
+Evaluation createEvaluation(size_t initialCapacity);
+/* Release the resources used by the given evaluation. */
+void       disposeEvaluation(Evaluation* disposed);
+/* Add the given node to the end of the given evaluation. */
+void       pushNode(Evaluation* target, EvaluationNode pushed);
+
+/* Add the given symbol to the end of the given table. */
+void pushSymbol(Table* target, Symbol pushed);
+/* Remove the last symbol from the given table. */
+void popSymbol(Table* target);
 
 /* Flag that explores the situation of a number. */
 typedef enum {
   /* Number has an acceptable exponent and the significand is valid. */
-  NUM_NORMAL,
+  NUMBER_NORMAL,
   /* Exponent is too big, regardless of the significand take the number as
-     infinite. */
-  NUM_INFINITE,
+   * infinite. */
+  NUMBER_INFINITE,
   /* Exponent is too small, regardless of the significand take the number as
-     zero. */
-  NUM_ZERO,
+   * zero. */
+  NUMBER_ZERO,
   /* Number has too many digits. */
-  NUM_TOO_PRECISE
+  NUMBER_TOO_PRECISE
 } NumberFlag;
 
 /* Dynamicly allocated, infinite precision, signed real. */
 typedef struct {
-  /* Significand that is an integer. */
-  Buffer     sig;
-  /* Exponent whose base can vary. */
-  int        exp;
+  /* Significand that is an infinite precision integer. */
+  Buffer     significand;
+  /* Signed exponent where the base is 2. Meaning the real value of the number
+   * is `significand * 2^exponent`. */
+  int        exponent;
   /* Flag. */
   NumberFlag flag;
 } Number;
 
-/* Arithmetic of the int type. */
-extern Arithmetic const ARI_INT;
+/* Result of converting a number to an arithmetic. */
+typedef enum {
+  /* Conversion was successful. */
+  NUMBER_CONVERSION_SUCCESS,
+  /* The converted number was not an integer, but the destination type was. */
+  NUMBER_CONVERSION_NOT_INTEGER,
+  /* The converted number was negative, but the destination type was an unsigned
+     integer. */
+  NUMBER_CONVERSION_NOT_UNSIGNED,
+  /* The converted number is cannot be fitted inside the destination integer
+     type. */
+  NUMBER_CONVERSION_OUT_OUF_BOUNDS
+} NumberConversionResult;
 
-/* Whether the given types are equal. */
-bool        typeEq(Type lhs, Type rhs);
-/* Rank of the given arithmetic type. Returns -1 if the given type is not an
- * arithmetic type. */
-iptr        typeRank(Type type);
-/* Whether the given source type can be converted to given destination type. */
-bool        typeCnv(Type src, Type des);
-/* Name of the given type. */
-char const* typeName(Type type);
-/* Stream out the given type as string to the given stream. */
-void        typeWrite(Type type, FILE* stream);
-
-/* Arithmetic of the given type. The rank is *1 if the given type is not an
- * arithmetic. */
-Arithmetic ariOf(Type type);
-/* Whether the arithmetic is valid. */
-bool       ariValid(Arithmetic ari);
-/* Whether the arithmetic is an integer. */
-bool       ariInt(Arithmetic ari);
-/* Whether the given source arithmetic can be fit to the given destination. */
-bool       ariFits(Arithmetic src, Arithmetic des);
-/* Arithmetic with the larger rank from the given ones. */
-Arithmetic ariLarger(Arithmetic lhs, Arithmetic rhs);
-/* Convert the value of the given source arithmetic to the given destination. */
-Value      ariCnv(Arithmetic src, Arithmetic des, Value val);
-
-/* Default value of the given type. */
-Value valDefault(Type type);
-/* Convert the value of the given source type to the given destination. */
-Value valCnv(Type src, Type des, Value val);
-/* Stream out the given value of the given type as string to the given stream.
- */
-void  valWrite(Type type, Value val, FILE* stream);
-
-/* Evaluation with the given initial node capacity. */
-Evaluation     evlOf(iptr cap);
-/* Release the memory resources used by the given evaluation. */
-void           evlFree(Evaluation* evl);
-/* Amount of nodes in the given evaluation. */
-iptr           evlLen(Evaluation evl);
-/* Node at the given index in the given evaluation. */
-EvaluationNode evlAt(Evaluation evl, iptr i);
-/* Add the given node to the end of the given evaluation. */
-void           evlAdd(Evaluation* evl, EvaluationNode node);
-/* Stream out the given evaluation as string to the given stream. */
-void           evlWrite(Evaluation evl, FILE* stream);
-/* Stream out the given evaluation tree as string to the given stream. */
-void           evlTree(Evaluation evl, FILE* stream);
-/* Root node of the given evaluation. */
-EvaluationNode evlRoot(Evaluation evl);
-/* Type of the given evaluation. */
-Type           evlType(Evaluation evl);
-/* Value of the given evaluation. */
-Value          evlVal(Evaluation evl);
-/* Whether the value of the given evaluation is known at compile-time. */
-bool           evlHas(Evaluation evl);
-
-/* Amount of symbols in the given table. */
-iptr   tblLen(Table tbl);
-/* Symbol at the given index in the given table. */
-Symbol tblAt(Table tbl, iptr i);
-/* Add the given symbol to the end of the given table. */
-void   tblAdd(Table* tbl, Symbol sym);
-/* Remove the last added symbol from the given table. */
-void   tblPop(Table* tbl);
-
-/* Parse the given decimal string into the given number. */
-Number   numOfDec(String str);
-/* Release the memory resources used by the given number. */
-void     numFree(Number* num);
-/* Comparison of the given number with the given value. Number should be based
- * in 2. Returns positive, zero, or negative depending on whether the number is
- * greater than, equals to, or less than the given value, respectively. */
-int      numCmp(Number num, uint64_t val);
-/* Whether the given number is an integer. */
-bool     numIsInt(Number num);
-/* Value of the given number as integer. Number should be based in 2. */
-uint64_t numAsInt(Number num);
-/* Value of the given number as a float. Number should be based in 2,
- * because floting-point exponents are based in 2. */
-float    numAsFloat(Number num);
-/* Value of the given number as a double. Number should be based in 2,
- * because floting-point exponents are based in 2. */
-double   numAsDouble(Number num);
+/* Parse the given decimal string into a number. */
+Number                 parseDecimal(String parsedDecimal);
+/* Release the memory used by the given number. */
+void                   disposeNumber(Number* disposed);
+/* Convert the given number with the given sign into the given arithmetic value
+ * of the given destination type. Returns the conversion result. */
+NumberConversionResult convertNumberToArithmetic(
+  Type destination, Value* target, Number converted, bool negativeSign);
 
 /* Analyze the given parse into the given table by reporting to the given
- * outcome. */
-void analyze(Table* tbl, Outcome* otc, Parse prs);
+ * source. */
+void analyzeParse(Table* target, Source* reported, Parse analyzed);

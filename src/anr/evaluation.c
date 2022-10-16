@@ -2,188 +2,25 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "anr/api.h"
-#include "anr/mod.h"
 #include "dbg/api.h"
 #include "psr/api.h"
-#include "utl/api.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
-/* Make sure the given amount of space exists at the end of the given
- * evaluation. When necessary, grows by at least half of the current capacity.
- */
-static void reserve(Evaluation* const evl, iptr const amount) {
-  iptr const cap   = evl->all - evl->bgn;
-  iptr const len   = evlLen(*evl);
-  iptr const space = cap - len;
-  if (space >= amount) return;
-
-  iptr const growth    = amount - space;
-  iptr const minGrowth = cap / 2;
-  iptr const newCap    = cap + (growth < minGrowth ? minGrowth : growth);
-  EvaluationNode* const mem =
-    realloc(evl->bgn, newCap * sizeof(EvaluationNode));
-  dbgExpect(mem, "Could not reallocate!");
-
-  evl->bgn = mem;
-  evl->end = mem + len;
-  evl->all = mem + newCap;
+Evaluation createEvaluation(size_t initialCapacity) {
+  Evaluation created = {.first = NULL, .after = NULL, .bound = NULL};
+  reserveArray(&created, initialCapacity, EvaluationNode);
+  return created;
 }
 
-/* Stream out the evaluation node at the given position and its childeren as
- * string to the given stream. Returns the position after all the childeren of
- * the node. */
-static EvaluationNode const*
-nodeWrite(EvaluationNode const* const i, FILE* const stream) {
-  switch (i->exp.op.tag) {
-  case OP_NULL:
-    if (stream) {
-      strWrite(i->exp.val, stream);
-      if (i->has) {
-        fprintf(stream, "`");
-        valWrite(i->type, i->val, stream);
-        fprintf(stream, "`");
-      }
-    }
-    return i - 1;
-  case OP_PRE: {
-    if (stream) fprintf(stream, "(");
-    lxmWrite(i->exp.op.pre.op, stream);
-    EvaluationNode const* const op = nodeWrite(i - 1, stream);
-    if (stream) {
-      fprintf(stream, ")");
-      if (i->has) {
-        fprintf(stream, "`");
-        valWrite(i->type, i->val, stream);
-        fprintf(stream, "`");
-      }
-    }
-    return op;
-  }
-  case OP_POST: {
-    if (stream) fprintf(stream, "(");
-    EvaluationNode const* const op = nodeWrite(i - 1, stream);
-    lxmWrite(i->exp.op.post.op, stream);
-    if (stream) {
-      fprintf(stream, ")");
-      if (i->has) {
-        fprintf(stream, "`");
-        valWrite(i->type, i->val, stream);
-        fprintf(stream, "`");
-      }
-    }
-    return op;
-  }
-  case OP_CIR: {
-    lxmWrite(i->exp.op.cir.lop, stream);
-    EvaluationNode const* const op = nodeWrite(i - 1, stream);
-    lxmWrite(i->exp.op.cir.rop, stream);
-    return op;
-  }
-  case OP_BIN: {
-    if (stream) fprintf(stream, "(");
-    EvaluationNode const* const rop = nodeWrite(i - 1, NULL);
-    EvaluationNode const* const lop = nodeWrite(rop, stream);
-    lxmWrite(i->exp.op.bin.op, stream);
-    nodeWrite(i - 1, stream);
-    if (stream) {
-      fprintf(stream, ")");
-      if (i->has) {
-        fprintf(stream, "`");
-        valWrite(i->type, i->val, stream);
-        fprintf(stream, "`");
-      }
-    }
-    return lop;
-  }
-  case OP_VAR: {
-    if (i->exp.ary == 1) {
-      EvaluationNode const* const st = nodeWrite(i - 1, stream);
-      lxmWrite(i->exp.op.var.lop, stream);
-      lxmWrite(i->exp.op.var.rop, stream);
-      return st;
-    }
-    EvaluationNode const* ops[i->exp.ary];
-    ops[0] = nodeWrite(i - 1, NULL);
-    for (iptr j = 1; j < i->exp.ary; j++) ops[j] = nodeWrite(ops[j - 1], NULL);
-    nodeWrite(ops[i->exp.ary - 2], stream);
-    lxmWrite(i->exp.op.var.lop, stream);
-    for (iptr j = i->exp.ary - 2; j > 0; j--) {
-      nodeWrite(ops[j - 1], stream);
-      lxmWrite(i->exp.op.var.sep, stream);
-    }
-    nodeWrite(i - 1, stream);
-    lxmWrite(i->exp.op.var.rop, stream);
-    if (stream) {
-      if (i->has) {
-        fprintf(stream, "`");
-        valWrite(i->type, i->val, stream);
-        fprintf(stream, "`");
-      }
-    }
-    return ops[i->exp.ary - 1];
-  }
-  default: dbgUnexpected("Unknown operator tag!");
-  }
+void disposeExpression(Expression* disposed) {
+  disposed->first = allocateArray(disposed->first, 0, ExpressionNode);
+  disposed->after = disposed->first;
+  disposed->bound = disposed->first;
 }
 
-/* Stream out the evaluation node at the given position and its childeren as
- * string to the given stream. Returns the position after all the childeren of
- * the node. */
-static EvaluationNode const*
-nodeTree(EvaluationNode const* i, iptr const depth, FILE* const stream) {
-  fprintf(stream, "%20s   ", opName(i->exp.op));
-  for (iptr j = 1; j < depth; j++) fprintf(stream, " |  ");
-  if (depth > 0) fprintf(stream, " +- ");
-  fprintf(stream, "`");
-  strWrite(i->exp.val, stream);
-  if (i->has) {
-    fprintf(stream, "` `");
-    valWrite(i->type, i->val, stream);
-  }
-  fprintf(stream, "`\n");
-  iptr const ary = i->exp.ary;
-  i--;
-  for (iptr j = 0; j < ary; j++) i = nodeTree(i, depth + 1, stream);
-  return i;
+void pushNode(Expression* target, ExpressionNode pushed) {
+  reserveArray(target, 1, ExpressionNode);
+  *target->after++ = pushed;
 }
-
-Evaluation evlOf(iptr const cap) {
-  Evaluation res = {0};
-  if (cap) reserve(&res, cap);
-  return res;
-}
-
-void evlFree(Evaluation* const evl) {
-  free(evl->bgn);
-  evl->bgn = NULL;
-  evl->end = NULL;
-  evl->all = NULL;
-}
-
-iptr evlLen(Evaluation const evl) { return evl.end - evl.bgn; }
-
-EvaluationNode evlAt(Evaluation const evl, iptr const i) { return evl.bgn[i]; }
-
-void evlAdd(Evaluation* const evl, EvaluationNode const node) {
-  reserve(evl, 1);
-  *evl->end++ = node;
-}
-
-void evlWrite(Evaluation const evl, FILE* const stream) {
-  for (EvaluationNode const* i = evl.end - 1; i >= evl.bgn;)
-    i = nodeWrite(i, stream);
-}
-
-void evlTree(Evaluation const evl, FILE* const stream) {
-  for (EvaluationNode const* i = evl.end - 1; i >= evl.bgn;)
-    i = nodeTree(i, 0, stream);
-}
-
-EvaluationNode evlRoot(Evaluation const evl) { return evl.end[-1]; }
-
-Type evlType(Evaluation const evl) { return evlRoot(evl).type; }
-
-Value evlVal(Evaluation const evl) { return evlRoot(evl).val; }
-
-bool evlHas(Evaluation const evl) { return evlRoot(evl).has; }

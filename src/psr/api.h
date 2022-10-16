@@ -129,110 +129,118 @@ typedef struct {
   OperatorPrecedence precedence;
   /* Index of the operator in its own precedence level. */
   size_t             inLevel;
+  /* Hashcode of the operator. */
+  size_t             hash;
 } Operator;
 
+/* Maximum amount of operators in any level. */
+#define MAX_OPERATOR_LEVEL_COUNT 11
+/* Hashcode of an operator with the given precedence and index. */
+#define hashOperator(precedenceLevel, inLevelIndex) \
+  ((size_t)(precedenceLevel)*MAX_OPERATOR_LEVEL_COUNT + (inLevelIndex))
+
 /* Number literal with decimal digits. */
-extern Operator const DECIMAL_LITERAL;
+#define DECIMAL_LITERAL hashOperator(OPERATOR_PRIMARY, 0)
 /* Access to a symbol with its id. */
-extern Operator const SYMBOL_ACCESS;
+#define SYMBOL_ACCESS   hashOperator(OPERATOR_PRIMARY, 1)
 /* Expression grouped with parentheses. */
-extern Operator const GROUP;
+#define GROUP           hashOperator(OPERATOR_PRIMARY, 2)
 /* Call to a function. */
-extern Operator const FUNCTION_CALL;
+#define FUNCTION_CALL   hashOperator(OPERATOR_PRIMARY, 3)
 
 /* Posate. */
-extern Operator const POSATE;
+#define POSATE            hashOperator(OPERATOR_UNARY, 0)
 /* Negate. */
-extern Operator const NEGATE;
+#define NEGATE            hashOperator(OPERATOR_UNARY, 1)
 /* Increment after returning. */
-extern Operator const POSTFIX_INCREMENT;
+#define POSTFIX_INCREMENT hashOperator(OPERATOR_UNARY, 2)
 /* Decrement after returning. */
-extern Operator const POSTFIX_DECREMENT;
+#define POSTFIX_DECREMENT hashOperator(OPERATOR_UNARY, 3)
 /* Increment before returning. */
-extern Operator const PREFIX_INCREMENT;
+#define PREFIX_INCREMENT  hashOperator(OPERATOR_UNARY, 4)
 /* Decrement before returning. */
-extern Operator const PREFIX_DECREMENT;
+#define PREFIX_DECREMENT  hashOperator(OPERATOR_UNARY, 5)
 /* Invert truthiness value. */
-extern Operator const LOGICAL_NOT;
+#define LOGICAL_NOT       hashOperator(OPERATOR_UNARY, 6)
 /* Invert bits. */
-extern Operator const COMPLEMENT;
+#define COMPLEMENT        hashOperator(OPERATOR_UNARY, 7)
 
 /* Multiply. */
-extern Operator const MULTIPLICATION;
+#define MULTIPLICATION hashOperator(OPERATOR_FACTOR, 0)
 /* Divide. */
-extern Operator const DIVISION;
+#define DIVISION       hashOperator(OPERATOR_FACTOR, 1)
 /* Reminder after division. */
-extern Operator const REMINDER;
+#define REMINDER       hashOperator(OPERATOR_FACTOR, 2)
 
 /* Add. */
-extern Operator const ADDITION;
+#define ADDITION    hashOperator(OPERATOR_TERM, 0)
 /* Subtract. */
-extern Operator const SUBTRACTION;
+#define SUBTRACTION hashOperator(OPERATOR_TERM, 1)
 
 /* Shift bits to left. */
-extern Operator const LEFT_SHIFT;
+#define LEFT_SHIFT  hashOperator(OPERATOR_SHIFT, 0)
 /* Shift bits to right. */
-extern Operator const RIGHT_SHIFT;
+#define RIGHT_SHIFT hashOperator(OPERATOR_SHIFT, 1)
 
 /* Bitwise AND. */
-extern Operator const BITWISE_AND;
+#define BITWISE_AND hashOperator(OPERATOR_BITWISE_AND, 0)
 
 /* Bitwise XOR */
-extern Operator const BITWISE_XOR;
+#define BITWISE_XOR hashOperator(OPERATOR_BITWISE_XOR, 0)
 
 /* Bitwise OR. */
-extern Operator const BITWISE_OR;
+#define BITWISE_OR hashOperator(OPERATOR_BITWISE_OR, 0)
 
 /* Whether the left is smaller than the right. */
-extern Operator const SMALLER_THAN;
+#define SMALLER_THAN             hashOperator(OPERATOR_ORDER_COMPARISON, 0)
 /* Whether the left is smaller than or equal to the right. */
-extern Operator const SMALLER_THAN_OR_EQUAL_TO;
+#define SMALLER_THAN_OR_EQUAL_TO hashOperator(OPERATOR_ORDER_COMPARISON, 1)
 /* Whether the left is grater than the right. */
-extern Operator const GREATER_THAN;
+#define GREATER_THAN             hashOperator(OPERATOR_ORDER_COMPARISON, 2)
 /* Whether the left is grater than or equal to the right. */
-extern Operator const GREATER_THAN_OR_EQUAL_TO;
+#define GREATER_THAN_OR_EQUAL_TO hashOperator(OPERATOR_ORDER_COMPARISON, 3)
 
 /* Whether the left is equal to right. */
-extern Operator const EQUAL_TO;
+#define EQUAL_TO     hashOperator(OPERATOR_EQUALITY_COMPARISON, 0)
 /* Wherhet the left is not equal to right. */
-extern Operator const NOT_EQUAL_TO;
+#define NOT_EQUAL_TO hashOperator(OPERATOR_EQUALITY_COMPARISON, 1)
 
 /* Logical AND. */
-extern Operator const LOGICAL_AND;
+#define LOGICAL_AND hashOperator(OPERATOR_LOGICAL_AND, 0)
 
 /* Logical OR. */
-extern Operator const LOGICAL_OR;
+#define LOGICAL_OR hashOperator(OPERATOR_LOGICAL_OR, 0)
 
 /* Assignment. */
-extern Operator const ASSIGNMENT;
+#define ASSIGNMENT                hashOperator(OPERATOR_ASSIGNMENT, 0)
 /* Assignment after multiplication. */
-extern Operator const MUTIPLICATION_ASSIGNMENT;
+#define MULTIPLICATION_ASSIGNMENT hashOperator(OPERATOR_ASSIGNMENT, 1)
 /* Assignment after division. */
-extern Operator const DIVISION_ASSIGNMENT;
+#define DIVISION_ASSIGNMENT       hashOperator(OPERATOR_ASSIGNMENT, 2)
 /* Assignment after reminder. */
-extern Operator const REMINDER_ASSIGNMENT;
+#define REMINDER_ASSIGNMENT       hashOperator(OPERATOR_ASSIGNMENT, 3)
 /* Assignment after addition. */
-extern Operator const ADDITION_ASSIGNMENT;
+#define ADDITION_ASSIGNMENT       hashOperator(OPERATOR_ASSIGNMENT, 4)
 /* Assignment after subtraction. */
-extern Operator const SUBTRACTION_ASSIGNMENT;
+#define SUBTRACTION_ASSIGNMENT    hashOperator(OPERATOR_ASSIGNMENT, 5)
 /* Assignment after left shift. */
-extern Operator const LEFT_SHIFT_ASSIGNMENT;
+#define LEFT_SHIFT_ASSIGNMENT     hashOperator(OPERATOR_ASSIGNMENT, 6)
 /* Assignment after right shift. */
-extern Operator const RIGHT_SHIFT_ASSIGNMENT;
+#define RIGHT_SHIFT_ASSIGNMENT    hashOperator(OPERATOR_ASSIGNMENT, 7)
 /* Assignment after bitwise and. */
-extern Operator const BITWISE_AND_ASSIGNMENT;
+#define BITWISE_AND_ASSIGNMENT    hashOperator(OPERATOR_ASSIGNMENT, 8)
 /* Assignment after bitwise xor. */
-extern Operator const BITWISE_XOR_ASSIGNMENT;
+#define BITWISE_XOR_ASSIGNMENT    hashOperator(OPERATOR_ASSIGNMENT, 9)
 /* Assignment after bitwise or. */
-extern Operator const BITWISE_OR_ASSIGNMENT;
+#define BITWISE_OR_ASSIGNMENT     hashOperator(OPERATOR_ASSIGNMENT, 10)
 
 /* Whether the given operators are the same. */
-bool   compareOperatorEquality(Operator left, Operator right);
-/* Hashcode of the given operator. */
-size_t hashOperator(Operator hashed);
+bool     compareOperatorEquality(Operator left, Operator right);
 /* Amount of operators in the given precedence and given index in the precedence
  * level. */
-size_t countInLevelOperators(OperatorPrecedence counted);
+size_t   countInLevelOperators(OperatorPrecedence counted);
+/* Operator with the given hash. */
+Operator getOperator(size_t gottenHash);
 /* Operator at the given prececence and index. */
 Operator
 getOperatorAt(OperatorPrecedence gottenPrecedence, size_t gottenInLevelIndex);
@@ -241,13 +249,13 @@ char const* nameOperator(Operator named);
 
 /* Instantiation of an operator. */
 typedef struct {
-  /* Operator. */
-  Operator operator;
+  /* Hash of the instantiated operator. */
+  size_t operator;
   /* Amount of operands, which are the nodes that come before this one in the
    * expression's array. */
-  size_t   arity;
+  size_t arity;
   /* Combined source section of all the lexemes of the expression. */
-  String   section;
+  String section;
 } ExpressionNode;
 
 /* Operations that result in calculation of a value. */

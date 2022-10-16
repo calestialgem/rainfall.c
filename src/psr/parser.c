@@ -86,9 +86,10 @@ static void buildNode(
   Context* context, Operator builtOperator, size_t builtArity,
   String builtSection) {
   pushNode(
-    &context->built,
-    (ExpressionNode){
-      .operator= builtOperator, .arity = builtArity, .section = builtSection});
+    &context->built, (ExpressionNode){
+                       .operator= builtOperator.hash,
+                       .arity   = builtArity,
+                       .section = builtSection});
 }
 
 /* Last built node. */

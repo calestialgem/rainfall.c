@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-Checks: "bugprone-*,-bugprone-easily-swappable-parameters,-bugprone-narrowing-conversions,cert-*,-cert-err09-cpp.MaxSize,-cert-err61-cpp.MaxSize,-cert-err33-c,clang-*,concurrency-*,cppcoreguidelines-*,-cppcoreguidelines-narrowing-conversions,-cppcoreguidelines-avoid-non-const-global-variables,hicpp-*,-hicpp-braces-around-statements,-hicpp-signed-bitwise,-hicpp-multiway-paths-covered,llvm-*,misc-*,-misc-no-recursion,-misc-throw-by-value-catch-by-reference.MaxSize,modernize-*,performance-*,portability-*,readability-*,-readability-braces-around-statements,-readability-identifier-length,-readability-function-cognitive-complexity"
+Checks: "bugprone-*,-bugprone-easily-swappable-parameters,-bugprone-narrowing-conversions,cert-*,-cert-err09-cpp.MaxSize,-cert-err61-cpp.MaxSize,-cert-err33-c,clang-*,concurrency-*,cppcoreguidelines-*,-cppcoreguidelines-narrowing-conversions,-cppcoreguidelines-avoid-non-const-global-variables,hicpp-*,-hicpp-braces-around-statements,-hicpp-signed-bitwise,-hicpp-multiway-paths-covered,llvm-*,misc-*,-misc-unused-parameters,-misc-redundant-expression,-misc-no-recursion,-misc-throw-by-value-catch-by-reference.MaxSize,modernize-*,performance-*,portability-*,readability-*,-readability-braces-around-statements,-readability-identifier-length,-readability-function-cognitive-complexity"
 WarningsAsErrors: ""
 HeaderFilterRegex: ""
 AnalyzeTemporaryDtors: false
