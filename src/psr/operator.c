@@ -61,7 +61,8 @@
        .separating = separatingLexeme,                            \
        .closing    = closingLexeme},                                 \
     .tag = OPERATOR_VARIARY, .precedence = precedenceLevel,       \
-    .inLevel = inLevelIndex                                       \
+    .inLevel = inLevelIndex,                                      \
+    .hash    = hashOperator(precedenceLevel, inLevelIndex)        \
   }
 
 Operator const DECIMAL_LITERAL_OPERATOR =
