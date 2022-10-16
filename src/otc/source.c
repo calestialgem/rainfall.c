@@ -35,7 +35,7 @@
     /* Transfer the variable amount of arguments to `fprintf`. */             \
     va_list arguments = NULL;                                                 \
     va_start(arguments, format);                                              \
-    Portion portion = portionAt(reportedSource, highlighted);                 \
+    Portion portion = createPortion(reportedSource, highlighted);             \
     /* First print the file and line information; then, the message. */       \
     fprintf(                                                                  \
       targetStream, "%s:%u:%u:%u:%u: %s: ", (reportedSource).name,            \
@@ -48,7 +48,7 @@
     va_end(arguments);                                                        \
   } while (false)
 
-Source loadSource(char const* name) {
+Source createSource(char const* name) {
   // Join the name with the extension.
   Buffer path = createBuffer(strlen(name) + 4);
   appendString(&path, viewTerminated(name));

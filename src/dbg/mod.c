@@ -21,8 +21,8 @@ void* allocate(void* reallocatedBlock, size_t allocatedSize) {
 }
 
 char const* trimRainfallSourcePath(char const* fullPath) {
-  String      rootFolder       = nullTerminated("src");
-  String      fullPathAsString = nullTerminated(fullPath);
+  String      rootFolder       = viewTerminated("src");
+  String      fullPathAsString = viewTerminated(fullPath);
   char const* previousPosition = NULL;
 
   // Last "src" is the source folder; remove the path upto that.
@@ -32,8 +32,9 @@ char const* trimRainfallSourcePath(char const* fullPath) {
     if (*position != '\\' && *position != '/') continue;
     // If there is a previous position after a folder saved, check.
     if (previousPosition) {
-      String folder = stringOf(position + 1, previousPosition);
-      if (equalStrings(folder, rootFolder)) return previousPosition + 1;
+      String folder = createString(position + 1, previousPosition);
+      if (compareStringEquality(folder, rootFolder))
+        return previousPosition + 1;
     }
     // Save this position if failed to match.
     previousPosition = position;

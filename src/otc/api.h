@@ -18,7 +18,7 @@ typedef struct {
 } Source;
 
 /* Load the source file at the given name. */
-Source loadSource(char const* loadedFileName);
+Source createSource(char const* loadedFileName);
 /* Dispose the contents of the given source file. */
 void   disposeSource(Source* disposed);
 /* Report an error at the given source file with the given formatted message. */
