@@ -82,7 +82,7 @@ static void trimLeadingZeros(Buffer* trimmed) {
 static void divideSignificand(Buffer* divided, int divider) {
   int reminder = 0;
 
-  for (char* digit = divided->after - 1; digit >= divided->first; digit++) {
+  for (char* digit = divided->after - 1; digit >= divided->first; digit--) {
     // Convert the reminder to an equivalent value for the place of the previous
     // digit.
     reminder *= SIGNIFICAND_BASE;
@@ -105,7 +105,7 @@ static void divideSignificand(Buffer* divided, int divider) {
 static int findSignificandModulus(Buffer modded, int mod) {
   int reminder = 0;
 
-  for (char const* digit = modded.after - 1; digit >= modded.first; digit++) {
+  for (char const* digit = modded.after - 1; digit >= modded.first; digit--) {
     // Convert the reminder to an equivalent value for the place of the previous
     // digit.
     reminder *= SIGNIFICAND_BASE;
@@ -438,7 +438,7 @@ double convertNumberToDouble(Number converted) {
 
 Number parseDecimal(String parsedDecimal) {
   // Check the parsed character limit.
-  if (countCharacters(parsedDecimal)) {
+  if (countCharacters(parsedDecimal) > PARSED_DIGIT_LIMIT) {
     return (Number){
       .significand = createBuffer(0),
       .exponent    = 0,
