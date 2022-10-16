@@ -607,7 +607,11 @@ static void parse(Context* context) {
   // parse after them.
   reportUnexpected(context, context->current);
 
-  expect(compareCurrent(context, LEXEME_EOF), "Lex does not end with an EOF!");
+  // Cannot use `compareCurrent` because that checks for existance, which does
+  // not consider the last lexeme.
+  expect(
+    getCurrentLexeme(context).tag == LEXEME_EOF,
+    "Lex does not end with an EOF!");
 }
 
 void parseLex(Parse* target, Source* reported, Lex parsed) {
