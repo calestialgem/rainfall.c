@@ -281,7 +281,7 @@ static bool checkNullaryNode(
     if (!checkConvertability(accessed.object.type, expected)) {
       highlightError(
         context->reported, checked.section,
-        "Expected a `%s`, but `%.s` is a `%s`!", nameType(expected),
+        "Expected a `%s`, but `%.*s` is a `%s`!", nameType(expected),
         (int)countCharacters(accessed.name), accessed.name.first,
         nameType(accessed.object.type));
       return false;
