@@ -1045,9 +1045,6 @@ static bool evaluateVariaryNode(
 static bool evaluateNode(
   Context* context, Evaluation* built, ExpressionNode const** pointer) {
   ExpressionNode evaluated = **pointer;
-  printf(
-    "Evaluating: [%s] `%.*s`\n", nameOperator(getOperator(evaluated.operator)),
-    (int)countCharacters(evaluated.section), evaluated.section.first);
   switch (getOperator(evaluated.operator).tag) {
   case OPERATOR_NULLARY: return evaluateNullaryNode(context, built, pointer);
   case OPERATOR_PRENARY: return evaluatePrenaryNode(context, built, pointer);
