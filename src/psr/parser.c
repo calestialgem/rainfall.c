@@ -341,7 +341,7 @@ static Result parseExpression(Context* context, OperatorPrecedence parsed) {
 
   // Parse an expression on the given precedence level or higher.
   for (OperatorPrecedence level = parsed; level < OPERATOR_LEVELS; level++) {
-    for (size_t inLevel = level; inLevel < countInLevelOperators(level);
+    for (size_t inLevel = 0; inLevel < countInLevelOperators(level);
          inLevel++) {
       // Pass the clean parse flag depending on whether there is not a result.
       switch (parseNode(context, level, inLevel, result == NOT_THERE)) {
