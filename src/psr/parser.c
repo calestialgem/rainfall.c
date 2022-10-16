@@ -567,6 +567,7 @@ static void parse(Context* context) {
     if (result == NOT_THERE) {
       if (!context->firstUnexpected) context->firstUnexpected = start;
       advanceOnce(context);
+      continue;
     }
 
     // If there is a result, show the previously skipped unexpected group of
