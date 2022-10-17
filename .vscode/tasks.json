@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
+
 {
   "version": "2.0.0",
   "tasks": [
@@ -21,6 +22,7 @@
         "clear": true
       }
     },
+
     // Compile the test Thrice file.
     {
       "type": "shell",
@@ -29,15 +31,10 @@
       "options": {
         "cwd": "${workspaceRoot}/res"
       },
-      "args": [
-        "test"
-      ],
+      "args": ["test"],
       "problemMatcher": {
         "owner": "rainfall",
-        "fileLocation": [
-          "relative",
-          "${workspaceRoot}/res"
-        ],
+        "fileLocation": ["relative", "${workspaceRoot}/res"],
         "pattern": {
           "regexp": "^(.*):(\\d+):(\\d+):(\\d+):(\\d+):\\s+(error|warning|info):\\s+(.*)$",
           "file": 1,
@@ -46,7 +43,7 @@
           "endLine": 4,
           "endColumn": 5,
           "severity": 6,
-          "message": 7,
+          "message": 7
         }
       },
       "group": {

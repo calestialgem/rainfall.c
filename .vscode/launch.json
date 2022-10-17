@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
+
 {
   "version": "0.2.0",
   "configurations": [
@@ -11,13 +12,12 @@
       "preLaunchTask": "${defaultBuildTask}",
       "program": "${workspaceRoot}/build/rainfall-c.exe",
       "cwd": "${workspaceRoot}/res",
-      "args": [
-        "test"
-      ],
+      "args": ["test"],
       "environment": [],
       "stopAtEntry": false,
       "console": "integratedTerminal"
     },
+
     // Run after rebuilding for Linux.
     {
       "name": "Linux Launch",
@@ -26,9 +26,7 @@
       "preLaunchTask": "${defaultBuildTask}",
       "program": "${workspaceRoot}/build/rainfall-c",
       "cwd": "${workspaceRoot}/res",
-      "args": [
-        "test"
-      ],
+      "args": ["test"],
       "environment": [],
       "stopAtEntry": false,
       "externalConsole": false,
