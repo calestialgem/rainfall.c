@@ -1,12 +1,11 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "anr/api.h"
-#include "dbg/api.h"
-#include "lxr/api.h"
-#include "otc/api.h"
-#include "psr/api.h"
-#include "utl/api.h"
+#include "analyzer/api.h"
+#include "lexer/api.h"
+#include "parser/api.h"
+#include "source/api.h"
+#include "utility/api.h"
 
 #include <stdio.h>
 

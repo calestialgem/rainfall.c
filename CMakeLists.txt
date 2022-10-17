@@ -15,36 +15,34 @@ add_executable(${PROJECT_NAME}
   src/main.c
 
   # Analyzer Module
-  src/anr/analyzer.c
-  src/anr/evaluation.c
-  src/anr/number.c
-  src/anr/table.c
-  src/anr/type.c
-
-  # Debug Module
-  src/dbg/mod.c
+  src/analyzer/analyzer.c
+  src/analyzer/evaluation.c
+  src/analyzer/number.c
+  src/analyzer/table.c
+  src/analyzer/type.c
 
   # Lexer Module
-  src/lxr/lex.c
-  src/lxr/lexeme.c
-  src/lxr/lexer.c
+  src/lexer/lex.c
+  src/lexer/lexeme.c
+  src/lexer/lexer.c
 
-  # Outcome Module
-  src/otc/location.c
-  src/otc/portion.c
-  src/otc/source.c
+  # Source Module
+  src/source/location.c
+  src/source/portion.c
+  src/source/source.c
 
   # Parser Module
-  src/psr/expression.c
-  src/psr/operator.c
-  src/psr/parse.c
-  src/psr/parser.c
+  src/parser/expression.c
+  src/parser/operator.c
+  src/parser/parse.c
+  src/parser/parser.c
 
   # Utility Module
-  src/utl/buffer.c
-  src/utl/map.c
-  src/utl/set.c
-  src/utl/string.c
+  src/utility/buffer.c
+  src/utility/map.c
+  src/utility/mod.c
+  src/utility/set.c
+  src/utility/string.c
 )
 
 # Add project source root to include directories.
