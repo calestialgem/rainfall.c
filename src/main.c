@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "analyzer/api.h"
+#include "generator/api.h"
 #include "lexer/api.h"
 #include "parser/api.h"
 #include "source/api.h"
@@ -26,16 +27,17 @@ int main(int const argumentCount, char const* const* const arguments) {
   Parse  parse  = createParse(&source, lex);
   Table  table  = createTable(&source, parse);
 
-  if (source.errors > 0)
-    reportInfo(
-      &source,
-      source.errors > 1 ? "There were %u errors." : "There was an error.",
-      source.errors);
   if (source.warnings > 0)
     reportInfo(
       &source,
       source.warnings > 1 ? "There were %u warnings." : "There was a warning.",
       source.warnings);
+  if (source.errors > 0)
+    reportInfo(
+      &source,
+      source.errors > 1 ? "There were %u errors." : "There was an error.",
+      source.errors);
+  else generateTable(table);
 
   disposeTable(&table);
   disposeParse(&parse);

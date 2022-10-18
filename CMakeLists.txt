@@ -21,6 +21,9 @@ add_executable(${PROJECT_NAME}
   src/analyzer/table.c
   src/analyzer/type.c
 
+  # Generator Module
+  src/generator/generator.c
+
   # Lexer Module
   src/lexer/lex.c
   src/lexer/lexeme.c

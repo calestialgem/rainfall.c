@@ -18,7 +18,7 @@ negate++;
 negate--;
 ++negate;
 --negate;
-let not        = negate;
+let not        = !negate;
 let complement = ~not;
 
 // [Factor]
