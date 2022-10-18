@@ -514,6 +514,12 @@ static bool checkBinaryNode(
   ExpressionNode checked = **pointer;
   (*pointer)--;
   switch (checked.operator) {
+  // Binary operator taking list of types and returning function type.
+  case FUNCTION_ARROW:
+    highlightWarning(
+      context->reported, checked.section, "Function arrow is not implemented!");
+    return false;
+
   // Binary operators taking any arithmetic and returning it.
   case MULTIPLICATION:
   case DIVISION:
@@ -617,11 +623,26 @@ static bool checkVariaryNode(
   ExpressionNode checked = **pointer;
   (*pointer)--;
   switch (checked.operator) {
+  case LIST:
+    highlightWarning(
+      context->reported, checked.section, "List is not implemented.");
+    return false;
+  default: unexpected("Unknown variary operator!");
+  }
+}
+
+/* Version of `checkNode` with a multary operator. */
+static bool checkMultaryNode(
+  Context* context, Evaluation* built, ExpressionNode const** pointer,
+  Type expected) {
+  ExpressionNode checked = **pointer;
+  (*pointer)--;
+  switch (checked.operator) {
   case FUNCTION_CALL:
     highlightWarning(
       context->reported, checked.section, "Function call is not implemented.");
     return false;
-  default: unexpected("Unknown variary operator!");
+  default: unexpected("Unknown multary operator!");
   }
 }
 
@@ -645,6 +666,8 @@ static bool checkNode(
     return checkBinaryNode(context, built, pointer, expected);
   case OPERATOR_VARIARY:
     return checkVariaryNode(context, built, pointer, expected);
+  case OPERATOR_MULTARY:
+    return checkMultaryNode(context, built, pointer, expected);
   default: unexpected("Unknown operator variant!");
   }
 }
@@ -841,6 +864,13 @@ static bool evaluateBinaryNode(
   ExpressionNode evaluated = **pointer;
   (*pointer)--;
   switch (evaluated.operator) {
+  // Binary operator taking list of types and returning function type.
+  case FUNCTION_ARROW:
+    highlightWarning(
+      context->reported, evaluated.section,
+      "Function arrow is not implemented!");
+    return false;
+
   // Binary operators taking any arithmetic and returning it.
   case MULTIPLICATION:
   case DIVISION:
@@ -1032,12 +1062,26 @@ static bool evaluateVariaryNode(
   ExpressionNode evaluated = **pointer;
   (*pointer)--;
   switch (evaluated.operator) {
+  case LIST:
+    highlightWarning(
+      context->reported, evaluated.section, "List is not implemented.");
+    return false;
+  default: unexpected("Unknown variary operator!");
+  }
+}
+
+/* Version of `evaluateNode` with a multary operator. */
+static bool evaluateMultaryNode(
+  Context* context, Evaluation* built, ExpressionNode const** pointer) {
+  ExpressionNode evaluated = **pointer;
+  (*pointer)--;
+  switch (evaluated.operator) {
   case FUNCTION_CALL:
     highlightWarning(
       context->reported, evaluated.section,
       "Function call is not implemented.");
     return false;
-  default: unexpected("Unknown variary operator!");
+  default: unexpected("Unknown multary operator!");
   }
 }
 
@@ -1053,6 +1097,7 @@ static bool evaluateNode(
   case OPERATOR_CIRNARY: return evaluateCirnaryNode(context, built, pointer);
   case OPERATOR_BINARY: return evaluateBinaryNode(context, built, pointer);
   case OPERATOR_VARIARY: return evaluateVariaryNode(context, built, pointer);
+  case OPERATOR_MULTARY: return evaluateMultaryNode(context, built, pointer);
   default: unexpected("Unknown operator variant!");
   }
 }

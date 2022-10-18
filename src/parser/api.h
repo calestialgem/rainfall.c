@@ -42,8 +42,18 @@ typedef struct {
   LexemeTag between;
 } BinaryOperator;
 
-/* Operators with two or more operators and one or more operands where the
- * total amount can vary. All operands are separated by an operator. */
+/* Operators with any amount of operands that are surrounded and separated by
+ * operators. */
+typedef struct {
+  /* Lexeme that comes before the first operand. */
+  LexemeTag opening;
+  /* Lexeme that comes between the intermediary operands. */
+  LexemeTag separating;
+  /* Lexeme that comes after the last operand. */
+  LexemeTag closing;
+} VariaryOperator;
+
+/* `VariaryOperator` that comes after an operand. */
 typedef struct {
   /* Lexeme that comes after the first operand. */
   LexemeTag opening;
@@ -51,7 +61,7 @@ typedef struct {
   LexemeTag separating;
   /* Lexeme that comes after the last operand. */
   LexemeTag closing;
-} VariaryOperator;
+} MultaryOperator;
 
 /* Variant of an opertor. */
 typedef enum {
@@ -66,7 +76,9 @@ typedef enum {
   /* Binary operator. */
   OPERATOR_BINARY,
   /* Variary operator. */
-  OPERATOR_VARIARY
+  OPERATOR_VARIARY,
+  /* Multary operator. */
+  OPERATOR_MULTARY
 } OperatorTag;
 
 /* Levels of operators that decide which operator can have operands of which.
@@ -102,6 +114,8 @@ typedef enum {
   OPERATOR_UNARY,
   /* Operators that are indivisable building blocks of expressions. */
   OPERATOR_PRIMARY,
+  /* Operators that list expressions. */
+  OPERATOR_LIST,
   /* Amount of operator precedence levels. */
   OPERATOR_LEVELS
 } OperatorPrecedence;
@@ -121,6 +135,8 @@ typedef struct {
     BinaryOperator  asBinary;
     /* Operator as variary operator. */
     VariaryOperator asVariary;
+    /* Operator as multary operator. */
+    MultaryOperator asMultary;
   };
 
   /* Variant of the operator. */
@@ -139,6 +155,9 @@ typedef struct {
 #define hashOperator(precedenceLevel, inLevelIndex) \
   ((size_t)(precedenceLevel)*MAX_OPERATOR_LEVEL_COUNT + (inLevelIndex))
 
+/* Comma separated list. */
+#define LIST hashOperator(OPERATOR_LIST, 0)
+
 /* Number literal with decimal digits. */
 #define DECIMAL_LITERAL hashOperator(OPERATOR_PRIMARY, 0)
 /* Access to a symbol with its id. */
@@ -147,6 +166,8 @@ typedef struct {
 #define GROUP           hashOperator(OPERATOR_PRIMARY, 2)
 /* Call to a function. */
 #define FUNCTION_CALL   hashOperator(OPERATOR_PRIMARY, 3)
+/* Function arrow. */
+#define FUNCTION_ARROW  hashOperator(OPERATOR_PRIMARY, 4)
 
 /* Posate. */
 #define POSATE            hashOperator(OPERATOR_UNARY, 0)

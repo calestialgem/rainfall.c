@@ -245,28 +245,27 @@ parseBinaryNode(Context* context, Operator parsed, bool cleanParse) {
 static Result
 parseVariaryNode(Context* context, Operator parsed, bool cleanParse) {
   Lexeme start = getCurrentLexeme(context);
-  // If its a clean parse, there is no first operand. And, if the opening lexeme
-  // variant is not there, the variary expression is not there.
-  if (cleanParse || !consumeOnce(context, parsed.asVariary.opening))
+  // As the variary operators do not have any operands that come before them,
+  // if its not a clean parse it cannot be a variary expression. If the opening
+  // lexeme is not there, the variary expression is not there.
+  if (!cleanParse || !consumeOnce(context, parsed.asVariary.opening))
     return NOT_THERE;
-  ExpressionNode firstOperand = getLastBuiltNode(context);
 
-  // Try to parse the second operand. Operands of the variary operators after
-  // the first one can be any level like the cirnary operators, because they are
-  // all marked by the opening, separating and closing lexemes clearly.
+  // Try to parse the first operand. Operands of the variary operators can be
+  // any level like the cirnary operators, because they are all marked by the
+  // opening, separating and closing lexemes clearly.
   switch (parseExpression(context, OPERATOR_ASSIGNMENT + 1)) {
   case SUCCESS: break;
   case NOT_THERE:
     // If the closing lexeme is found, the expression is complete.
     if (consumeOnce(context, parsed.asVariary.closing)) {
-      buildNode(
-        context, parsed, 1, createSectionFromNode(context, firstOperand));
+      buildNode(context, parsed, 0, createSectionFromLexeme(context, start));
       return SUCCESS;
     }
 
     // If there is not an operator or a closing lexeme, there is an error.
     highlightError(
-      context->reported, createSectionFromNode(context, firstOperand),
+      context->reported, createSectionFromLexeme(context, start),
       "Expected a closing `%s` for the opening `%s`!",
       nameLexeme(parsed.asVariary.closing),
       nameLexeme(parsed.asVariary.opening));
@@ -277,9 +276,9 @@ parseVariaryNode(Context* context, Operator parsed, bool cleanParse) {
   default: unexpected("Unknown parse result!");
   }
 
-  // The first operand was there, and the second one was parsed just now; thus,
-  // there are 2 operands at the moment.
-  size_t arity = 2;
+  // The first operand was parsed just now; thus, there is 1 operand at the
+  // moment.
+  size_t arity = 1;
 
   while (true) {
     // If the closing lexeme is found, the expression is over.
@@ -288,7 +287,7 @@ parseVariaryNode(Context* context, Operator parsed, bool cleanParse) {
     // If the closing lexeme is not there, the separating one must be.
     if (!consumeOnce(context, parsed.asVariary.separating)) {
       highlightError(
-        context->reported, createSectionFromNode(context, firstOperand),
+        context->reported, createSectionFromLexeme(context, start),
         "Expected a closing `%s` for the opening `%s`!",
         nameLexeme(parsed.asVariary.closing),
         nameLexeme(parsed.asVariary.opening));
@@ -304,9 +303,84 @@ parseVariaryNode(Context* context, Operator parsed, bool cleanParse) {
     case SUCCESS: arity++; break;
     case NOT_THERE:
       highlightError(
-        context->reported, createSectionFromNode(context, firstOperand),
+        context->reported, createSectionFromLexeme(context, start),
         "Expected an operand after the separating `%s`!",
         nameLexeme(parsed.asVariary.separating));
+    case FAILURE: return FAILURE;
+    default: unexpected("Unknown parse result!");
+    }
+  }
+
+  buildNode(context, parsed, arity, createSectionFromLexeme(context, start));
+  return SUCCESS;
+}
+
+/* Try to parse a multary expression node. */
+static Result
+parseMultaryNode(Context* context, Operator parsed, bool cleanParse) {
+  Lexeme start = getCurrentLexeme(context);
+  // If its a clean parse, there is no first operand. And, if the opening lexeme
+  // variant is not there, the multary expression is not there.
+  if (cleanParse || !consumeOnce(context, parsed.asMultary.opening))
+    return NOT_THERE;
+  ExpressionNode firstOperand = getLastBuiltNode(context);
+
+  // Try to parse the second operand. Operands of the multary operators after
+  // the first one can be any level like the cirnary operators, because they are
+  // all marked by the opening, separating and closing lexemes clearly.
+  switch (parseExpression(context, OPERATOR_ASSIGNMENT + 1)) {
+  case SUCCESS: break;
+  case NOT_THERE:
+    // If the closing lexeme is found, the expression is complete.
+    if (consumeOnce(context, parsed.asMultary.closing)) {
+      buildNode(
+        context, parsed, 1, createSectionFromNode(context, firstOperand));
+      return SUCCESS;
+    }
+
+    // If there is not an operator or a closing lexeme, there is an error.
+    highlightError(
+      context->reported, createSectionFromNode(context, firstOperand),
+      "Expected a closing `%s` for the opening `%s`!",
+      nameLexeme(parsed.asMultary.closing),
+      nameLexeme(parsed.asMultary.opening));
+    highlightInfo(
+      context->reported, start.section, "Opening `%s` was here.",
+      nameLexeme(parsed.asMultary.opening));
+  case FAILURE: return FAILURE;
+  default: unexpected("Unknown parse result!");
+  }
+
+  // The first operand was there, and the second one was parsed just now; thus,
+  // there are 2 operands at the moment.
+  size_t arity = 2;
+
+  while (true) {
+    // If the closing lexeme is found, the expression is over.
+    if (consumeOnce(context, parsed.asMultary.closing)) break;
+
+    // If the closing lexeme is not there, the separating one must be.
+    if (!consumeOnce(context, parsed.asMultary.separating)) {
+      highlightError(
+        context->reported, createSectionFromNode(context, firstOperand),
+        "Expected a closing `%s` for the opening `%s`!",
+        nameLexeme(parsed.asMultary.closing),
+        nameLexeme(parsed.asMultary.opening));
+      highlightInfo(
+        context->reported, start.section, "Opening `%s` was here.",
+        nameLexeme(parsed.asMultary.opening));
+      return FAILURE;
+    }
+
+    // After the separating lexeme, there should be another operand. As the
+    // operand is parsed successfuly the arity should be increased.
+    switch (parseExpression(context, OPERATOR_ASSIGNMENT + 1)) {
+    case SUCCESS: arity++; break;
+    case NOT_THERE:
+      highlightError(
+        context->reported, createSectionFromNode(context, firstOperand),
+        "Expected an operand after the separating `%s`!",
+        nameLexeme(parsed.asMultary.separating));
     case FAILURE: return FAILURE;
     default: unexpected("Unknown parse result!");
     }
@@ -329,6 +403,7 @@ static Result parseNode(
   case OPERATOR_CIRNARY: return parseCirnaryNode(context, parsed, cleanParse);
   case OPERATOR_BINARY: return parseBinaryNode(context, parsed, cleanParse);
   case OPERATOR_VARIARY: return parseVariaryNode(context, parsed, cleanParse);
+  case OPERATOR_MULTARY: return parseMultaryNode(context, parsed, cleanParse);
   default: unexpected("Unknown operator variant!");
   }
 }
