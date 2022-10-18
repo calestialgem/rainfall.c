@@ -25,6 +25,22 @@ typedef struct {
 String markNames[MARK_COUNT];
 String keywordNames[KEYWORD_COUNT];
 
+/* Whether the given character is in the English alphabet. */
+static bool compareToAlpha(char compared) {
+  return (compared >= 'a' && compared <= 'z') ||
+         (compared >= 'A' && compared <= 'Z');
+}
+
+/* Whether the given character is a decimal digit. */
+static bool compareToDecimalDigit(char compared) {
+  return compared >= '0' && compared <= '9';
+}
+
+/* Whether the given character is whitespace. */
+static bool compareToWhitespace(char compared) {
+  return compared == ' ' || compared == '\t' || compared == '\n';
+}
+
 /* Section of the source file starting from the given position upto the current
  * character. */
 #define createSection(startPosition) \
@@ -35,8 +51,7 @@ String keywordNames[KEYWORD_COUNT];
   do {                                                                         \
     if (context->unknownStart) {                                               \
       String unknown = createSection(context->unknownStart);                   \
-      while (countCharacters(unknown) > 1 && unknown.after[-1])                \
-        unknown.after--;                                                       \
+      while (compareToWhitespace(unknown.after[-1])) unknown.after--;          \
       highlightError(                                                          \
         context->source, unknown, "Could not recognize %s!",                   \
         countCharacters(unknown) > 1 ? "these characters" : "this character"); \
@@ -117,22 +132,6 @@ takeVarying(Lexer* context, Check takenLeading, Check takenTrailing) {
   // Then, consume all the characters until there is a missmatch.
   while (checkCurrent(takenTrailing)) advanceOnce();
   return true;
-}
-
-/* Whether the given character is in the English alphabet. */
-static bool compareToAlpha(char compared) {
-  return (compared >= 'a' && compared <= 'z') ||
-         (compared >= 'A' && compared <= 'Z');
-}
-
-/* Whether the given character is a decimal digit. */
-static bool compareToDecimalDigit(char compared) {
-  return compared >= '0' && compared <= '9';
-}
-
-/* Whether the given character is whitespace. */
-static bool compareToWhitespace(char compared) {
-  return compared == ' ' || compared == '\t' || compared == '\n';
 }
 
 /* Try to skip a whitespace. */
