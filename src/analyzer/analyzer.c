@@ -256,8 +256,10 @@ static bool checkIntegerNode(
   return checkNode(context, built, pointer, expected);
 }
 
-/* Version of `checkNode` with a nullary operator. */
-static bool checkNullaryNode(
+/* Check the given expression node. Returns the node that comes after the
+ * given one and its childeren. Returns null if the evaluation failed or the
+ * node did not have the expected type. */
+static bool checkNode(
   Context* context, Evaluation* built, ExpressionNode const** pointer,
   Type expected) {
   ExpressionNode checked = **pointer;
@@ -365,17 +367,7 @@ static bool checkNullaryNode(
     default: unexpected("Unknown number conversion result!");
     }
   }
-  default: unexpected("Unknown nullary operator!");
-  }
-}
 
-/* Version of `checkNode` with a prenary operator. */
-static bool checkPrenaryNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer,
-  Type expected) {
-  ExpressionNode checked = **pointer;
-  (*pointer)--;
-  switch (checked.operator) {
   // Prenary operators taking any arithmetic and returning it.
   case POSATE:
   case NEGATE: {
@@ -449,17 +441,7 @@ static bool checkPrenaryNode(
     convertLastBuiltNode(built, expected);
     return true;
   }
-  default: unexpected("Unknown prenary operator!");
-  }
-}
 
-/* Version of `checkNode` with a postary operator. */
-static bool checkPostaryNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer,
-  Type expected) {
-  ExpressionNode checked = **pointer;
-  (*pointer)--;
-  switch (checked.operator) {
   // Binary operators delegating to the unchecked version.
   case POSTFIX_INCREMENT:
   case POSTFIX_DECREMENT: {
@@ -484,17 +466,7 @@ static bool checkPostaryNode(
     convertLastBuiltNode(built, expected);
     return true;
   }
-  default: unexpected("Unknown postary operator!");
-  }
-}
 
-/* Version of `checkNode` with a cirnary operator. */
-static bool checkCirnaryNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer,
-  Type expected) {
-  ExpressionNode checked = **pointer;
-  (*pointer)--;
-  switch (checked.operator) {
   // Cirnary operator taking any type and returning it.
   case GROUP: {
     if (!checkNode(context, built, pointer, expected)) return false;
@@ -503,17 +475,7 @@ static bool checkCirnaryNode(
       built, (EvaluationNode){.evaluated = checked, .object = object});
     return true;
   }
-  default: unexpected("Unknown cirnary operator!");
-  }
-}
 
-/* Version of `checkNode` with a binary operator. */
-static bool checkBinaryNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer,
-  Type expected) {
-  ExpressionNode checked = **pointer;
-  (*pointer)--;
-  switch (checked.operator) {
   // Binary operator taking list of types and returning function type.
   case FUNCTION_ARROW:
     highlightWarning(
@@ -612,63 +574,15 @@ static bool checkBinaryNode(
     convertLastBuiltNode(built, expected);
     return true;
   }
-  default: unexpected("Unknown binary operator!");
-  }
-}
-
-/* Version of `checkNode` with a variary operator. */
-static bool checkVariaryNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer,
-  Type expected) {
-  ExpressionNode checked = **pointer;
-  (*pointer)--;
-  switch (checked.operator) {
   case LIST:
     highlightWarning(
       context->reported, checked.section, "List is not implemented.");
     return false;
-  default: unexpected("Unknown variary operator!");
-  }
-}
-
-/* Version of `checkNode` with a multary operator. */
-static bool checkMultaryNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer,
-  Type expected) {
-  ExpressionNode checked = **pointer;
-  (*pointer)--;
-  switch (checked.operator) {
   case FUNCTION_CALL:
     highlightWarning(
       context->reported, checked.section, "Function call is not implemented.");
     return false;
-  default: unexpected("Unknown multary operator!");
-  }
-}
-
-/* Check the given expression node. Returns the node that comes after the
- * given one and its childeren. Returns null if the evaluation failed or the
- * node did not have the expected type. */
-static bool checkNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer,
-  Type expected) {
-  ExpressionNode checked = **pointer;
-  switch (getOperator(checked.operator).tag) {
-  case OPERATOR_NULLARY:
-    return checkNullaryNode(context, built, pointer, expected);
-  case OPERATOR_PRENARY:
-    return checkPrenaryNode(context, built, pointer, expected);
-  case OPERATOR_POSTARY:
-    return checkPostaryNode(context, built, pointer, expected);
-  case OPERATOR_CIRNARY:
-    return checkCirnaryNode(context, built, pointer, expected);
-  case OPERATOR_BINARY:
-    return checkBinaryNode(context, built, pointer, expected);
-  case OPERATOR_VARIARY:
-    return checkVariaryNode(context, built, pointer, expected);
-  case OPERATOR_MULTARY:
-    return checkMultaryNode(context, built, pointer, expected);
-  default: unexpected("Unknown operator variant!");
+  default: unexpected("Unknown operator!");
   }
 }
 
@@ -682,8 +596,9 @@ static bool checkExpression(
   return checkNode(context, built, &start, expected);
 }
 
-/* Version of `evaluateNode` with a nullary operator. */
-static bool evaluateNullaryNode(
+/* Evaluate the given expression node and move it to the node that comes after
+ * the given one and its childeren. Returns whether the evaluation failed. */
+static bool evaluateNode(
   Context* context, Evaluation* built, ExpressionNode const** pointer) {
   ExpressionNode evaluated = **pointer;
   (*pointer)--;
@@ -747,16 +662,7 @@ static bool evaluateNullaryNode(
     disposeNumber(&decimal);
     return true;
   }
-  default: unexpected("Unknown nullary operator!");
-  }
-}
 
-/* Version of `evaluateNode` with a prenary operator. */
-static bool evaluatePrenaryNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer) {
-  ExpressionNode evaluated = **pointer;
-  (*pointer)--;
-  switch (evaluated.operator) {
   // Prenary operators taking any arithmetic and returning it.
   case POSATE:
   case NEGATE: {
@@ -810,16 +716,7 @@ static bool evaluatePrenaryNode(
       built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
-  default: unexpected("Unknown prenary operator!");
-  }
-}
 
-/* Version of `evaluateNode` with a postary operator. */
-static bool evaluatePostaryNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer) {
-  ExpressionNode evaluated = **pointer;
-  (*pointer)--;
-  switch (evaluated.operator) {
   // Postary operators taking any arithmetic and returning void.
   case POSTFIX_INCREMENT:
   case POSTFIX_DECREMENT: {
@@ -832,16 +729,7 @@ static bool evaluatePostaryNode(
       built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
-  default: unexpected("Unknown postary operator!");
-  }
-}
 
-/* Version of `evaluateNode` with a cirnary operator. */
-static bool evaluateCirnaryNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer) {
-  ExpressionNode evaluated = **pointer;
-  (*pointer)--;
-  switch (evaluated.operator) {
   // Cirnary operator taking any type and returning it.
   case GROUP: {
     // Check the operand.
@@ -854,16 +742,7 @@ static bool evaluateCirnaryNode(
       (EvaluationNode){.evaluated = evaluated, .object = operand.object});
     return true;
   }
-  default: unexpected("Unknown cirnary operator!");
-  }
-}
 
-/* Version of `evaluateNode` with a binary operator. */
-static bool evaluateBinaryNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer) {
-  ExpressionNode evaluated = **pointer;
-  (*pointer)--;
-  switch (evaluated.operator) {
   // Binary operator taking list of types and returning function type.
   case FUNCTION_ARROW:
     highlightWarning(
@@ -1052,52 +931,15 @@ static bool evaluateBinaryNode(
       built, (EvaluationNode){.evaluated = evaluated, .object = object});
     return true;
   }
-  default: unexpected("Unknown binary operator!");
-  }
-}
-
-/* Version of `evaluateNode` with a variary operator. */
-static bool evaluateVariaryNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer) {
-  ExpressionNode evaluated = **pointer;
-  (*pointer)--;
-  switch (evaluated.operator) {
   case LIST:
     highlightWarning(
       context->reported, evaluated.section, "List is not implemented.");
     return false;
-  default: unexpected("Unknown variary operator!");
-  }
-}
-
-/* Version of `evaluateNode` with a multary operator. */
-static bool evaluateMultaryNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer) {
-  ExpressionNode evaluated = **pointer;
-  (*pointer)--;
-  switch (evaluated.operator) {
   case FUNCTION_CALL:
     highlightWarning(
       context->reported, evaluated.section,
       "Function call is not implemented.");
     return false;
-  default: unexpected("Unknown multary operator!");
-  }
-}
-
-/* Evaluate the given expression node and move it to the node that comes after
- * the given one and its childeren. Returns whether the evaluation failed. */
-static bool evaluateNode(
-  Context* context, Evaluation* built, ExpressionNode const** pointer) {
-  ExpressionNode evaluated = **pointer;
-  switch (getOperator(evaluated.operator).tag) {
-  case OPERATOR_NULLARY: return evaluateNullaryNode(context, built, pointer);
-  case OPERATOR_PRENARY: return evaluatePrenaryNode(context, built, pointer);
-  case OPERATOR_POSTARY: return evaluatePostaryNode(context, built, pointer);
-  case OPERATOR_CIRNARY: return evaluateCirnaryNode(context, built, pointer);
-  case OPERATOR_BINARY: return evaluateBinaryNode(context, built, pointer);
-  case OPERATOR_VARIARY: return evaluateVariaryNode(context, built, pointer);
-  case OPERATOR_MULTARY: return evaluateMultaryNode(context, built, pointer);
   default: unexpected("Unknown operator variant!");
   }
 }
