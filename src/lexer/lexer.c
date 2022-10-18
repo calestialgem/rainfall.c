@@ -8,6 +8,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 
 /* Context of the lexing process. */
 typedef struct {
@@ -29,19 +30,26 @@ String keywordNames[KEYWORD_COUNT];
 #define createSection(startPosition) \
   createString(startPosition, context->current)
 
-/* Add a lexeme with the given value and type. If there was an error, reports
- * that first and clears the error start. */
-#define pushSectionAndTag(pushedSection, pushedTag)                          \
-  if (context->unknownStart) {                                               \
-    String unknown = createSection(context->unknownStart);                   \
-    highlightError(                                                          \
-      context->source, unknown, "Could not recognize %s!",                   \
-      countCharacters(unknown) > 1 ? "these characters" : "this character"); \
-    pushLexeme(                                                              \
-      context->lex, (Lexeme){.section = unknown, .tag = LEXEME_ERROR});      \
-    context->unknownStart = NULL;                                            \
-  }                                                                          \
-  pushLexeme(                                                                \
+/* If there was an error, reports and clears the error start. */
+#define reportUnknown()                                                        \
+  do {                                                                         \
+    if (context->unknownStart) {                                               \
+      String unknown = createSection(context->unknownStart);                   \
+      while (countCharacters(unknown) > 1 && unknown.after[-1])                \
+        unknown.after--;                                                       \
+      highlightError(                                                          \
+        context->source, unknown, "Could not recognize %s!",                   \
+        countCharacters(unknown) > 1 ? "these characters" : "this character"); \
+      pushLexeme(                                                              \
+        context->lex, (Lexeme){.section = unknown, .tag = LEXEME_ERROR});      \
+      context->unknownStart = NULL;                                            \
+    }                                                                          \
+  } while (false)
+
+/* Add a lexeme with the given value and type. */
+#define pushSectionAndTag(pushedSection, pushedTag) \
+  reportUnknown();                                  \
+  pushLexeme(                                       \
     context->lex, (Lexeme){.section = (pushedSection), .tag = (pushedTag)})
 
 /* Whether there is a character to lex. */
@@ -129,7 +137,10 @@ static bool compareToWhitespace(char compared) {
 
 /* Try to skip a whitespace. */
 static bool lexWhitespace(Lexer* context) {
-  return takeVarying(context, &compareToWhitespace, &compareToWhitespace);
+  if (!takeVarying(context, &compareToWhitespace, &compareToWhitespace))
+    return false;
+  reportUnknown();
+  return true;
 }
 
 /* Whether the given character is the start of a comment. */
@@ -146,6 +157,7 @@ static bool lexComment(Lexer* context) {
     retreatOnce(); // Roll back the first '/'.
     return false;
   }
+  reportUnknown();
   return true;
 }
 
