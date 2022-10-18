@@ -18,6 +18,10 @@ typedef enum {
   LEXEME_OPENING_PARENTHESIS,
   /* Mark ")". */
   LEXEME_CLOSING_PARENTHESIS,
+  /* Mark "{". */
+  LEXEME_OPENING_BRACE,
+  /* Mark "}". */
+  LEXEME_CLOSING_BRACE,
   /* Mark "*=". */
   LEXEME_STAR_EQUAL,
   /* Mark "*". */
@@ -36,6 +40,8 @@ typedef enum {
   LEXEME_PLUS_PLUS,
   /* Mark "+". */
   LEXEME_PLUS,
+  /* Mark "->". */
+  LEXEME_MINUS_RIGHT_ARROW,
   /* Mark "-=". */
   LEXEME_MINUS_EQUAL,
   /* Mark "--". */

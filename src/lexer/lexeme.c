@@ -11,6 +11,8 @@ char const* nameLexeme(LexemeTag named) {
   case LEXEME_SEMICOLON: return ";";
   case LEXEME_OPENING_PARENTHESIS: return "(";
   case LEXEME_CLOSING_PARENTHESIS: return ")";
+  case LEXEME_OPENING_BRACE: return "{";
+  case LEXEME_CLOSING_BRACE: return "}";
   case LEXEME_STAR_EQUAL: return "*=";
   case LEXEME_STAR: return "*";
   case LEXEME_SLASH_EQUAL: return "/=";
@@ -20,6 +22,7 @@ char const* nameLexeme(LexemeTag named) {
   case LEXEME_PLUS_EQUAL: return "+=";
   case LEXEME_PLUS_PLUS: return "++";
   case LEXEME_PLUS: return "+";
+  case LEXEME_MINUS_RIGHT_ARROW: return "->";
   case LEXEME_MINUS_EQUAL: return "-=";
   case LEXEME_MINUS_MINUS: return "--";
   case LEXEME_MINUS: return "-";
