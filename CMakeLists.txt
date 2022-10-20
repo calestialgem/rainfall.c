@@ -37,6 +37,7 @@ SetupTarget(${PROJECT_NAME})
 # Header files in the project.
 set(headerFiles
   src/test.c
+  src/string.c
 )
 
 # Add compile commands for the header files, but leave them as object files.
