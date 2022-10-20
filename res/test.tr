@@ -1,95 +1,17 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// [Primary]
-// ~~~~~~~~~
+let short = [](x: int) 3 * x;
 
-let decimal = 10;
-let access  = decimal;
-let group   = (access);
-let call    = function();
+let long: [](int)int = [](x: int) int { return 3 * x; }
 
-// [Unary]
-// ~~~~~~~
+let higher = [](x: int, f: [](int)int) f(x);
 
-let posate = +group;
-var negate = -posate;
-negate++;
-negate--;
-++negate;
---negate;
-let not        = !negate;
-let complement = ~not;
+let main = []() {
+  let result0 = higher(3, short);
+  let result1 = higher(3, long);
 
-// [Factor]
-// ~~~~~~~~
-
-let multiply = not * complement;
-let divide   = complement / multiply;
-let reminder = multiply % divide;
-
-// [Term]
-// ~~~~~~
-
-let add = divide + reminder;
-let sub = reminder - add;
-
-// [Shift]
-// ~~~~~~~
-
-let leftShift  = add << sub;
-let rightShift = sub >> leftShift;
-
-// [Bitwise AND]
-// ~~~~~~~~~~~~~
-
-let bitwiseAND = leftShift & rightShift;
-
-// [Bitwise XOR]
-// ~~~~~~~~~~~~~
-
-let bitwiseXOR = rightShift ^ bitwiseAND;
-
-// [Bitwise OR]
-// ~~~~~~~~~~~~~
-
-let bitwiseOR = bitwiseAND | bitwiseXOR;
-
-// [Comparison]
-// ~~~~~~~~~~~~
-
-let smallerThan    = bitwiseXOR < bitwiseOR;
-let smallerOrEqual = bitwiseOR <= smallerThan;
-let largerThan     = smallerThan > smallerOrEqual;
-let largerOrEqual  = smallerOrEqual >= largerThan;
-
-// [Equality]
-// ~~~~~~~~~~
-
-let equal    = largerThan == largerOrEqual;
-let notEqual = largerOrEqual != equal;
-
-// [Logical AND]
-// ~~~~~~~~~~~~~
-
-let logicalAND = equal && notEqual;
-
-// [Logical OR]
-// ~~~~~~~~~~~~
-
-var logicalOR: int = notEqual || logicalAND;
-
-// [Assignment]
-// ~~~~~~~~~~~~
-
-logicalOR   = logicalAND;
-logicalOR  *= logicalAND;
-logicalOR  /= logicalAND;
-logicalOR  %= logicalAND;
-logicalOR  += logicalAND;
-logicalOR  -= logicalAND;
-logicalOR <<= logicalAND;
-logicalOR >>= logicalAND;
-logicalOR  &= logicalAND;
-logicalOR  ^= logicalAND;
-logicalOR  |= logicalAND;
+// Closure not implemented.
+//  let inline = higher(result, [result](x: int) result * x);
+  let inline = higher(result, [](x: int) 5 * x);
+}
