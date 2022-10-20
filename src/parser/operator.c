@@ -80,13 +80,6 @@
     .hash    = hashOperator(precedenceLevel, inLevelIndex)        \
   }
 
-Operator const LIST_OPERATOR = createVariaryOperator(
-  OPERATOR_LIST, 0, LEXEME_OPENING_PARENTHESIS, LEXEME_COMMA,
-  LEXEME_CLOSING_PARENTHESIS);
-
-/* Amount of list operators. */
-#define LIST_OPERATORS 1
-
 Operator const DECIMAL_LITERAL_OPERATOR =
   createNullaryOperator(OPERATOR_PRIMARY, 0, LEXEME_DECIMAL);
 Operator const SYMBOL_ACCESS_OPERATOR =
@@ -96,11 +89,9 @@ Operator const GROUP_OPERATOR = createCirnaryOperator(
 Operator const FUNCTION_CALL_OPERATOR = createMultaryOperator(
   OPERATOR_PRIMARY, 3, LEXEME_OPENING_PARENTHESIS, LEXEME_COMMA,
   LEXEME_CLOSING_PARENTHESIS);
-Operator const FUNCTION_ARROW_OPERATOR =
-  createBinaryOperator(OPERATOR_PRIMARY, 4, LEXEME_MINUS_RIGHT_ARROW);
 
 /* Amount of primary operators. */
-#define PRIMARY_OPERATORS 5
+#define PRIMARY_OPERATORS 4
 
 Operator const POSATE_OPERATOR =
   createPrenaryOperator(OPERATOR_UNARY, 0, LEXEME_PLUS);
@@ -243,7 +234,6 @@ size_t countInLevelOperators(OperatorPrecedence counted) {
   case OPERATOR_FACTOR: return FACTOR_OPERATORS;
   case OPERATOR_UNARY: return UNARY_OPERATORS;
   case OPERATOR_PRIMARY: return PRIMARY_OPERATORS;
-  case OPERATOR_LIST: return LIST_OPERATORS;
   default: unexpected("Unknown operator precedence!");
   }
 }
@@ -291,8 +281,6 @@ Operator getOperator(size_t gottenHash) {
   case SYMBOL_ACCESS: return SYMBOL_ACCESS_OPERATOR;
   case GROUP: return GROUP_OPERATOR;
   case FUNCTION_CALL: return FUNCTION_CALL_OPERATOR;
-  case FUNCTION_ARROW: return FUNCTION_ARROW_OPERATOR;
-  case LIST: return LIST_OPERATOR;
   default: unexpected("Unknown operator hash!");
   }
 }
@@ -345,8 +333,6 @@ char const* nameOperator(Operator named) {
   case SYMBOL_ACCESS: return "symbol access";
   case GROUP: return "group";
   case FUNCTION_CALL: return "function call";
-  case FUNCTION_ARROW: return "function arrow";
-  case LIST: return "list";
   default: unexpected("Unknown operator hash!");
   }
 }

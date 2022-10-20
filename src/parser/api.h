@@ -114,8 +114,6 @@ typedef enum {
   OPERATOR_UNARY,
   /* Operators that are indivisable building blocks of expressions. */
   OPERATOR_PRIMARY,
-  /* Operators that list expressions. */
-  OPERATOR_LIST,
   /* Amount of operator precedence levels. */
   OPERATOR_LEVELS
 } OperatorPrecedence;
@@ -155,9 +153,6 @@ typedef struct {
 #define hashOperator(precedenceLevel, inLevelIndex) \
   ((size_t)(precedenceLevel)*MAX_OPERATOR_LEVEL_COUNT + (inLevelIndex))
 
-/* Comma separated list. */
-#define LIST hashOperator(OPERATOR_LIST, 0)
-
 /* Number literal with decimal digits. */
 #define DECIMAL_LITERAL hashOperator(OPERATOR_PRIMARY, 0)
 /* Access to a symbol with its id. */
@@ -166,8 +161,6 @@ typedef struct {
 #define GROUP           hashOperator(OPERATOR_PRIMARY, 2)
 /* Call to a function. */
 #define FUNCTION_CALL   hashOperator(OPERATOR_PRIMARY, 3)
-/* Function arrow. */
-#define FUNCTION_ARROW  hashOperator(OPERATOR_PRIMARY, 4)
 
 /* Posate. */
 #define POSATE            hashOperator(OPERATOR_UNARY, 0)
@@ -279,7 +272,7 @@ typedef struct {
   String section;
 } ExpressionNode;
 
-/* Operations that result in calculation of a value. */
+/* Tree of operations. */
 typedef struct {
   /* Pointer to the first node if it exists. */
   ExpressionNode* first;
@@ -287,7 +280,73 @@ typedef struct {
   ExpressionNode* after;
   /* Pointer to one after the last allocated node. */
   ExpressionNode* bound;
+} ExpressionTree;
+
+// Prototype for parameter lists to have type expressions in them.
+typedef struct ParameterExpression ParameterExpression;
+
+/* Function parameter list expression. */
+typedef struct {
+  /* Pointer to the first parameter if it exists. */
+  ParameterExpression* first;
+  /* Pointer to one after the last parameter. */
+  ParameterExpression* after;
+  /* Pointer to one after the last allocated parameter. */
+  ParameterExpression* bound;
+} ParameterListExpression;
+
+// Prototype for statement lists to have expressions in them.
+typedef struct Statement Statement;
+
+/* Dynamic array of statements. */
+typedef struct {
+  /* Pointer to the first statement if it exists. */
+  Statement* first;
+  /* Pointer to one after the last statement. */
+  Statement* after;
+  /* Pointer to one after the last allocated statement. */
+  Statement* bound;
+} StatementList;
+
+/* Expressions of functions literals. */
+typedef struct {
+  /* Parameter list. */
+  ParameterListExpression parameters;
+  /* Return type. */
+  Expression returnType;
+  /* Statement list. */
+  StatementList           statements;
+} FunctionExpression;
+
+/* Variant of an expression. */
+typedef enum {
+  /* Function expression. */
+  EXPRESSION_FUNCTION,
+  /* Function type expression. */
+  EXPRESSION_FUNCTION_TYPE,
+  /* Expression tree. */
+  EXPRESSION_TREE
+} ExpressionTag;
+
+/* Operations that result in calculation of a value. */
+typedef struct {
+  union {
+    /* Expression as function. */
+    FunctionExpression     asFunction;
+    /* Expression as function type. */
+    FunctionTypeExpression asFunctionType;
+    /* Expression as tree. */
+    ExpressionTree         asTree;
+  };
 } Expression;
+
+/* Function parameter expression. */
+struct ParameterExpression {
+  /* Parameter name. */
+  String     name;
+  /* Parameter type. */
+  Expression type;
+};
 
 /* Amount of nodes in the given expression. */
 size_t countExpressionNodes(Expression counted);
@@ -341,58 +400,72 @@ typedef struct {
   Expression type;
 } DefaultedVariableDefinition;
 
-/* Expression whose resulting value is discarded. These are calculated for the
- * side effects. */
+/* Variant of a statement. */
+typedef enum {
+  /* Binding definition. */
+  DEFINITION_BINDING,
+  /* Inferred binding definition. */
+  DEFINITION_INFERRED_BINDING,
+  /* Variable definition. */
+  DEFINITION_VARIABLE,
+  /* Inferred variable definition. */
+  DEFINITION_INFERRED_VARIABLE,
+  /* Defaulted variable definition. */
+  DEFINITION_DEFAULTED_VARIABLE,
+  /* Function definition. */
+  DEFINITION_FUNCTION,
+} DefinitionTag;
+
+/* Creation of a symbol. */
 typedef struct {
-  /* Expression that is calculated, but discarded. */
-  Expression discarded;
-} DiscardedExpression;
+  union {
+    /* Definition as binding. */
+    BindingDefinition           asBinding;
+    /* Definition as inferred binding. */
+    InferredBindingDefinition   asInferredBinding;
+    /* Definition as variable. */
+    VariableDefinition          asVariable;
+    /* Definition as inferred variable. */
+    InferredVariableDefinition  asInferredVariable;
+    /* Definition as defaulted variable. */
+    DefaultedVariableDefinition asDefaultedVariable;
+    /* Definition as function. */
+    FunctionDefinition          asFunction;
+  };
+
+  /* Variant of the definition. */
+  DefinitionTag tag;
+} Definition;
 
 /* Variant of a statement. */
 typedef enum {
-  /* Binding definition statement. */
-  STATEMENT_BINDING_DEFINITION,
-  /* Inferred binding definition statement. */
-  STATEMENT_INFERRED_BINDING_DEFINITION,
-  /* Variable definition statement. */
-  STATEMENT_VARIABLE_DEFINITION,
-  /* Inferred variable definition statement. */
-  STATEMENT_INFERRED_VARIABLE_DEFINITION,
-  /* Defaulted variable definition statement. */
-  STATEMENT_DEFAULTED_VARIABLE_DEFINITION,
-  /* Discarded expression statement. */
-  STATEMENT_DISCARDED_EXPRESSION
+  /* Definition statement. */
+  STATEMENT_DEFINITION,
+  /* Expression statement. */
+  STATEMENT_EXPRESSION
 } StatementTag;
 
 /* Directives that are given for the computer to execute. */
-typedef struct {
+struct Statement {
   union {
-    /* Statement as binding definition. */
-    BindingDefinition           asBindingDefinition;
-    /* Statement as inferred binding definition. */
-    InferredBindingDefinition   asInferredBindingDefinition;
-    /* Statement as variable definition. */
-    VariableDefinition          asVariableDefinition;
-    /* Statement as inferred variable definition. */
-    InferredVariableDefinition  asInferredVariableDefinition;
-    /* Statement as defaulted variable definition. */
-    DefaultedVariableDefinition asDefaultedVariableDefinition;
-    /* Statement as discarded expression. */
-    DiscardedExpression         asDiscardedExpression;
+    /* Statement as definition. */
+    Definition asDefinition;
+    /* Statement as expression. */
+    Expression asExpression;
   };
 
   /* Variant of the statement. */
   StatementTag tag;
-} Statement;
+};
 
 /* Result of parsing a lex. */
 typedef struct {
-  /* Pointer to the first statement if it exists. */
-  Statement* first;
-  /* Pointer to one after the last statement. */
-  Statement* after;
-  /* Pointer to one after the last allocated statement. */
-  Statement* bound;
+  /* Pointer to the first definition if it exists. */
+  Definition* first;
+  /* Pointer to one after the last definition. */
+  Definition* after;
+  /* Pointer to one after the last allocated definition. */
+  Definition* bound;
 } Parse;
 
 /* Parse the given lex. Reports to the given outcome. */
