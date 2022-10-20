@@ -35,7 +35,9 @@ add_executable(${PROJECT_NAME} src/main.c)
 SetupTarget(${PROJECT_NAME})
 
 # Header files in the project.
-set(headerFiles src/lib.c)
+set(headerFiles
+  src/test.c
+)
 
 # Add compile commands for the header files, but leave them as object files.
 # Compile commands helps clangd to understand the headers.
