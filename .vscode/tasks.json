@@ -4,11 +4,12 @@
 {
   "version": "2.0.0",
   "tasks": [
-    // Rebuild the project using cmake.
+    // Rebuild the project using cmake, only the executable, not header files.
     {
       "type": "cmake",
       "label": "rebuild",
       "command": "cleanRebuild",
+      "targets": ["rainfall-c"],
       "group": {
         "kind": "build",
         "isDefault": true

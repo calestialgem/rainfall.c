@@ -1,46 +1,15 @@
 // SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "analyzer/api.h"
-#include "generator/api.h"
-#include "lexer/api.h"
-#include "parser/api.h"
-#include "source/api.h"
-#include "utility/api.h"
+#include "lib.c"
 
 #include <stdio.h>
 
 /* Start the program. */
 int main(int const argumentCount, char const* const* const arguments) {
-  // Check input arguments.
-  if (argumentCount != 2) {
-    fprintf(
-      stderr, "Provide %s Thrice file!\n",
-      argumentCount > 2 ? "only one" : "a");
-    return -1;
-  }
+  printf("Running with arguments:\n");
+  for (int argument = 0; argument < argumentCount; argument++)
+    printf("[%i] %s\n", argument, arguments[argument]);
 
-  initLexer();
-
-  Source source = createSource(arguments[1]);
-  Lex    lex    = createLex(&source);
-  Parse  parse  = createParse(&source, lex);
-  Table  table  = createTable(&source, parse);
-
-  if (source.warnings > 0)
-    reportInfo(
-      &source,
-      source.warnings > 1 ? "There were %u warnings." : "There was a warning.",
-      source.warnings);
-  if (source.errors > 0)
-    reportInfo(
-      &source,
-      source.errors > 1 ? "There were %u errors." : "There was an error.",
-      source.errors);
-  else generateTable(table);
-
-  disposeTable(&table);
-  disposeParse(&parse);
-  disposeLex(&lex);
-  disposeSource(&source);
+  printf("%s\n", GetMessage());
 }

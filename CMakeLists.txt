@@ -9,57 +9,35 @@ set(CMAKE_C_STANDARD_REQUIRED true)
 
 project(rainfall-c)
 
-## Main executable of the project.
-add_executable(${PROJECT_NAME}
-  # Launcher
-  src/main.c
+# Setup the given target.
+function(SetupTarget setTarget)
+  # Add project source root to include directories.
+  target_include_directories(${setTarget} PRIVATE src)
 
-  # Analyzer Module
-  src/analyzer/analyzer.c
-  src/analyzer/evaluation.c
-  src/analyzer/number.c
-  src/analyzer/table.c
-  src/analyzer/type.c
+  # Enable all warnings.
+  if(MSVC)
+    target_compile_options(${setTarget} PRIVATE /Wall)
+  else(MSVC)
+    target_compile_options(${setTarget} PRIVATE
+      -Wall
+      -Wextra
+      -Wpedantic
+      -Wno-deprecated-declarations
+      -Wno-gnu-empty-struct
+      -Wno-pragma-once-outside-header
+      -Wno-empty-translation-unit
+    )
+  endif(MSVC)
+endfunction(SetupTarget setTarget)
 
-  # Generator Module
-  src/generator/generator.c
+# Main executable of the project.
+add_executable(${PROJECT_NAME} src/main.c)
+SetupTarget(${PROJECT_NAME})
 
-  # Lexer Module
-  src/lexer/lex.c
-  src/lexer/lexeme.c
-  src/lexer/lexer.c
+# Header files in the project.
+set(headerFiles src/lib.c)
 
-  # Source Module
-  src/source/location.c
-  src/source/portion.c
-  src/source/source.c
-
-  # Parser Module
-  src/parser/expression.c
-  src/parser/operator.c
-  src/parser/parse.c
-  src/parser/parser.c
-
-  # Utility Module
-  src/utility/buffer.c
-  src/utility/map.c
-  src/utility/mod.c
-  src/utility/set.c
-  src/utility/string.c
-)
-
-# Add project source root to include directories.
-target_include_directories(${PROJECT_NAME} PRIVATE src)
-
-# Enable all warnings.
-if(MSVC)
-  target_compile_options(${PROJECT_NAME} PRIVATE /Wall)
-else(MSVC)
-  target_compile_options(${PROJECT_NAME} PRIVATE
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Wno-deprecated-declarations
-    -Wno-gnu-empty-struct
-  )
-endif(MSVC)
+# Add compile commands for the header files, but leave them as object files.
+# Compile commands helps clangd to understand the headers.
+add_library(headerObjects OBJECT ${headerFiles})
+SetupTarget(headerObjects)
