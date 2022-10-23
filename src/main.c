@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "allocation.c"
+#include "list.c"
 #include "string.c"
 #include "test.c"
 
@@ -10,5 +11,6 @@ int main(void) {
   RegisterTestModuleTests();
   RegisterStringModuleTests();
   RegisterAllocationModuleTests();
+  RegisterListModuleTests();
   RunUnitTests();
 }

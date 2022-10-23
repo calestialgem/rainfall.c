@@ -76,53 +76,6 @@ bool TestArrayAllocation(void) {
   return true;
 }
 
-/* Make sure the given amount of space exists at the end of the given dynamic
- * array. When necessary, grows by at least half of the current capacity. */
-#define ReserveSpace(targetArray, reservedSize, ReservedElementType)        \
-  do {                                                                      \
-    /* Find whether growth is necessary. */                                 \
-    size_t capacity = (targetArray)->bound - (targetArray)->first;          \
-    size_t count    = (targetArray)->after - (targetArray)->first;          \
-    size_t space    = capacity - count;                                     \
-    if (space < (reservedSize)) {                                           \
-      /* Grow the dynamic array. */                                         \
-      capacity += max((reservedSize)-space, capacity / 2);                  \
-      (targetArray)->first =                                                \
-        AllocateArray((targetArray)->first, capacity, ReservedElementType); \
-      (targetArray)->after = (targetArray)->first + count;                  \
-      (targetArray)->bound = (targetArray)->first + capacity;               \
-    }                                                                       \
-  } while (false)
-
-/* Test opening new space. */
-bool TestOpeningSpace(void) {
-  struct {
-    int* first;
-    int* after;
-    int* bound;
-  } array = {NULL, NULL, NULL};
-
-  ReserveSpace(&array, 1, int);
-  *array.after++ = 1;
-  array.first    = AllocateArray(array.first, 0, int);
-  return true;
-}
-
-/* Test ensuring existing space. */
-bool TestEnsuringSpace(void) {
-  int* block = AllocateArray(NULL, 1, int);
-
-  struct {
-    int* first;
-    int* after;
-    int* bound;
-  } array = {block, block, block + 1};
-
-  ReserveSpace(&array, 1, int);
-  AllocateArray(array.first, 0, int);
-  return array.first == block;
-}
-
 /* Register the tests in the allocation module. */
 void RegisterAllocationModuleTests(void) {
   // Test `Allocate`.
@@ -132,8 +85,4 @@ void RegisterAllocationModuleTests(void) {
 
   // Test `AllocateArray`.
   RegisterUnitTest(TestArrayAllocation);
-
-  // Test `ReserveSpace`.
-  RegisterUnitTest(TestOpeningSpace);
-  RegisterUnitTest(TestEnsuringSpace);
 }

@@ -39,6 +39,7 @@ set(headerFiles
   src/test.c
   src/string.c
   src/allocation.c
+  src/list.c
 )
 
 # Add compile commands for the header files, but leave them as object files.
