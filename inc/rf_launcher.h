@@ -84,11 +84,18 @@ struct rf_launch_command {
   enum rf_launch_command_variant variant;
 };
 
-/* Value that indicates the variant of a launch option. */
+/* Value that indicates the variant of a launch option. Option variant needs a
+ * null version and a count, because options should be stored in a static array
+ * where each member is for a unique option variant and they can exist or
+ * not. */
 enum rf_launch_option_variant {
   /* Option that sets the workspace directory, which defaults to the current
    * working directory if this option is not present. */
   RF_LAUNCH_OPTION_DIRECTORY,
+  /* Number of option variants. */
+  RF_LAUNCH_OPTION_VARIANTS_COUNT,
+  /* Variant that indicates the option is not there. */
+  RF_LAUNCH_OPTION_NULL,
 };
 
 /* A parameter of the compiler that decides how it works. */
@@ -103,5 +110,23 @@ struct rf_launch_option {
   /* Variant of the option. */
   enum rf_launch_option_variant variant;
 };
+
+/* All the information that is required to launch the compiler. */
+struct rf_launch_context {
+  /* The command that will be executed in the launch. */
+  struct rf_launch_command executed_command;
+  /* Options that are set for the launch. Each element in the array can only
+   * have a null option, which indicates the option was not provided, or an
+   * option with a variant that equals to the index of the element. This way all
+   * provided options are of different variants. */
+  struct rf_launch_option  set_options[RF_LAUNCH_OPTION_VARIANTS_COUNT];
+};
+
+// =================================================
+//    }-{   P U B L I C   F U N C T I O N S   }-{
+// =================================================
+
+/* Launches the compiler with the provided context. */
+void rf_launch(struct rf_launch_context launched_context);
 
 #endif // RF_LAUNCHER_H
