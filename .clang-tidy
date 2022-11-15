@@ -1,4 +1,4 @@
-Checks: "bugprone-*,-bugprone-suspicious-include,cert-*,-cert-err09-cpp.MaxSize,-cert-err61-cpp.MaxSize,-cert-err33-c,clang-*,concurrency-*,-concurrency-mt-unsafe,cppcoreguidelines-*,hicpp-*,-hicpp-braces-around-statements,llvm-*,misc-*,-misc-unused-parameters,-misc-no-recursion,-misc-throw-by-value-catch-by-reference.MaxSize,modernize-*,performance-*,portability-*,readability-*,-readability-braces-around-statements,-readability-function-cognitive-complexity"
+Checks: "bugprone-*,cert-*,-cert-err09-cpp.MaxSize,-cert-err61-cpp.MaxSize,clang-*,concurrency-*,cppcoreguidelines-*,hicpp-*,llvm-*,misc-*,-misc-unused-parameters,-misc-throw-by-value-catch-by-reference.MaxSize,modernize-*,performance-*,portability-*,readability-*,"
 WarningsAsErrors: ""
 HeaderFilterRegex: ""
 AnalyzeTemporaryDtors: false
