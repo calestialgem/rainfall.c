@@ -1,16 +1,5 @@
-// SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
-// SPDX-License-Identifier: GPL-3.0-or-later
+#include <stdio.h> // puts
 
-#include "allocation.c"
-#include "list.c"
-#include "string.c"
-#include "test.c"
-
-/* Start the program. */
-int main(void) {
-  RegisterTestModuleTests();
-  RegisterStringModuleTests();
-  RegisterAllocationModuleTests();
-  RegisterListModuleTests();
-  RunUnitTests();
-}
+/* Parse the command-line arguments and run the compiler, if all the unit tests
+ * pass. */
+int main(void) { puts("Hello, world!"); }

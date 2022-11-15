@@ -1,6 +1,3 @@
-# SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com>
-# SPDX-License-Identifier: GPL-3.0-or-later
-
 cmake_minimum_required(VERSION 3.0)
 
 # Set the language standard.
@@ -10,15 +7,15 @@ set(CMAKE_C_STANDARD_REQUIRED true)
 project(rainfall-c)
 
 # Setup the given target.
-function(SetupTarget setTarget)
+function(setup_target target_to_setup)
   # Add project source root to include directories.
-  target_include_directories(${setTarget} PRIVATE src)
+  target_include_directories(${target_to_setup} PRIVATE src)
 
   # Enable all warnings.
   if(MSVC)
-    target_compile_options(${setTarget} PRIVATE /Wall)
+    target_compile_options(${target_to_setup} PRIVATE /Wall)
   else(MSVC)
-    target_compile_options(${setTarget} PRIVATE
+    target_compile_options(${target_to_setup} PRIVATE
       -Wall
       -Wextra
       -Wpedantic
@@ -28,21 +25,19 @@ function(SetupTarget setTarget)
       -Wno-empty-translation-unit
     )
   endif(MSVC)
-endfunction(SetupTarget setTarget)
+endfunction(setup_target target_to_setup)
 
 # Main executable of the project.
 add_executable(${PROJECT_NAME} src/main.c)
-SetupTarget(${PROJECT_NAME})
+setup_target(${PROJECT_NAME})
 
 # Header files in the project.
-set(headerFiles
-  src/test.c
-  src/string.c
-  src/allocation.c
-  src/list.c
+set(header_files
 )
 
 # Add compile commands for the header files, but leave them as object files.
 # Compile commands helps clangd to understand the headers.
-add_library(headerObjects OBJECT ${headerFiles})
-SetupTarget(headerObjects)
+if(header_files)
+  add_library(headerObjects OBJECT ${header_files})
+  setup_target(headerObjects)
+endif(header_files)

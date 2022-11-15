@@ -1,6 +1,3 @@
-<!-- SPDX-FileCopyrightText: 2022 Cem Geçgel <gecgelcem@outlook.com> -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-
 # Rainfall
 
 Rainfall is the compiler for the Thrice language.
@@ -14,8 +11,7 @@ rewritten in Thrice.
 
 ## Setup
 
-Project is written using VS Code and clangd. It is compiled using CMake and
-clang.
+Project is written using VS Code and clangd. It is compiled using CMake.
 
 VS Code launching settings exist for Windows and Linux.
 
