@@ -21,6 +21,8 @@ static double elapsed_milliseconds(double start_milliseconds);
 // =================================================
 
 void rf_test_unit(unit_test_t tested_unit, char const* reported_name) {
+  run_test_count++;
+
   // Run the test while measuring the elapsed time.
   double start_milliseconds    = current_milliseconds();
   bool   outcome               = tested_unit();
