@@ -1,8 +1,8 @@
 #include "rf_tester.h"
 
-#include <stdio.h>  // fputs, printf, stderr
-#include <stdlib.h> // abort
-#include <time.h>   // timespec, timespec_get, TIME_UTC
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 /* Point at time when the tester starts. */
 static double   tester_start_milliseconds;
@@ -15,6 +15,10 @@ static unsigned failed_test_count;
 static double current_milliseconds(void);
 /* Elapsed duration starting from the given point at time in milliseconds. */
 static double elapsed_milliseconds(double start_milliseconds);
+
+// =================================================
+//    }-{   P U B L I C   F U N C T I O N S   }-{
+// =================================================
 
 void rf_test_unit(unit_test_t tested_unit, char const* reported_name) {
   // Run the test while measuring the elapsed time.
@@ -57,6 +61,10 @@ bool rf_tester_report(void) {
   return failed_test_count == 0;
 }
 
+// ===================================================
+//    [+]   P R I V A T E   F U N C T I O N S   [+]
+// ===================================================
+
 static double current_milliseconds(void) {
   // Get the current time.
   struct timespec current_time;
@@ -77,3 +85,14 @@ static double current_milliseconds(void) {
 static double elapsed_milliseconds(double start_milliseconds) {
   return current_milliseconds() - start_milliseconds;
 }
+
+// =====================================================
+//    ***   Q U A L I T Y   A S S E S S M E N T   ***
+// =====================================================
+
+/* Tests the testing infrastructure. */
+static bool tester_infrastructure(void);
+
+void rf_tester_test(void) { RF_TEST_UNIT(tester_infrastructure); }
+
+static bool tester_infrastructure(void) { return true; }

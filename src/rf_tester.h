@@ -3,7 +3,7 @@
 #ifndef RF_TESTER_H
 #define RF_TESTER_H 1
 
-#include <stdbool.h> // bool
+#include <stdbool.h>
 
 /* A function type that is a unit test. Runs the test when called, and returns
  * whether the test passed. */
@@ -21,5 +21,8 @@ void rf_test_unit(unit_test_t tested_unit, char const* reported_name);
 void rf_tester_start(void);
 /* Reports all the tests results and returns whether all the tests passed. */
 bool rf_tester_report(void);
+
+/* Run all the tests for the tester module. */
+void rf_tester_test(void);
 
 #endif // RF_TESTER_H

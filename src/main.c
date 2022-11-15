@@ -1,8 +1,8 @@
 #include "rf_tester.h"
 
-#include <stdbool.h> // bool
-#include <stdio.h>   // puts, fputs, stderr
-#include <stdlib.h>  // EXIT_FAILURE
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /* Runs all the unit tests for the compiler and returns whether all of them
  * passed. */
@@ -21,5 +21,6 @@ int main(void) {
 
 static bool run_tests(void) {
   rf_tester_start();
+  rf_tester_test();
   return rf_tester_report();
 }
