@@ -22,7 +22,7 @@ enum rf_launch_command_variant {
   RF_LAUNCH_COMMAND_RUN,
 };
 
-/* An instruction that can be executed by the Rainfall compiler. */
+/* An instruction that can be executed by the compiler. */
 struct rf_launch_command {
   union {
     /* Command as a new command. */
@@ -82,6 +82,26 @@ struct rf_launch_command {
 
   /* Variant of the command. */
   enum rf_launch_command_variant variant;
+};
+
+/* Value that indicates the variant of a launch option. */
+enum rf_launch_option_variant {
+  /* Option that sets the workspace directory, which defaults to the current
+   * working directory if this option is not present. */
+  RF_LAUNCH_OPTION_DIRECTORY,
+};
+
+/* A parameter of the compiler that decides how it works. */
+struct rf_launch_option {
+  union {
+    /* Option as a directory option. */
+    struct {
+      /* Path to the workspace directory. */
+      struct rf_string workspace_path;
+    } as_directory;
+  };
+  /* Variant of the option. */
+  enum rf_launch_option_variant variant;
 };
 
 #endif // RF_LAUNCHER_H
