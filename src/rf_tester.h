@@ -13,6 +13,10 @@ typedef bool (*unit_test_t)(void);
  * function. */
 #define RF_TEST_UNIT(tested_unit) rf_test_unit(tested_unit, #tested_unit)
 
+// =================================================
+//    }-{   P U B L I C   F U N C T I O N S   }-{
+// =================================================
+
 /* Runs the given unit test and reports the given name if the test fails or
  * takes too long to run. */
 void rf_test_unit(unit_test_t tested_unit, char const* reported_name);
@@ -21,6 +25,10 @@ void rf_test_unit(unit_test_t tested_unit, char const* reported_name);
 void rf_tester_start(void);
 /* Reports all the tests results and returns whether all the tests passed. */
 bool rf_tester_report(void);
+
+// =====================================================
+//    ***   Q U A L I T Y   A S S E S S M E N T   ***
+// =====================================================
 
 /* Run all the tests for the tester module. */
 void rf_tester_test(void);
