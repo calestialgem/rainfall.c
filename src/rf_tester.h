@@ -1,5 +1,5 @@
 /* Runs the unit tests in the code and records their results and reports any
- * problems. At the end, also reports the total outcome of all the tets. */
+ * problems. At the end, also reports the total outcome of all the tests. */
 #ifndef RF_TESTER_H
 #define RF_TESTER_H 1
 
