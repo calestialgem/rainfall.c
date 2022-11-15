@@ -54,7 +54,7 @@ bool rf_tester_report(void) {
   if (run_test_count == 0) {
     printf("No tests were run.");
   } else if (failed_test_count == 0) {
-    printf("All %d test have passed.", run_test_count);
+    printf("All %d tests have passed.", run_test_count);
   } else {
     printf("%d/%d of the tets failed!", failed_test_count, run_test_count);
   }
