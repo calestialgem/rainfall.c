@@ -20,7 +20,7 @@ int main(void) {
 }
 
 static bool run_tests(void) {
-  rf_tester_start();
-  rf_tester_test();
-  return rf_tester_report();
+  rf_begin_tests();
+  rf_test_tester();
+  return rf_report_tests();
 }

@@ -40,13 +40,13 @@ void rf_test_unit(unit_test_t tested_unit, char const* reported_name) {
     duration_milliseconds);
 }
 
-void rf_tester_start(void) {
+void rf_begin_tests(void) {
   tester_start_milliseconds = current_milliseconds();
   run_test_count            = 0;
   failed_test_count         = 0;
 }
 
-bool rf_tester_report(void) {
+bool rf_report_tests(void) {
   double duration_milliseconds =
     elapsed_milliseconds(tester_start_milliseconds);
 
@@ -95,6 +95,6 @@ static double elapsed_milliseconds(double start_milliseconds) {
 /* Tests the testing infrastructure. */
 static bool tester_infrastructure(void);
 
-void rf_tester_test(void) { RF_TEST_UNIT(tester_infrastructure); }
+void rf_test_tester(void) { RF_TEST_UNIT(tester_infrastructure); }
 
 static bool tester_infrastructure(void) { return true; }
