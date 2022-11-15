@@ -72,7 +72,7 @@ QualifierOrder:
 RawStringFormats: []
 ReferenceAlignment: Pointer
 ReflowComments: True
-RemoveBracesLLVM: True
+RemoveBracesLLVM: False
 # RequiresClausePosition: OwnLine
 SeparateDefinitionBlocks: Always
 ShortNamespaceLines: 0
