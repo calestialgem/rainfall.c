@@ -14,15 +14,4 @@ struct rf_string {
   size_t      count;
 };
 
-// =================================================
-//    }-{   P U B L I C   F U N C T I O N S   }-{
-// =================================================
-
-// =====================================================
-//    ***   Q U A L I T Y   A S S E S S M E N T   ***
-// =====================================================
-
-/* Run all the tests for the string module. */
-void rf_string_test(void);
-
 #endif // RF_STRING_H
