@@ -12,7 +12,7 @@ enum rf_launch_command_variant {
   /* Command for creating a new package in the workspace. */
   RF_LAUNCH_COMMAND_NEW,
   /* Command for syntactically and semantically checking the packages in the
-     workspace. */
+   * workspace. */
   RF_LAUNCH_COMMAND_CHECK,
   /* Command for running the tests of the packages in the workspace. */
   RF_LAUNCH_COMMAND_TEST,
