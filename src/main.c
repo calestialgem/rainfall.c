@@ -1,4 +1,5 @@
 #include "rf_tester.h"
+
 #include <stdbool.h> // bool
 #include <stdio.h>   // puts, fputs, stderr
 #include <stdlib.h>  // EXIT_FAILURE

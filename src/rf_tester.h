@@ -15,7 +15,7 @@ typedef bool (*unit_test_t)(void);
 
 /* Runs the given unit test and reports the given name if the test fails or
  * takes too long to run. */
-void rf_test_unit(unit_test_t tested_unit, char const *reported_name);
+void rf_test_unit(unit_test_t tested_unit, char const* reported_name);
 /* Starts the timer for all the tests and resets counters for passed and failed
  * unit tests. */
 void rf_tester_start(void);
