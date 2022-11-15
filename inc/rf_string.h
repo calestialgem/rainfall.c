@@ -9,7 +9,7 @@
 struct rf_string {
   /* Immutable pointer to the first character in the string if it exists. Can be
    * an invalid pointer if the count is 0. */
-  char const* data;
+  char const* array;
   /* Number of characters in the string. */
   size_t      count;
 };
