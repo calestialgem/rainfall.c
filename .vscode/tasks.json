@@ -28,14 +28,14 @@
     {
       "type": "shell",
       "label": "compileTest",
-      "command": "${workspaceRoot}/build/rainfall-c",
+      "command": "${workspaceFolder}/build/rainfall-c",
       "options": {
-        "cwd": "${workspaceRoot}/res"
+        "cwd": "${workspaceFolder}/res"
       },
-      "args": ["test"],
+      "args": [],
       "problemMatcher": {
         "owner": "rainfall",
-        "fileLocation": ["relative", "${workspaceRoot}/res"],
+        "fileLocation": ["relative", "${workspaceFolder}/res"],
         "pattern": {
           "regexp": "^(.*):(\\d+):(\\d+):(\\d+):(\\d+):\\s+(error|warning|info):\\s+(.*)$",
           "file": 1,
