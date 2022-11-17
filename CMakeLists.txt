@@ -10,6 +10,7 @@ project(rainfall-c)
 add_executable(${PROJECT_NAME}
   src/main.c
   src/rf_tester.c
+  src/rf_string.c
   src/rf_launcher.c
 )
 
