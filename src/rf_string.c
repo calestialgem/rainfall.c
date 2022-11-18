@@ -18,3 +18,17 @@ bool rf_compare_strings(struct rf_string this, struct rf_string that) {
   }
   return true;
 }
+
+bool rf_compare_prefix(struct rf_string compared, struct rf_string prefix) {
+  if (compared.count < prefix.count) { return false; }
+  if (compared.array == prefix.array) { return true; }
+  for (size_t i = 0; i < prefix.count; i++) {
+    if (compared.array[i] != prefix.array[i]) { return false; }
+  }
+  return true;
+}
+
+void rf_skip_prefix(struct rf_string* skipped, size_t amount) {
+  skipped->array += amount;
+  skipped->count -= amount;
+}
