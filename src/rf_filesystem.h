@@ -6,10 +6,16 @@
 #include "rf_string.h"
 
 /* Codes for errors that might arise in a filesystem operation. */
-enum rf_filesystem_error {
+enum rf_filesystem_result {
+  /* Operation was done without any errors. */
   RF_FILESYSTEM_SUCCESSFUL,
+  /* An unknown error occurred. */
+  RF_FILESYSTEM_UNKNOWN_ERROR,
+  /* The given path already existed. */
   RF_FILESYSTEM_EXISTING_PATH,
+  /* The given path did not exist. */
   RF_FILESYSTEM_NONEXISTING_PATH,
+  /* The given path was invalid. */
   RF_FILESYSTEM_INVALID_PATH,
 };
 
@@ -19,9 +25,11 @@ enum rf_filesystem_error {
 
 /* Changes the current working directory to the given path. Returns the error
  * code of the operation. */
-enum rf_filesystem_error rf_change_working_directory(struct rf_string path);
+[[nodiscard]] enum rf_filesystem_result rf_change_working_directory(
+  struct rf_string path);
 /* Creates a new directory at the given path. Returns the error code of the
  * operation. */
-enum rf_filesystem_error rf_create_directory(struct rf_string path);
+[[nodiscard]] enum rf_filesystem_result rf_create_directory(
+  struct rf_string path);
 
 #endif // RF_FILESYSTEM_H
