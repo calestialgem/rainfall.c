@@ -48,6 +48,45 @@ static enum parse_result parse_directory_option(struct arguments parsed,
  * argument. Returns the result. */
 static enum parse_result parse_configuration_option(struct arguments parsed,
   int* parsed_index, struct rf_launch_command* result);
+/* Parses the first command in the given arguments starting at the given index
+ * to the given launch command. Moves the given index to the position after the
+ * parsed arguments. Returns the result. */
+static enum parse_result parse_command(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result);
+/* Parses the new command argument starting at the given index to the given
+ * launch command. Moves the given index to the position after the parsed
+ * argument. Returns the result. */
+static enum parse_result parse_new_command(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result);
+/* Parses the check command arguments starting at the given index to the given
+ * launch command. Moves the given index to the position after the parsed
+ * arguments. Returns the result. */
+static enum parse_result parse_check_command(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result);
+/* Parses the test command arguments starting at the given index to the given
+ * launch command. Moves the given index to the position after the parsed
+ * arguments. Returns the result. */
+static enum parse_result parse_test_command(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result);
+/* Parses the build command argument starting at the given index to the given
+ * launch command. Moves the given index to the position after the parsed
+ * argument. Returns the result. */
+static enum parse_result parse_build_command(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result);
+/* Parses the run command arguments starting at the given index to the given
+ * launch command. Moves the given index to the position after the parsed
+ * arguments. Returns the result. */
+static enum parse_result parse_run_command(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result);
+/* Stores the argument at the given index to the given result. Moves the given
+ * index forward. Returns the result. */
+static enum parse_result store_next_argument(struct arguments parsed,
+  int* parsed_index, struct rf_string* result);
+/* Stores the all the remaining arguments starting from the given index to the
+ * given result. Moves the given index forward. Returns the result. */
+static void              store_remaining_arguments(struct arguments parsed,
+               int* parsed_index, struct rf_string const** result_array,
+               size_t* result_count);
 
 /* Parse the command-line arguments and run the compiler, if all the unit tests
  * pass. */
@@ -121,6 +160,33 @@ static enum parse_result parse_arguments(struct arguments parsed,
     case PARSE_SUCCEEDED: continue;
     }
     break;
+  }
+
+  switch (parse_command(parsed, &parsed_index, result)) {
+  case PARSE_CANCELED: fprintf(stderr, "failure: Expected a command!\n");
+  case PARSE_FAILED: return PARSE_FAILED;
+  case PARSE_SUCCEEDED: break;
+  }
+
+  // Check whether there are unused arguments.
+  if (parsed_index < parsed.count) {
+    fputs("failure: There are extra arguments provided to the command: `",
+      stderr);
+
+    // Print the extra arguments as a comma-separated list. To that end, the
+    // first extra argument is printed first, then the rest is leaded by a
+    // comma.
+    for (fputs(parsed.array[parsed_index++], stderr);
+         parsed_index < parsed.count; parsed_index++) {
+      fputs("`, `", stderr);
+      fputs(parsed.array[parsed_index], stderr);
+    }
+
+    fputs(
+      "`!\n"
+      "info: Run the compiler without arguments to see the usage.\n",
+      stderr);
+    return PARSE_FAILED;
   }
 
   return PARSE_SUCCEEDED;
@@ -249,4 +315,164 @@ static enum parse_result parse_configuration_option(struct arguments parsed,
     rf_view_null_terminated(parsed.array[*parsed_index]);
   (*parsed_index)++;
   return PARSE_SUCCEEDED;
+}
+
+static enum parse_result parse_command(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result) {
+  // Check whether there is an argument left.
+  if (parsed.count <= *parsed_index) { return PARSE_CANCELED; }
+
+  // Get the command name or shortcut.
+  struct rf_string command =
+    rf_view_null_terminated(parsed.array[*parsed_index]);
+  (*parsed_index)++;
+
+  // Check whether the command is a shortcut.
+  if (command.count == 1) {
+    switch (command.array[0]) {
+    case 'n': return parse_new_command(parsed, parsed_index, result);
+    case 'c': return parse_check_command(parsed, parsed_index, result);
+    case 't': return parse_test_command(parsed, parsed_index, result);
+    case 'b': return parse_build_command(parsed, parsed_index, result);
+    case 'r': return parse_run_command(parsed, parsed_index, result);
+    default:
+      fprintf(stderr,
+        "failure: Unknown command shortcut `%c`!\n"
+        "info: Run the compiler without arguments to see the usage.\n",
+        command.array[0]);
+      return PARSE_FAILED;
+    }
+  } else {
+    if (rf_compare_strings(command, rf_view_null_terminated("new"))) {
+      return parse_new_command(parsed, parsed_index, result);
+    }
+    if (rf_compare_strings(command, rf_view_null_terminated("check"))) {
+      return parse_check_command(parsed, parsed_index, result);
+    }
+    if (rf_compare_strings(command, rf_view_null_terminated("test"))) {
+      return parse_test_command(parsed, parsed_index, result);
+    }
+    if (rf_compare_strings(command, rf_view_null_terminated("build"))) {
+      return parse_build_command(parsed, parsed_index, result);
+    }
+    if (rf_compare_strings(command, rf_view_null_terminated("run"))) {
+      return parse_run_command(parsed, parsed_index, result);
+    }
+
+    fprintf(stderr,
+      "failure: Unknown command name `%.*s`!\n"
+      "info: Run the compiler without arguments to see the usage.\n",
+      (int)command.count, command.array);
+    return PARSE_FAILED;
+  }
+}
+
+static enum parse_result parse_new_command(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result) {
+  switch (store_next_argument(parsed, parsed_index, &result->as_run.run_name)) {
+  case PARSE_CANCELED:
+    fputs(
+      "failure: Name for the package that will be created is not provided!"
+      "info: Run the compiler without arguments to see the usage.\n",
+      stderr);
+  case PARSE_FAILED: return PARSE_FAILED;
+  case PARSE_SUCCEEDED: break;
+  }
+
+  // Set the variant.
+  result->variant = RF_LAUNCH_COMMAND_NEW;
+  return PARSE_SUCCEEDED;
+}
+
+static enum parse_result parse_check_command(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result) {
+  store_remaining_arguments(parsed, parsed_index,
+    &result->as_check.checked_names.array,
+    &result->as_check.checked_names.count);
+
+  // Set the variant.
+  result->variant = RF_LAUNCH_COMMAND_CHECK;
+  return PARSE_SUCCEEDED;
+}
+
+static enum parse_result parse_test_command(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result) {
+  store_remaining_arguments(parsed, parsed_index,
+    &result->as_test.tested_names.array, &result->as_test.tested_names.count);
+
+  // Set the variant.
+  result->variant = RF_LAUNCH_COMMAND_TEST;
+  return PARSE_SUCCEEDED;
+}
+
+static enum parse_result parse_build_command(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result) {
+  switch (store_next_argument(parsed, parsed_index, &result->as_run.run_name)) {
+  case PARSE_CANCELED:
+    fputs(
+      "failure: Name for the package that will be built is not provided!"
+      "info: Run the compiler without arguments to see the usage.\n",
+      stderr);
+  case PARSE_FAILED: return PARSE_FAILED;
+  case PARSE_SUCCEEDED: break;
+  }
+
+  // Set the variant.
+  result->variant = RF_LAUNCH_COMMAND_BUILD;
+  return PARSE_SUCCEEDED;
+}
+
+static enum parse_result parse_run_command(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result) {
+  switch (store_next_argument(parsed, parsed_index, &result->as_run.run_name)) {
+  case PARSE_CANCELED:
+    fputs(
+      "failure: Name for the package that will be run is not provided!"
+      "info: Run the compiler without arguments to see the usage.\n",
+      stderr);
+  case PARSE_FAILED: return PARSE_FAILED;
+  case PARSE_SUCCEEDED: break;
+  }
+
+  store_remaining_arguments(parsed, parsed_index,
+    &result->as_run.passed_arguments.array,
+    &result->as_run.passed_arguments.count);
+
+  // Set the variant.
+  result->variant = RF_LAUNCH_COMMAND_RUN;
+  return PARSE_SUCCEEDED;
+}
+
+static enum parse_result store_next_argument(struct arguments parsed,
+  int* parsed_index, struct rf_string* result) {
+  // Check whether there is an argument left.
+  if (parsed.count <= *parsed_index) { return PARSE_CANCELED; }
+
+  // Set the name and advance over it.
+  *result = rf_view_null_terminated(parsed.array[*parsed_index]);
+  (*parsed_index)++;
+  return PARSE_SUCCEEDED;
+}
+
+static void store_remaining_arguments(struct arguments parsed,
+  int* parsed_index, struct rf_string const** result_array,
+  size_t* result_count) {
+  // Find the number of remaining arguments.
+  *result_count = parsed.count - *parsed_index;
+
+  // Return if there are no remaining arguments.
+  if (result_count == 0) {
+    *result_array = NULL;
+    return;
+  }
+
+  // Allocate a dynamic array for the arguments.
+  struct rf_string* as_strings =
+    calloc(*result_count, sizeof(struct rf_string));
+
+  // Set the arguments and advance over them.
+  for (size_t i = 0; *parsed_index < parsed.count; (*parsed_index)++, i++) {
+    as_strings[i] = rf_view_null_terminated(parsed.array[*parsed_index]);
+  }
+  *result_array = as_strings;
 }
