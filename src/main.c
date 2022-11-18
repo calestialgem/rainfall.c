@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* Data of the command-line argument parsing proccess. */
 struct parse_context {
@@ -288,7 +289,19 @@ static enum parse_result parse_directory_option(struct parse_context* context) {
   }
 
   // Set the path and advance over it.
-  rf_change_working_directory(context->arguments.array[context->next_index++]);
+  struct rf_string workspace_directory =
+    context->arguments.array[context->next_index++];
+  int working_directory_error =
+    rf_change_working_directory(workspace_directory);
+  if (working_directory_error != 0) {
+    fprintf(stderr,
+      "failure: Cannot set the workspace directory to `%.*s`!\n"
+      "cause: %s\n",
+      (int)workspace_directory.count, workspace_directory.array,
+      strerror(working_directory_error));
+    return PARSE_FAILED;
+  }
+
   return PARSE_SUCCEEDED;
 }
 
