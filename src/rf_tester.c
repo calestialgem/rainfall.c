@@ -71,7 +71,7 @@ static double current_milliseconds(void) {
   // Get the current time.
   struct timespec current_time;
   if (timespec_get(&current_time, TIME_UTC) == 0) {
-    (void)fputs("Could not get the time!\n", stderr);
+    fputs("Could not get the time!\n", stderr);
     abort();
   }
 
