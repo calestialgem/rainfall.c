@@ -1,6 +1,6 @@
 BasedOnStyle: LLVM
 AccessModifierOffset: -2
-AlignAfterOpenBracket: AlwaysBreak
+AlignAfterOpenBracket: DontAlign
 AlignArrayOfStructures: Right
 AlignConsecutiveAssignments: AcrossComments
 AlignConsecutiveBitFields: AcrossComments
@@ -9,8 +9,8 @@ AlignConsecutiveMacros: AcrossComments
 AlignEscapedNewlines: Left
 AlignOperands: AlignAfterOperator
 AlignTrailingComments: True
-AllowAllArgumentsOnNextLine: True
-AllowAllParametersOfDeclarationOnNextLine: True
+AllowAllArgumentsOnNextLine: False
+AllowAllParametersOfDeclarationOnNextLine: False
 AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: True
 AllowShortEnumsOnASingleLine: True
@@ -55,7 +55,7 @@ IndentPPDirectives: BeforeHash
 IndentRequires: False
 IndentWidth: 2
 IndentWrappedFunctionNames: False
-# InsertBraces: False
+InsertBraces: True
 KeepEmptyLinesAtTheStartOfBlocks: False
 LambdaBodyIndentation: OuterScope
 MaxEmptyLinesToKeep: 1

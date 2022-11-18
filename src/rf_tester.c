@@ -35,8 +35,7 @@ void rf_test_unit(unit_test_t tested_unit, char const* reported_name) {
   }
 
   if (!outcome) { failed_test_count++; }
-  printf(
-    "[%s] %s (%.3f ms)\n", outcome ? "TOO LONG" : "FAILED", reported_name,
+  printf("[%s] %s (%.3f ms)\n", outcome ? "TOO LONG" : "FAILED", reported_name,
     duration_milliseconds);
 }
 
@@ -56,8 +55,8 @@ bool rf_report_tests(void) {
   } else if (failed_test_count == 0) {
     printf("info: All %d tests have passed.", run_test_count);
   } else {
-    printf(
-      "failure: %d/%d of the tets failed!", failed_test_count, run_test_count);
+    printf("failure: %d/%d of the tets failed!", failed_test_count,
+      run_test_count);
   }
   printf(" (%.3f ms)\n", duration_milliseconds);
 

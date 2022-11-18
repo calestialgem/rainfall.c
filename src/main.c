@@ -28,26 +28,26 @@ enum parse_result {
 
 /* Runs all the unit tests for the compiler and returns whether all of them
  * passed. */
-static bool run_tests(void);
+static bool              run_tests(void);
 /* Parses the given command-line arguments to the given launch command. Returns
  * the result. */
-static enum parse_result
-parse_arguments(struct arguments parsed, struct rf_launch_command* result);
+static enum parse_result parse_arguments(struct arguments parsed,
+  struct rf_launch_command*                               result);
 /* Parses the first option in the given arguments starting at the given
  * index to the given launch command. Moves the given index to the position
  * after the parsed arguments. Returns the result. */
-static enum parse_result parse_option(
-  struct arguments parsed, int* parsed_index, struct rf_launch_command* result);
+static enum parse_result parse_option(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result);
 /* Parses the directory option argument starting at the given index to the given
  * launch command. Moves the given index to the position after the parsed
  * argument. Returns the result. */
-static enum parse_result parse_directory_option(
-  struct arguments parsed, int* parsed_index, struct rf_launch_command* result);
+static enum parse_result parse_directory_option(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result);
 /* Parses the configuration option argument starting at the given index to the
  * given launch command. Moves the given index to the position after the parsed
  * argument. Returns the result. */
-static enum parse_result parse_configuration_option(
-  struct arguments parsed, int* parsed_index, struct rf_launch_command* result);
+static enum parse_result parse_configuration_option(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result);
 
 /* Parse the command-line arguments and run the compiler, if all the unit tests
  * pass. */
@@ -60,8 +60,8 @@ int main(int arguments_count, char const* const* arguments_array) {
 
   // Create the arguments by skipping the first one, which is assumed to be the
   // path to the executable.
-  struct arguments arguments = {
-    .array = arguments_array + 1, .count = arguments_count - 1};
+  struct arguments arguments = {.array = arguments_array + 1,
+    .count                             = arguments_count - 1};
 
   // Parse the arguments and launch if it was successful.
   struct rf_launch_command launched;
@@ -78,8 +78,8 @@ static bool run_tests(void) {
   return rf_report_tests();
 }
 
-static enum parse_result
-parse_arguments(struct arguments parsed, struct rf_launch_command* result) {
+static enum parse_result parse_arguments(struct arguments parsed,
+  struct rf_launch_command*                               result) {
   // If no arguments are given, print the version and help message.
   if (parsed.count == 0) {
     printf(
@@ -126,9 +126,8 @@ parse_arguments(struct arguments parsed, struct rf_launch_command* result) {
   return PARSE_SUCCEEDED;
 }
 
-static enum parse_result parse_option(
-  struct arguments parsed, int* parsed_index,
-  struct rf_launch_command* result) {
+static enum parse_result parse_option(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result) {
   // Check whether there is an argument left.
   if (parsed.count <= *parsed_index) { return PARSE_CANCELED; }
 
@@ -150,8 +149,7 @@ static enum parse_result parse_option(
       return PARSE_FAILED;
     }
     if (option.count == 1) {
-      fprintf(
-        stderr,
+      fprintf(stderr,
         "failure: Option name must be longer than a single character!\n"
         "info: Use `-%c` for providing only the shortcut.\n",
         option.array[0]);
@@ -166,8 +164,7 @@ static enum parse_result parse_option(
       return parse_configuration_option(parsed, parsed_index, result);
     }
 
-    fprintf(
-      stderr,
+    fprintf(stderr,
       "failure: Unknown option name: `%.*s`!\n"
       "info: Run the compiler without arguments to see the usage.\n",
       (int)option.count, option.array);
@@ -185,8 +182,7 @@ static enum parse_result parse_option(
       return PARSE_FAILED;
     }
     if (option.count > 2) {
-      fprintf(
-        stderr,
+      fprintf(stderr,
         "failure: Option shortcut must be a single character!\n"
         "info: Use `-%.*s` for providing the full name.\n",
         (int)option.count, option.array);
@@ -198,8 +194,7 @@ static enum parse_result parse_option(
     case 'd': return parse_directory_option(parsed, parsed_index, result);
     case 'c': return parse_configuration_option(parsed, parsed_index, result);
     default:
-      fprintf(
-        stderr,
+      fprintf(stderr,
         "failure: Unknown option shortcut: `%c`!\n"
         "info: Run the compiler without arguments to see the usage.\n",
         option.array[1]);
@@ -211,9 +206,8 @@ static enum parse_result parse_option(
   return PARSE_CANCELED;
 }
 
-static enum parse_result parse_directory_option(
-  struct arguments parsed, int* parsed_index,
-  struct rf_launch_command* result) {
+static enum parse_result parse_directory_option(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result) {
   // Make sure the option is provided once.
   static bool already_parsed = false;
   if (already_parsed) {
@@ -234,9 +228,8 @@ static enum parse_result parse_directory_option(
   return PARSE_SUCCEEDED;
 }
 
-static enum parse_result parse_configuration_option(
-  struct arguments parsed, int* parsed_index,
-  struct rf_launch_command* result) {
+static enum parse_result parse_configuration_option(struct arguments parsed,
+  int* parsed_index, struct rf_launch_command* result) {
   // Make sure the option is provided once.
   static bool already_parsed = false;
   if (already_parsed) {
