@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+struct rf_string const RF_EMPTY_STRING = {.array = NULL, .count = 0};
+
 // =================================================
 //    }-{   P U B L I C   F U N C T I O N S   }-{
 // =================================================

@@ -15,6 +15,9 @@ struct rf_string {
   size_t      count;
 };
 
+/* String without any characters in it. */
+extern struct rf_string const RF_EMPTY_STRING;
+
 // =================================================
 //    }-{   P U B L I C   F U N C T I O N S   }-{
 // =================================================
