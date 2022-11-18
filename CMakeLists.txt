@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 # Set the language standard.
-set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED true)
 
 project(rainfall-c)
