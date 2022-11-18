@@ -27,5 +27,6 @@ else(MSVC)
     -Wall
     -Wextra
     -Wpedantic
+    -Wno-deprecated-declarations
   )
 endif(MSVC)
