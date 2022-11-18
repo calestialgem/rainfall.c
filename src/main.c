@@ -54,5 +54,32 @@ static bool run_tests(void) {
 
 static bool
 parse_arguments(struct arguments parsed, struct rf_launch_command* result) {
+  // If no arguments are given, print the version and help message.
+  if (parsed.count == 0) {
+    printf(
+      "Rainfall Thrice to C Transpiler Version 0.0.1\n"
+      "Usage: rainfall [options] <command> [arguments]\n"
+      "\n"
+      "Commands:\n"
+      " (n) new <name>: Creates a new package with the given name.\n"
+      " (c) check [names]: Checks the given packages or all the packages "
+      "in "
+      "the workspace if none is given.\n"
+      " (t) test [names]: Tests the given packages or all the packages in "
+      "the workspace if none is given.\n"
+      " (b) build <name>: Builds the executable package with the given "
+      "name.\n"
+      " (r) run <name> [arguments]: Runs the executable package with the "
+      "given name by passing the given command-line arguments to it.\n"
+      "\n"
+      "Options:\n"
+      " (-d) --directory <path>: Runs the compiler in the workspace directory "
+      "at the given path. Defaults to the current working directory.\n"
+      " (-c) --configuration <name>: Runs the compiler with the configuration "
+      "that has the given name. Defaults to the default configuration if it "
+      "exists. Otherwise, runs the compiler without setting a "
+      "configuration.\n");
+    return false;
+  }
   return true;
 }
