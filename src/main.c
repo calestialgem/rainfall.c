@@ -1,3 +1,4 @@
+#include "rf_filesystem.h"
 #include "rf_launcher.h"
 #include "rf_string.h"
 #include "rf_tester.h"
@@ -151,7 +152,6 @@ static enum parse_result parse_arguments(struct parse_context* context) {
   }
 
   // Set the default option values.
-  context->result.workspace_path     = rf_view_null_terminated(".");
   context->result.configuration_name = RF_EMPTY_STRING;
 
   // Try parsing options until cannot.
@@ -288,8 +288,7 @@ static enum parse_result parse_directory_option(struct parse_context* context) {
   }
 
   // Set the path and advance over it.
-  context->result.workspace_path =
-    context->arguments.array[context->next_index++];
+  rf_change_working_directory(context->arguments.array[context->next_index++]);
   return PARSE_SUCCEEDED;
 }
 

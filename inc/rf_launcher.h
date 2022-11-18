@@ -82,8 +82,6 @@ struct rf_launch_command {
 
   /* Variant of the command. */
   enum rf_launch_command_variant variant;
-  /* Path to the workspace directory. */
-  struct rf_string               workspace_path;
   /* Name of the launched configuration. Empty string means the configuration
    * was not provided. */
   struct rf_string               configuration_name;
