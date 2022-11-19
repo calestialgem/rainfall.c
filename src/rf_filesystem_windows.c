@@ -14,14 +14,12 @@
 //    }-{   P U B L I C   F U N C T I O N S   }-{
 // =================================================
 
-int rf_change_working_directory(struct rf_string path) {
+bool rf_change_working_directory(struct rf_string path) {
   AS_NULL_TERMINATED(path);
-  if (_chdir(path_as_null_terminated) != 0) { return errno; }
-  return 0;
+  return _chdir(path_as_null_terminated);
 }
 
-int rf_create_directory(struct rf_string path) {
+bool rf_create_directory(struct rf_string path) {
   AS_NULL_TERMINATED(path);
-  if (_mkdir(path_as_null_terminated) != 0) { return errno; }
-  return 0;
+  return _mkdir(path_as_null_terminated);
 }

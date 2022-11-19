@@ -5,15 +5,17 @@
 
 #include "rf_string.h"
 
+#include <stdbool.h>
+
 // =================================================
 //    }-{   P U B L I C   F U N C T I O N S   }-{
 // =================================================
 
-/* Changes the current working directory to the given path. Returns the error
- * code of the operation. */
-[[nodiscard]] int rf_change_working_directory(struct rf_string path);
-/* Creates a new directory at the given path. Returns the error code of the
- * operation. */
-[[nodiscard]] int rf_create_directory(struct rf_string path);
+/* Changes the current working directory to the given path. Returns whether the
+ * operation was not successful. Populates the `errno` on failure. */
+bool rf_change_working_directory(struct rf_string path);
+/* Creates a new directory at the given path. Returns whether the
+ * operation was not successful. Populates the `errno` on failure. */
+bool rf_create_directory(struct rf_string path);
 
 #endif // RF_FILESYSTEM_H
