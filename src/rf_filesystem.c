@@ -48,6 +48,10 @@ bool rf_open_file(struct rf_file* target, char const* mode,
 
   // Allocate an extra byte for the null-termination character.
   target->path = malloc(total_length + 1);
+  if (target->path == NULL) {
+    target->stream = NULL;
+    return true;
+  }
 
   // Write the parts, the directory separators, the extension and the
   // null-termination character.
@@ -65,7 +69,10 @@ bool rf_open_file(struct rf_file* target, char const* mode,
   // manually assigned to `errno`.
   int error_code = fopen_s(&target->stream, target->path, mode);
   if (error_code != 0) {
-    errno = error_code;
+    free(target->path);
+    target->path   = NULL;
+    target->stream = NULL;
+    errno          = error_code;
     return true;
   }
   return false;
