@@ -1,0 +1,6 @@
+/* Generated prelude of Name package. */
+
+/* Returns a value for debugging the setup. */
+public function value(): int {
+  return 7;
+}

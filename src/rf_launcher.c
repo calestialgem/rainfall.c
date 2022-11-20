@@ -35,6 +35,37 @@ static void execute_new_command(struct rf_launch_command executed) {
       executed.as_new.created_name.array, strerror(errno));
     return;
   }
+
+  struct rf_file library_file;
+  if (rf_open_file(&library_file, "wx", ".tr", 2, executed.as_new.created_name,
+        rf_view_null_terminated("Prelude"))) {
+    fprintf(stderr,
+      "failure: Cannot open prelude source `%.*s/Prelude.tr`!\n"
+      "cause: %s\n",
+      (int)executed.as_new.created_name.count,
+      executed.as_new.created_name.array, strerror(errno));
+    return;
+  }
+
+  fprintf(library_file.stream,
+    "/* Generated prelude of %.*s package. */\n"
+    "\n"
+    "/* Returns a value for debugging the setup. */\n"
+    "public function value(): int {\n"
+    "  return 7;\n"
+    "}\n",
+    (int)executed.as_new.created_name.count,
+    executed.as_new.created_name.array);
+
+  if (rf_close_file(&library_file)) {
+    fprintf(stderr,
+      "failure: Cannot close prelude source `%.*s/Prelude.tr`!\n"
+      "cause: %s\n",
+      (int)executed.as_new.created_name.count,
+      executed.as_new.created_name.array, strerror(errno));
+    return;
+  }
+
   struct rf_file main_file;
   if (rf_open_file(&main_file, "wx", ".tr", 2, executed.as_new.created_name,
         rf_view_null_terminated("Main"))) {
@@ -46,10 +77,17 @@ static void execute_new_command(struct rf_launch_command executed) {
     return;
   }
 
-  fputs(
+  fprintf(main_file.stream,
+    "/* Access the prelude of %.*s for debugging the setup. */\n"
+    "import %.*s;\n"
+    "\n"
     "entrypoint {\n"
+    "  return %.*s.value;\n"
     "}\n",
-    main_file.stream);
+    (int)executed.as_new.created_name.count, executed.as_new.created_name.array,
+    (int)executed.as_new.created_name.count, executed.as_new.created_name.array,
+    (int)executed.as_new.created_name.count,
+    executed.as_new.created_name.array);
 
   if (rf_close_file(&main_file)) {
     fprintf(stderr,
