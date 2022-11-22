@@ -13,6 +13,7 @@ add_executable(${PROJECT_NAME}
   src/rf_tester.c
   src/rf_string.c
   src/rf_filesystem.c
+  src/rf_modeler.c
   src/rf_launcher.c
 )
 
