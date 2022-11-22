@@ -26,10 +26,15 @@ extern struct rf_string const RF_EMPTY_STRING;
 struct rf_string rf_view_null_terminated(char const* viewed);
 /* Returns whether the characters of the given strings are the same and ordered
  * the same way. */
-bool rf_compare_strings(struct rf_string this, struct rf_string that);
+bool   rf_compare_strings(struct rf_string this, struct rf_string that);
 /* Finds whether the given string has the given prefix at its start. */
-bool rf_compare_prefix(struct rf_string compared, struct rf_string prefix);
+bool   rf_compare_prefix(struct rf_string compared, struct rf_string prefix);
+/* Finds whether the given string has the given suffix at its end. */
+bool   rf_compare_suffix(struct rf_string compared, struct rf_string suffix);
 /* Removes the given amount of characters from the start of the given string. */
-void rf_skip_prefix(struct rf_string* skipped, size_t amount);
+void   rf_skip_prefix(struct rf_string* skipped, size_t amount);
+/* Finds the index of the first character in the given source after the last
+ * occurrence of the given string. Returns `0` if the string does not exist.*/
+size_t rf_find_last_occurrence(struct rf_string source, struct rf_string found);
 
 #endif // RF_STRING_H
