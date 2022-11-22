@@ -9,6 +9,8 @@
 struct allocation {
   /* Location of the allocation. */
   void*       block;
+  /* Maximum size ever reached by the block. */
+  size_t      max_size;
   /* Name of the file the allocation was done in. */
   char const* file;
   /* Number of the line the allocation was done at. */
@@ -48,50 +50,94 @@ static void               push_allocation(struct allocation pushed);
 //    }-{   P U B L I C   F U N C T I O N S   }-{
 // =================================================
 
-bool rf_allocate(void** target, size_t amount, char const* file,
-  unsigned line) {
-  // Try reallocating and report error if it fails.
-  void* allocated_block = realloc(*target, amount);
+bool rf_allocate(void** target, size_t size, char const* file, unsigned line) {
+  // Get the information on the target block.
+  struct allocation* previous = find_allocation(*target);
+
+  if (previous != NULL) {
+    fprintf(stderr,
+      "failure: Trying to allocate a block that is already allocated at "
+      "%s:%u!\n"
+      "info: Allocation was at %s:%u\n.",
+      file, line, previous->file, previous->line);
+    abort();
+  }
+
+  // Try allocating and report error if it fails.
+  void* allocated_block = malloc(size);
   if (allocated_block == NULL) { return true; }
 
-  // Find the recorded information about the target block, and update it. Create
-  // new information if its not there.
-  struct allocation* previous = find_allocation(*target);
-  if (previous != NULL) {
-    previous->reallocation_count++;
-    previous->relocation_count += previous->block != allocated_block;
-    previous->block = allocated_block;
-  } else {
-    push_allocation((struct allocation){.block = allocated_block,
-      .file                                    = file,
-      .line                                    = line,
-      .is_freed                                = false,
-      .reallocation_count                      = 0,
-      .relocation_count                        = 0});
-  }
+  // Record the allocation.
+  push_allocation((struct allocation){.block = allocated_block,
+    .max_size                                = size,
+    .file                                    = file,
+    .line                                    = line,
+    .is_freed                                = false,
+    .reallocation_count                      = 0,
+    .relocation_count                        = 0});
 
   // Set the new block and report success.
   *target = allocated_block;
   return false;
 }
 
-void rf_free(void** target, char const* file, unsigned line) {
+bool rf_reallocate(void** target, size_t new_size, char const* file,
+  unsigned line) {
   // Get the information on the target block.
   struct allocation* previous = find_allocation(*target);
 
   // If there is no record of it, report and abort.
   if (previous == NULL) {
     fprintf(stderr,
-      "failure: Trying to free a block that was not allocated at %s:%u!", file,
+      "failure: Trying to reallocate a block that was not allocated at "
+      "%s:%u!\n",
+      file, line);
+    abort();
+  }
+
+  // If the block is already freed, report and abort.
+  if (previous->is_freed) {
+    fprintf(stderr,
+      "failure: Trying to reallocate a block that was freed at %s:%u!\n", file,
       line);
+    abort();
+  }
+
+  // Try reallocating and report error if it fails.
+  void* reallocated_block = realloc(*target, new_size);
+  if (reallocated_block == NULL) { return true; }
+
+  // Update the records.
+  previous->reallocation_count++;
+  previous->relocation_count += previous->block != reallocated_block;
+  previous->block    = reallocated_block;
+  previous->max_size = max(previous->max_size, new_size);
+
+  // Set the might be relocated block and report success.
+  *target = reallocated_block;
+  return false;
+}
+
+void rf_free(void** target, char const* file, unsigned line) {
+  // If the target is null, return.
+  if (*target == NULL) { return; }
+
+  // Get the information on the target block.
+  struct allocation* previous = find_allocation(*target);
+
+  // If there is no record of it, report and abort.
+  if (previous == NULL) {
+    fprintf(stderr,
+      "failure: Trying to free a block that was not allocated at %s:%u!\n",
+      file, line);
     abort();
   }
 
   // If it is already freed, report and abort.
   if (previous->is_freed) {
     fprintf(stderr,
-      "failure: Trying to free a block that was already freed at %s:%u!", file,
-      line);
+      "failure: Trying to free a block that was already freed at %s:%u!\n",
+      file, line);
     abort();
   }
 
@@ -105,7 +151,8 @@ void rf_report_allocations(void) {
   puts("\nAllocations:");
   for (size_t i = 0; i < allocation_list.count; i++) {
     struct allocation allocation = allocation_list.elements[i];
-    printf("[%zu] %s:%u: %u (%u)%s\n", i, allocation.file, allocation.line,
+    printf("[%zu] %s:%u: max: %zu reallocations: %u relocations: %u%s\n", i,
+      allocation.file, allocation.line, allocation.max_size,
       allocation.reallocation_count, allocation.relocation_count,
       allocation.is_freed ? "" : "LEAKED");
   }
