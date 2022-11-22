@@ -1,4 +1,4 @@
-Checks: "bugprone-*,-bugprone-easily-swappable-parameters,-bugprone-suspicious-include,cert-*,-cert-err33-c,-cert-err09-cpp.MaxSize,-cert-err61-cpp.MaxSize,clang-*,concurrency-*,-concurrency-mt-unsafe,cppcoreguidelines-*,-cppcoreguidelines-init-variables,-cppcoreguidelines-avoid-non-const-global-variables,hicpp-*,llvm-*,misc-*,-misc-unused-parameters,-misc-throw-by-value-catch-by-reference.MaxSize,modernize-*,performance-*,portability-*,readability-*,-readability-implicit-bool-conversion"
+Checks: "bugprone-*,-bugprone-easily-swappable-parameters,-bugprone-suspicious-include,cert-*,-cert-err33-c,-cert-err09-cpp.MaxSize,-cert-err61-cpp.MaxSize,clang-*,concurrency-*,-concurrency-mt-unsafe,cppcoreguidelines-*,-cppcoreguidelines-init-variables,-cppcoreguidelines-avoid-non-const-global-variables,hicpp-*,-hicpp-named-parameter,llvm-*,misc-*,-misc-unused-parameters,-misc-throw-by-value-catch-by-reference.MaxSize,modernize-*,performance-*,portability-*,readability-*,-readability-named-parameter,-readability-implicit-bool-conversion"
 WarningsAsErrors: ""
 HeaderFilterRegex: ""
 AnalyzeTemporaryDtors: false
