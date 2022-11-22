@@ -1,4 +1,5 @@
 #include "rf_allocator.h"
+#include "rf_string.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -151,8 +152,14 @@ void rf_report_allocations(void) {
   puts("\nAllocations:");
   for (size_t i = 0; i < allocation_list.count; i++) {
     struct allocation allocation = allocation_list.elements[i];
+
+    // Remove the parent directories upto the source folder.
+    struct rf_string path = rf_view_null_terminated(allocation.file);
+    rf_skip_prefix(&path,
+      rf_find_last_occurrence(path, rf_view_null_terminated("/src/")));
+
     printf("[%zu] %s:%u: max: %zu reallocations: %u relocations: %u%s\n", i,
-      allocation.file, allocation.line, allocation.max_size,
+      path.array, allocation.line, allocation.max_size,
       allocation.reallocation_count, allocation.relocation_count,
       allocation.is_freed ? "" : "LEAKED");
   }
