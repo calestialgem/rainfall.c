@@ -1,5 +1,6 @@
 #include "rf_filesystem.h"
 
+#include "rf_allocator.h"
 #include "rf_string.h"
 
 #include <errno.h>
@@ -47,8 +48,7 @@ bool rf_open_file(struct rf_file* target, char const* mode,
   for (int i = 0; i < part_count; i++) { total_length += parts[i].count; }
 
   // Allocate an extra byte for the null-termination character.
-  target->path = malloc(total_length + 1);
-  if (target->path == NULL) {
+  if (RF_ALLOCATE(&target->path, total_length + 1)) {
     target->stream = NULL;
     return true;
   }
@@ -69,7 +69,7 @@ bool rf_open_file(struct rf_file* target, char const* mode,
   // manually assigned to `errno`.
   int error_code = fopen_s(&target->stream, target->path, mode);
   if (error_code != 0) {
-    free(target->path);
+    RF_FREE(target->path);
     target->path   = NULL;
     target->stream = NULL;
     errno          = error_code;
@@ -79,8 +79,7 @@ bool rf_open_file(struct rf_file* target, char const* mode,
 }
 
 bool rf_close_file(struct rf_file* target) {
-  free(target->path);
-  target->path = NULL;
+  RF_FREE(&target->path);
 
   // Close the file and return the error status.
   int status     = fclose(target->stream);

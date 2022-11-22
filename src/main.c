@@ -1,3 +1,4 @@
+#include "rf_allocator.h"
 #include "rf_filesystem.h"
 #include "rf_launcher.h"
 #include "rf_string.h"
@@ -90,32 +91,54 @@ int main(int arguments_count, char const* const* arguments_array) {
     return EXIT_FAILURE;
   }
 
+  // Check whether there are no arguments, which means the assumption that the
+  // first argument is the path to the executable of the compiler does not hold.
+  if (arguments_count < 1) {
+    fputs(
+      "failure: Command line arguments do not start with the path to the "
+      "executable!",
+      stderr);
+    return EXIT_FAILURE;
+  }
+
+  // Create the arguments by skipping the first one, which is assumed to be the
+  // path to the executable.
   struct {
     struct rf_string* array;
     int               count;
   } arguments_as_string;
 
-  // Create the arguments by skipping the first one, which is assumed to be the
-  // path to the executable.
   arguments_as_string.count = arguments_count - 1;
-  arguments_as_string.array =
-    calloc(arguments_as_string.count, sizeof(struct rf_string));
+  if (RF_ALLOCATE_ARRAY(&arguments_as_string.array, arguments_as_string.count,
+        struct rf_string)) {
+    fprintf(stderr,
+      "failure: Could not allocate memory for processing command-line "
+      "arguments!\n"
+      "cause: %s\n",
+      strerror(errno));
+    return EXIT_FAILURE;
+  }
   for (int i = 0; i < arguments_as_string.count; i++) {
     arguments_as_string.array[i] =
       rf_view_null_terminated(arguments_array[i + 1]);
   }
 
+  // Parse the arguments and launch if it was successful.
   struct parse_context context;
   context.arguments.array = arguments_as_string.array;
   context.arguments.count = arguments_as_string.count;
   context.next_index      = 0;
-
-  // Parse the arguments and launch if it was successful.
+  int exit_code           = EXIT_SUCCESS;
   switch (parse_arguments(&context)) {
-  case PARSE_FAILED: free(arguments_as_string.array); return EXIT_FAILURE;
-  case PARSE_SUCCEEDED: rf_launch(context.result);
-  case PARSE_CANCELED: free(arguments_as_string.array); return EXIT_SUCCESS;
+  case PARSE_CANCELED: break;
+  case PARSE_FAILED: exit_code = EXIT_FAILURE; break;
+  case PARSE_SUCCEEDED: rf_launch(context.result); break;
   }
+  RF_FREE(&arguments_as_string.array);
+
+  // Report allocations and exit.
+  rf_report_allocations();
+  return exit_code;
 }
 
 static bool run_tests(void) {
