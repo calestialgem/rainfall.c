@@ -17,14 +17,18 @@ static void execute_new_command(struct rf_launch_command executed);
 void rf_launch(struct rf_launch_command launched) {
   switch (launched.variant) {
   case RF_LAUNCH_COMMAND_NEW: execute_new_command(launched); break;
-  case RF_LAUNCH_COMMAND_CHECK:
-  case RF_LAUNCH_COMMAND_TEST:
-  case RF_LAUNCH_COMMAND_BUILD:
+  case RF_LAUNCH_COMMAND_CHECK: [[fallthrough]];
+  case RF_LAUNCH_COMMAND_TEST: [[fallthrough]];
+  case RF_LAUNCH_COMMAND_BUILD: [[fallthrough]];
   case RF_LAUNCH_COMMAND_RUN:
     fputs("failure: Not implemented yet!", stderr);
     break;
   }
 }
+
+// ===================================================
+//    [+]   P R I V A T E   F U N C T I O N S   [+]
+// ===================================================
 
 static void execute_new_command(struct rf_launch_command executed) {
   if (rf_create_directory(executed.as_new.created_name)) {
