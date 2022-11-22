@@ -97,4 +97,8 @@ static void execute_new_command(struct rf_launch_command executed) {
       executed.as_new.created_name.array, strerror(errno));
     return;
   }
+
+  printf("Successfully created package `%.*s`.\n",
+    (int)executed.as_new.created_name.count,
+    executed.as_new.created_name.array);
 }
