@@ -8,23 +8,21 @@
 #include <string.h>
 
 /* Creates a package with the given name. */
-static void execute_new_command(struct rf_launch_command executed);
+static void execute_new_command(struct rf_new_command executed);
 /* Checks all the packages or the packages with the given names. */
-static void execute_check_command(struct rf_launch_command executed);
+static void execute_check_command(struct rf_check_command executed);
 
 // =================================================
 //    }-{   P U B L I C   F U N C T I O N S   }-{
 // =================================================
 
-void rf_launch(struct rf_launch_command launched) {
+void rf_launch(struct rf_launch_command launched, struct rf_string) {
   switch (launched.variant) {
-  case RF_LAUNCH_COMMAND_NEW: execute_new_command(launched); break;
-  case RF_LAUNCH_COMMAND_CHECK: execute_check_command(launched); break;
-  case RF_LAUNCH_COMMAND_TEST: [[fallthrough]];
-  case RF_LAUNCH_COMMAND_BUILD: [[fallthrough]];
-  case RF_LAUNCH_COMMAND_RUN:
-    fputs("failure: Not implemented yet!", stderr);
-    break;
+  case RF_NEW_COMMAND: execute_new_command(launched.as_new); break;
+  case RF_CHECK_COMMAND: execute_check_command(launched.as_check); break;
+  case RF_TEST_COMMAND: [[fallthrough]];
+  case RF_BUILD_COMMAND: [[fallthrough]];
+  case RF_RUN_COMMAND: fputs("failure: Not implemented yet!", stderr); break;
   }
 }
 
@@ -32,57 +30,55 @@ void rf_launch(struct rf_launch_command launched) {
 //    [+]   P R I V A T E   F U N C T I O N S   [+]
 // ===================================================
 
-static void execute_new_command(struct rf_launch_command executed) {
+static void execute_new_command(struct rf_new_command executed) {
   // Check package name.
-  if (executed.as_new.created_name.count == 0) {
+  if (executed.created_name.count == 0) {
     fputs("failure: Cannot create package with an empty name!\n", stderr);
     return;
   }
-  if (executed.as_new.created_name.array[0] < 'A' ||
-      executed.as_new.created_name.array[0] > 'Z') {
+  if (executed.created_name.array[0] < 'A' ||
+      executed.created_name.array[0] > 'Z') {
     fprintf(stderr,
       "failure: Cannot create package `%.*s`!\n"
       "info: Package name must start with an uppercase English letter.\n",
-      (int)executed.as_new.created_name.count,
-      executed.as_new.created_name.array);
+      (int)executed.created_name.count, executed.created_name.array);
     return;
   }
-  for (size_t i = 0; i < executed.as_new.created_name.count; i++) {
-    if ((executed.as_new.created_name.array[0] < 'A' ||
-          executed.as_new.created_name.array[0] > 'Z') &&
-        (executed.as_new.created_name.array[0] < 'a' ||
-          executed.as_new.created_name.array[0] > 'z') &&
-        (executed.as_new.created_name.array[0] < '0' ||
-          executed.as_new.created_name.array[0] > '9')) {
+  for (size_t i = 0; i < executed.created_name.count; i++) {
+    if ((executed.created_name.array[0] < 'A' ||
+          executed.created_name.array[0] > 'Z') &&
+        (executed.created_name.array[0] < 'a' ||
+          executed.created_name.array[0] > 'z') &&
+        (executed.created_name.array[0] < '0' ||
+          executed.created_name.array[0] > '9')) {
       fprintf(stderr,
         "failure: Cannot create package `%.*s`!\n"
         "info: Package name must solely consist of English letters and decimal "
         "digits.\n",
-        (int)executed.as_new.created_name.count,
-        executed.as_new.created_name.array);
+        (int)executed.created_name.count, executed.created_name.array);
       return;
     }
   }
 
   // Create package directory.
-  if (rf_create_directory(executed.as_new.created_name)) {
+  if (rf_create_directory(executed.created_name)) {
     fprintf(stderr,
       "failure: Cannot create package `%.*s`!\n"
       "cause: %s\n",
-      (int)executed.as_new.created_name.count,
-      executed.as_new.created_name.array, strerror(errno));
+      (int)executed.created_name.count, executed.created_name.array,
+      strerror(errno));
     return;
   }
 
   // Create a source file that is inside the package.
   struct rf_file library_file;
-  if (rf_open_file(&library_file, "wx", ".tr", 2, executed.as_new.created_name,
+  if (rf_open_file(&library_file, "wx", ".tr", 2, executed.created_name,
         rf_view_null_terminated("Prelude"))) {
     fprintf(stderr,
       "failure: Cannot open prelude source `%.*s/Prelude.tr`!\n"
       "cause: %s\n",
-      (int)executed.as_new.created_name.count,
-      executed.as_new.created_name.array, strerror(errno));
+      (int)executed.created_name.count, executed.created_name.array,
+      strerror(errno));
     return;
   }
   fprintf(library_file.stream,
@@ -92,26 +88,25 @@ static void execute_new_command(struct rf_launch_command executed) {
     "public function value(): int {\n"
     "  return 7;\n"
     "}\n",
-    (int)executed.as_new.created_name.count,
-    executed.as_new.created_name.array);
+    (int)executed.created_name.count, executed.created_name.array);
   if (rf_close_file(&library_file)) {
     fprintf(stderr,
       "failure: Cannot close prelude source `%.*s/Prelude.tr`!\n"
       "cause: %s\n",
-      (int)executed.as_new.created_name.count,
-      executed.as_new.created_name.array, strerror(errno));
+      (int)executed.created_name.count, executed.created_name.array,
+      strerror(errno));
     return;
   }
 
   // Create a source file with an entry point.
   struct rf_file main_file;
-  if (rf_open_file(&main_file, "wx", ".tr", 2, executed.as_new.created_name,
+  if (rf_open_file(&main_file, "wx", ".tr", 2, executed.created_name,
         rf_view_null_terminated("Main"))) {
     fprintf(stderr,
       "failure: Cannot open main source `%.*s/Main.tr`!\n"
       "cause: %s\n",
-      (int)executed.as_new.created_name.count,
-      executed.as_new.created_name.array, strerror(errno));
+      (int)executed.created_name.count, executed.created_name.array,
+      strerror(errno));
     return;
   }
   fprintf(main_file.stream,
@@ -121,29 +116,29 @@ static void execute_new_command(struct rf_launch_command executed) {
     "entrypoint {\n"
     "  return %.*s.value;\n"
     "}\n",
-    (int)executed.as_new.created_name.count, executed.as_new.created_name.array,
-    (int)executed.as_new.created_name.count, executed.as_new.created_name.array,
-    (int)executed.as_new.created_name.count,
-    executed.as_new.created_name.array);
+    (int)executed.created_name.count, executed.created_name.array,
+    (int)executed.created_name.count, executed.created_name.array,
+    (int)executed.created_name.count, executed.created_name.array);
   if (rf_close_file(&main_file)) {
     fprintf(stderr,
       "failure: Cannot close main source `%.*s/Main.tr`!\n"
       "cause: %s\n",
-      (int)executed.as_new.created_name.count,
-      executed.as_new.created_name.array, strerror(errno));
+      (int)executed.created_name.count, executed.created_name.array,
+      strerror(errno));
     return;
   }
 
   // Report success.
   printf("info: Successfully created package `%.*s`.\n",
-    (int)executed.as_new.created_name.count,
-    executed.as_new.created_name.array);
+    (int)executed.created_name.count, executed.created_name.array);
 }
 
-static void execute_check_command(struct rf_launch_command executed) {
+static void execute_check_command(struct rf_check_command executed) {
   // Load the workspace.
 
   // Report success.
-  printf("info: Successfully checked %s packages.\n",
-    executed.as_check.checked_names.count == 0 ? "all" : "given");
+  printf("info: Successfully checked %s.\n",
+    executed.checked_names.count == 0   ? "all the packages"
+    : executed.checked_names.count == 1 ? "the given package"
+                                        : "the given packages");
 }
