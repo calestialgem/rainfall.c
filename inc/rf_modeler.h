@@ -6,6 +6,11 @@
 
 #include <stddef.h>
 
+enum {
+  /* Maximum number of source files that could be modeled by the compiler. */
+  RF_SOURCE_MODELS_LIMIT = 1024,
+};
+
 /* A node in the workspace forest. Might be a source or module. Also it is a
  * package if its at the top level. */
 struct rf_workspace_node {
