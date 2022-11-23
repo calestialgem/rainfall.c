@@ -1,6 +1,7 @@
 #include "rf_allocator.h"
 #include "rf_filesystem.h"
 #include "rf_launcher.h"
+#include "rf_status.h"
 #include "rf_string.h"
 #include "rf_tester.h"
 
@@ -12,75 +13,71 @@
 
 /* Data of the command-line argument parsing proccess. */
 struct parse_context {
-  /* Command-line arguments that are given to the compiler.
-   * The first argument is skipped because it is assumed to
-   * be the path to the executable. */
   struct {
     /* Immutable pointer to the first argument after the path to the executable
      * if it exists. */
     struct rf_string const* array;
     /* Number of arguments after the path to the executable. */
     int                     count;
-  } arguments;
+  }
+  /* Command-line arguments that are given to the compiler. The first argument
+   * is skipped because it is assumed to be the path to the executable. */
+  arguments;
 
   /* Index the argument that is going to be parsed next. Can be equal to the
    * number of arguments, which means there is no more arguments to parse. */
-  int                      next_index;
-  /* Launch command that is the result of parsing the command-line arguments. */
-  struct rf_launch_command result;
-};
+  int next_index;
 
-/* Information on the result of parsing command-line arguments. */
-enum parse_result {
-  /* Parse did not start because some requirements were not met. */
-  PARSE_CANCELED,
-  /* Parse started, but it was aborted because of an error. */
-  PARSE_FAILED,
-  /* Parse finished without any errors. */
-  PARSE_SUCCEEDED,
+  struct {
+    /* Command that will be launched. */
+    struct rf_launch_command launched_command;
+    /* Name of the configuration that will be used on the launch. */
+    struct rf_string         configuration_name;
+  }
+  /* Result of parsing the command-line arguments. */
+  result;
 };
 
 /* Runs all the unit tests for the compiler and returns whether all of them
  * passed. */
-static bool              run_tests(void);
-/* Runs the given context. Returns the result. */
-static enum parse_result parse_arguments(struct parse_context* context);
+static bool           run_tests(void);
+/* Runs the given context. */
+static enum rf_status parse_arguments(struct parse_context* context);
 /* Parses the next option from the given context. Moves the context after the
- * parsed option. Returns the result. */
-static enum parse_result parse_option(struct parse_context* context);
+ * parsed option. */
+static enum rf_status parse_option(struct parse_context* context);
 /* Parses the next argument of the directory option from the given context.
- * Moves the context after the parsed argument. Returns the result. */
-static enum parse_result parse_directory_option(struct parse_context* context);
+ * Moves the context after the parsed argument. */
+static enum rf_status parse_directory_option(struct parse_context* context);
 /* Parses the next argument of the configuration option from the given context.
- * Moves the context after the parsed argument. Returns the result. */
-static enum parse_result parse_configuration_option(
-  struct parse_context* context);
+ * Moves the context after the parsed argument. */
+static enum rf_status parse_configuration_option(struct parse_context* context);
 /* Parses the next command from the given context. Moves the context after the
- * parsed command. Returns the result. */
-static enum parse_result parse_command(struct parse_context* context);
+ * parsed command. */
+static enum rf_status parse_command(struct parse_context* context);
 /* Parses the next argument of the new command from the given context.
- * Moves the context after the parsed argument. Returns the result. */
-static enum parse_result parse_new_command(struct parse_context* context);
+ * Moves the context after the parsed argument. */
+static enum rf_status parse_new_command(struct parse_context* context);
 /* Parses the next arguments of the check command from the given context.
- * Moves the context after the parsed arguments. Returns the result. */
-static enum parse_result parse_check_command(struct parse_context* context);
+ * Moves the context after the parsed arguments. */
+static enum rf_status parse_check_command(struct parse_context* context);
 /* Parses the next arguments of the test command from the given context.
- * Moves the context after the parsed arguments. Returns the result. */
-static enum parse_result parse_test_command(struct parse_context* context);
+ * Moves the context after the parsed arguments. */
+static enum rf_status parse_test_command(struct parse_context* context);
 /* Parses the next argument of the new command from the given context.
- * Moves the context after the parsed argument. Returns the result. */
-static enum parse_result parse_build_command(struct parse_context* context);
+ * Moves the context after the parsed argument. */
+static enum rf_status parse_build_command(struct parse_context* context);
 /* Parses the next arguments of the run command from the given context.
- * Moves the context after the parsed arguments. Returns the result. */
-static enum parse_result parse_run_command(struct parse_context* context);
+ * Moves the context after the parsed arguments. */
+static enum rf_status parse_run_command(struct parse_context* context);
 /* Stores the next argument from the given context to the given target. Moves
- * the context after the stored argument. Returns the result. */
-static enum parse_result store_next_argument(struct parse_context* context,
-  struct rf_string*                                                target);
+ * the context after the stored argument. */
+static enum rf_status store_next_argument(struct parse_context* context,
+  struct rf_string*                                             target);
 /* Stores the all remaining argument from the given context to the given target.
  * Moves the context to the end of the arguments. */
-static void store_remaining_arguments(struct parse_context* context,
-  struct rf_string const** target_array, size_t* target_count);
+static void           store_remaining_arguments(struct parse_context* context,
+            struct rf_string const** target_array, size_t* target_count);
 
 /* Parse the command-line arguments and run the compiler, if all the unit tests
  * pass. */
@@ -130,9 +127,12 @@ int main(int arguments_count, char const* const* arguments_array) {
   context.next_index      = 0;
   int exit_code           = EXIT_SUCCESS;
   switch (parse_arguments(&context)) {
-  case PARSE_CANCELED: break;
-  case PARSE_FAILED: exit_code = EXIT_FAILURE; break;
-  case PARSE_SUCCEEDED: rf_launch(context.result); break;
+  case RF_SUCCEEDED:
+    rf_launch(context.result.launched_command,
+      context.result.configuration_name);
+    break;
+  case RF_CANCELED: break;
+  case RF_FAILED: exit_code = EXIT_FAILURE; break;
   }
   RF_FREE(&arguments_as_string.array);
 
@@ -147,7 +147,7 @@ static bool run_tests(void) {
   return rf_report_tests();
 }
 
-static enum parse_result parse_arguments(struct parse_context* context) {
+static enum rf_status parse_arguments(struct parse_context* context) {
   // If no arguments are given, print the version and help message.
   if (context->arguments.count == 0) {
     printf(
@@ -173,7 +173,7 @@ static enum parse_result parse_arguments(struct parse_context* context) {
       "that has the given name. Defaults to the default configuration if it "
       "exists. Otherwise, runs the compiler without setting a "
       "configuration.\n");
-    return PARSE_CANCELED;
+    return RF_CANCELED;
   }
 
   // Set the default option values.
@@ -182,17 +182,17 @@ static enum parse_result parse_arguments(struct parse_context* context) {
   // Try parsing options until cannot.
   for (;;) {
     switch (parse_option(context)) {
-    case PARSE_CANCELED: break;
-    case PARSE_FAILED: return PARSE_FAILED;
-    case PARSE_SUCCEEDED: continue;
+    case RF_SUCCEEDED: continue;
+    case RF_CANCELED: break;
+    case RF_FAILED: return RF_FAILED;
     }
     break;
   }
 
   switch (parse_command(context)) {
-  case PARSE_CANCELED: fprintf(stderr, "failure: Expected a command!\n");
-  case PARSE_FAILED: return PARSE_FAILED;
-  case PARSE_SUCCEEDED: break;
+  case RF_SUCCEEDED: break;
+  case RF_CANCELED: fprintf(stderr, "failure: Expected a command!\n");
+  case RF_FAILED: return RF_FAILED;
   }
 
   // Check whether there are unused arguments.
@@ -214,17 +214,15 @@ static enum parse_result parse_arguments(struct parse_context* context) {
       "`!\n"
       "info: Run the compiler without arguments to see the usage.\n",
       stderr);
-    return PARSE_FAILED;
+    return RF_FAILED;
   }
 
-  return PARSE_SUCCEEDED;
+  return RF_SUCCEEDED;
 }
 
-static enum parse_result parse_option(struct parse_context* context) {
+static enum rf_status parse_option(struct parse_context* context) {
   // Check whether there is an argument left.
-  if (context->next_index == context->arguments.count) {
-    return PARSE_CANCELED;
-  }
+  if (context->next_index == context->arguments.count) { return RF_CANCELED; }
 
   // Get the first argument, which should be the option name or shortcut.
   struct rf_string option = context->arguments.array[context->next_index++];
@@ -237,14 +235,14 @@ static enum parse_result parse_option(struct parse_context* context) {
     // Check the name length.
     if (option.count == 0) {
       fprintf(stderr, "failure: Expected an option name after `--`!\n");
-      return PARSE_FAILED;
+      return RF_FAILED;
     }
     if (option.count == 1) {
       fprintf(stderr,
         "failure: Option name must be longer than a single character!\n"
         "info: Use `-%c` for providing only the shortcut.\n",
         option.array[0]);
-      return PARSE_FAILED;
+      return RF_FAILED;
     }
 
     // Dispatch to option.
@@ -259,7 +257,7 @@ static enum parse_result parse_option(struct parse_context* context) {
       "failure: Unknown option name: `%.*s`!\n"
       "info: Run the compiler without arguments to see the usage.\n",
       (int)option.count, option.array);
-    return PARSE_FAILED;
+    return RF_FAILED;
   }
 
   // Check whether it is a shortcut, which starts with a '-'.
@@ -267,14 +265,14 @@ static enum parse_result parse_option(struct parse_context* context) {
     // Check the shortcut length.
     if (option.count < 2) {
       fprintf(stderr, "failure: Expected an option shortcut after `-`!\n");
-      return PARSE_FAILED;
+      return RF_FAILED;
     }
     if (option.count > 2) {
       fprintf(stderr,
         "failure: Option shortcut must be a single character!\n"
         "info: Use `-%.*s` for providing the full name.\n",
         (int)option.count, option.array);
-      return PARSE_FAILED;
+      return RF_FAILED;
     }
 
     // Dispatch to option.
@@ -286,7 +284,7 @@ static enum parse_result parse_option(struct parse_context* context) {
         "failure: Unknown option shortcut: `%c`!\n"
         "info: Run the compiler without arguments to see the usage.\n",
         option.array[1]);
-      return PARSE_FAILED;
+      return RF_FAILED;
     }
   }
 
@@ -294,22 +292,22 @@ static enum parse_result parse_option(struct parse_context* context) {
   // the previously skipped over argument that was thought to be an option name
   // or shortcut.
   context->next_index--;
-  return PARSE_CANCELED;
+  return RF_CANCELED;
 }
 
-static enum parse_result parse_directory_option(struct parse_context* context) {
+static enum rf_status parse_directory_option(struct parse_context* context) {
   // Make sure the option is provided once.
   static bool already_parsed = false;
   if (already_parsed) {
     fprintf(stderr, "failure: Multiple directory options are provided!");
-    return PARSE_FAILED;
+    return RF_FAILED;
   }
   already_parsed = true;
 
   // Check whether there is an argument left.
   if (context->next_index == context->arguments.count) {
     fprintf(stderr, "failure: Path to the workspace is not provided!");
-    return PARSE_FAILED;
+    return RF_FAILED;
   }
 
   // Set the path and advance over it.
@@ -321,39 +319,37 @@ static enum parse_result parse_directory_option(struct parse_context* context) {
       "cause: %s\n",
       (int)workspace_directory.count, workspace_directory.array,
       strerror(errno));
-    return PARSE_FAILED;
+    return RF_FAILED;
   }
 
-  return PARSE_SUCCEEDED;
+  return RF_SUCCEEDED;
 }
 
-static enum parse_result parse_configuration_option(
+static enum rf_status parse_configuration_option(
   struct parse_context* context) {
   // Make sure the option is provided once.
   static bool already_parsed = false;
   if (already_parsed) {
     fprintf(stderr, "failure: Multiple configuration options are provided!");
-    return PARSE_FAILED;
+    return RF_FAILED;
   }
   already_parsed = true;
 
   // Check whether there is an argument left.
   if (context->next_index == context->arguments.count) {
     fprintf(stderr, "failure: Name of the configuration is not provided!");
-    return PARSE_FAILED;
+    return RF_FAILED;
   }
 
   // Set the name and advance over it.
   context->result.configuration_name =
     context->arguments.array[context->next_index++];
-  return PARSE_SUCCEEDED;
+  return RF_SUCCEEDED;
 }
 
-static enum parse_result parse_command(struct parse_context* context) {
+static enum rf_status parse_command(struct parse_context* context) {
   // Check whether there is an argument left.
-  if (context->next_index == context->arguments.count) {
-    return PARSE_CANCELED;
-  }
+  if (context->next_index == context->arguments.count) { return RF_CANCELED; }
 
   // Get the command name or shortcut.
   struct rf_string command = context->arguments.array[context->next_index++];
@@ -371,7 +367,7 @@ static enum parse_result parse_command(struct parse_context* context) {
         "failure: Unknown command shortcut `%c`!\n"
         "info: Run the compiler without arguments to see the usage.\n",
         command.array[0]);
-      return PARSE_FAILED;
+      return RF_FAILED;
     }
   } else {
     if (rf_compare_strings(command, rf_view_null_terminated("new"))) {
@@ -394,92 +390,93 @@ static enum parse_result parse_command(struct parse_context* context) {
       "failure: Unknown command name `%.*s`!\n"
       "info: Run the compiler without arguments to see the usage.\n",
       (int)command.count, command.array);
-    return PARSE_FAILED;
+    return RF_FAILED;
   }
 }
 
-static enum parse_result parse_new_command(struct parse_context* context) {
-  switch (store_next_argument(context, &context->result.as_run.run_name)) {
-  case PARSE_CANCELED:
+static enum rf_status parse_new_command(struct parse_context* context) {
+  switch (store_next_argument(context,
+    &context->result.launched_command.as_new.created_name)) {
+  case RF_SUCCEEDED: break;
+  case RF_CANCELED:
     fputs(
       "failure: Name for the package that will be created is not provided!"
       "info: Run the compiler without arguments to see the usage.\n",
       stderr);
-  case PARSE_FAILED: return PARSE_FAILED;
-  case PARSE_SUCCEEDED: break;
+  case RF_FAILED: return RF_FAILED;
   }
 
   // Set the variant.
-  context->result.variant = RF_LAUNCH_COMMAND_NEW;
-  return PARSE_SUCCEEDED;
+  context->result.launched_command.variant = RF_NEW_COMMAND;
+  return RF_SUCCEEDED;
 }
 
-static enum parse_result parse_check_command(struct parse_context* context) {
+static enum rf_status parse_check_command(struct parse_context* context) {
   store_remaining_arguments(context,
-    &context->result.as_check.checked_names.array,
-    &context->result.as_check.checked_names.count);
+    &context->result.launched_command.as_check.checked_names.array,
+    &context->result.launched_command.as_check.checked_names.count);
 
   // Set the variant.
-  context->result.variant = RF_LAUNCH_COMMAND_CHECK;
-  return PARSE_SUCCEEDED;
+  context->result.launched_command.variant = RF_CHECK_COMMAND;
+  return RF_SUCCEEDED;
 }
 
-static enum parse_result parse_test_command(struct parse_context* context) {
+static enum rf_status parse_test_command(struct parse_context* context) {
   store_remaining_arguments(context,
-    &context->result.as_test.tested_names.array,
-    &context->result.as_test.tested_names.count);
+    &context->result.launched_command.as_test.tested_names.array,
+    &context->result.launched_command.as_test.tested_names.count);
 
   // Set the variant.
-  context->result.variant = RF_LAUNCH_COMMAND_TEST;
-  return PARSE_SUCCEEDED;
+  context->result.launched_command.variant = RF_TEST_COMMAND;
+  return RF_SUCCEEDED;
 }
 
-static enum parse_result parse_build_command(struct parse_context* context) {
-  switch (store_next_argument(context, &context->result.as_run.run_name)) {
-  case PARSE_CANCELED:
+static enum rf_status parse_build_command(struct parse_context* context) {
+  switch (store_next_argument(context,
+    &context->result.launched_command.as_build.built_name)) {
+  case RF_SUCCEEDED: break;
+  case RF_CANCELED:
     fputs(
       "failure: Name for the package that will be built is not provided!"
       "info: Run the compiler without arguments to see the usage.\n",
       stderr);
-  case PARSE_FAILED: return PARSE_FAILED;
-  case PARSE_SUCCEEDED: break;
+  case RF_FAILED: return RF_FAILED;
   }
 
   // Set the variant.
-  context->result.variant = RF_LAUNCH_COMMAND_BUILD;
-  return PARSE_SUCCEEDED;
+  context->result.launched_command.variant = RF_BUILD_COMMAND;
+  return RF_SUCCEEDED;
 }
 
-static enum parse_result parse_run_command(struct parse_context* context) {
-  switch (store_next_argument(context, &context->result.as_run.run_name)) {
-  case PARSE_CANCELED:
+static enum rf_status parse_run_command(struct parse_context* context) {
+  switch (store_next_argument(context,
+    &context->result.launched_command.as_run.run_name)) {
+  case RF_SUCCEEDED: break;
+  case RF_CANCELED:
     fputs(
       "failure: Name for the package that will be run is not provided!"
       "info: Run the compiler without arguments to see the usage.\n",
       stderr);
-  case PARSE_FAILED: return PARSE_FAILED;
-  case PARSE_SUCCEEDED: break;
+  case RF_FAILED: return RF_FAILED;
   }
 
   store_remaining_arguments(context,
-    &context->result.as_run.passed_arguments.array,
-    &context->result.as_run.passed_arguments.count);
+    &context->result.launched_command.as_run.passed_arguments.array,
+    &context->result.launched_command.as_run.passed_arguments.count);
 
   // Set the variant.
-  context->result.variant = RF_LAUNCH_COMMAND_RUN;
-  return PARSE_SUCCEEDED;
+  context->result.launched_command.variant = RF_RUN_COMMAND;
+  return RF_SUCCEEDED;
 }
 
-static enum parse_result store_next_argument(struct parse_context* context,
-  struct rf_string*                                                target) {
+static enum rf_status store_next_argument(struct parse_context* context,
+  struct rf_string*                                             target) {
   // Check whether there is an argument left.
-  if (context->next_index == context->arguments.count) {
-    return PARSE_CANCELED;
-  }
+  if (context->next_index == context->arguments.count) { return RF_CANCELED; }
 
   // Set the name and advance over it.
   *target = context->arguments.array[context->next_index++];
-  return PARSE_SUCCEEDED;
+  return RF_SUCCEEDED;
 }
 
 static void store_remaining_arguments(struct parse_context* context,
