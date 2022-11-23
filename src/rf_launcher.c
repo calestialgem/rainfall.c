@@ -135,7 +135,7 @@ static void execute_new_command(struct rf_launch_command executed) {
   }
 
   // Report success.
-  printf("Successfully created package `%.*s`.\n",
+  printf("info: Successfully created package `%.*s`.\n",
     (int)executed.as_new.created_name.count,
     executed.as_new.created_name.array);
 }
@@ -144,6 +144,6 @@ static void execute_check_command(struct rf_launch_command executed) {
   // Load the workspace.
 
   // Report success.
-  printf("Successfully checked %s packages.\n",
+  printf("info: Successfully checked %s packages.\n",
     executed.as_check.checked_names.count == 0 ? "all" : "given");
 }
