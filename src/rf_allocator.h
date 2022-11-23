@@ -1,6 +1,6 @@
 /* Manages memory allocation in the compiler. */
 #ifndef RF_ALLOCATOR_H
-#define RF_ALLOCATOR_H
+#define RF_ALLOCATOR_H 1
 
 #include <stdbool.h>
 #include <stddef.h>

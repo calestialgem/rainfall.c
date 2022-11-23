@@ -1,6 +1,6 @@
 /* Represents the entire workspace with a single type of model. */
 #ifndef RF_MODELER_H
-#define RF_MODELER_H
+#define RF_MODELER_H 1
 
 #include "rf_string.h"
 
