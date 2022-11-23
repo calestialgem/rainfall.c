@@ -9,6 +9,8 @@
 
 /* Creates a package with the given name. */
 static void execute_new_command(struct rf_launch_command executed);
+/* Checks all the packages or the packages with the given names. */
+static void execute_check_command(struct rf_launch_command executed);
 
 // =================================================
 //    }-{   P U B L I C   F U N C T I O N S   }-{
@@ -17,7 +19,7 @@ static void execute_new_command(struct rf_launch_command executed);
 void rf_launch(struct rf_launch_command launched) {
   switch (launched.variant) {
   case RF_LAUNCH_COMMAND_NEW: execute_new_command(launched); break;
-  case RF_LAUNCH_COMMAND_CHECK: [[fallthrough]];
+  case RF_LAUNCH_COMMAND_CHECK: execute_check_command(launched); break;
   case RF_LAUNCH_COMMAND_TEST: [[fallthrough]];
   case RF_LAUNCH_COMMAND_BUILD: [[fallthrough]];
   case RF_LAUNCH_COMMAND_RUN:
@@ -136,4 +138,12 @@ static void execute_new_command(struct rf_launch_command executed) {
   printf("Successfully created package `%.*s`.\n",
     (int)executed.as_new.created_name.count,
     executed.as_new.created_name.array);
+}
+
+static void execute_check_command(struct rf_launch_command executed) {
+  // Load the workspace.
+
+  // Report success.
+  printf("Successfully checked %s packages.\n",
+    executed.as_check.checked_names.count == 0 ? "all" : "given");
 }

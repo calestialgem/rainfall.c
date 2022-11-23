@@ -12,7 +12,7 @@
       "preLaunchTask": "${defaultBuildTask}",
       "program": "${workspaceFolder}/build/rainfall-c.exe",
       "cwd": "${workspaceFolder}",
-      "args": ["-d", "res", "new", "Name"],
+      "args": ["-d", "res", "c", "Name"],
       "environment": [],
       "stopAtEntry": false,
       "console": "integratedTerminal"
@@ -26,7 +26,7 @@
       "preLaunchTask": "${defaultBuildTask}",
       "program": "${workspaceFolder}/build/rainfall-c",
       "cwd": "${workspaceFolder}",
-      "args": ["-d", "res", "new", "Name"],
+      "args": ["-d", "res", "c", "Name"],
       "environment": [],
       "stopAtEntry": false,
       "externalConsole": false,
