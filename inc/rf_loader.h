@@ -27,10 +27,12 @@ struct rf_loader {
   file_contents_buffer;
 
   struct {
-    /* Fixed array of models. */
-    struct rf_linear_model array[RF_SOURCE_MODELS_LIMIT];
+    /* Pointer to the first model if it exists. */
+    struct rf_linear_model* array;
     /* Number of models in the array. */
-    int                    count;
+    size_t                  count;
+    /* Maximum number of models that could fit the array. */
+    size_t                  limit;
   }
   /* Linear models of the sources. */
   models;

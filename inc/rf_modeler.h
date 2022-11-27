@@ -6,11 +6,6 @@
 
 #include <stddef.h>
 
-enum {
-  /* Maximum number of source files that could be modeled by the compiler. */
-  RF_SOURCE_MODELS_LIMIT = 1024,
-};
-
 /* Forest of sources and modules, where the roots are packages. The children
  * come before the parent. Modules are branches, while the sources are
  * leaves. */
@@ -23,9 +18,9 @@ struct rf_workspace {
 
     union {
       /* Identifier of the source model. */
-      int model_id;
+      size_t model_id;
       /* Number of sources and submodules that are directly under the module. */
-      int children_count;
+      size_t children_count;
     };
 
     /* Variant of the workspace node. */
