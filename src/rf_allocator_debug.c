@@ -9,20 +9,21 @@
 /* Recorded information about an allocation. */
 struct allocation {
   /* Location of the allocation. */
-  void*       block;
+  void*            block;
   /* Maximum size ever reached by the block. */
-  size_t      max_size;
-  /* Name of the file the allocation was done in. */
-  char const* file;
+  size_t           max_size;
+  /* Path of the source file the allocation was done in relative to the
+   * project's source directory. */
+  struct rf_string path;
   /* Number of the line the allocation was done at. */
-  unsigned    line;
+  unsigned         line;
   /* Number of times the allocation was reallocated with a different size. */
-  unsigned    reallocation_count;
+  unsigned         reallocation_count;
   /* Number of times the allocation was copied to a different location to
    * facilitate reallocation. */
-  unsigned    relocation_count;
+  unsigned         relocation_count;
   /* Whether the allocation is already freed. */
-  bool        is_freed;
+  bool             is_freed;
 };
 
 enum {
@@ -40,6 +41,8 @@ struct {
 /* Staticly stored list of allocations. */
 allocation_list;
 
+/* Reduces the path relative to the project's source directory. */
+static struct rf_string   reduce_path(char const* file);
 /* Returns the pointer to the allocation with the given block. Returns null
  * pointer when there is not an allocation with the given block. */
 static struct allocation* find_allocation(void* found_block);
@@ -55,12 +58,15 @@ bool rf_allocate(void** target, size_t size, char const* file, unsigned line) {
   // Get the information on the target block.
   struct allocation* previous = find_allocation(*target);
 
+  struct rf_string path = reduce_path(file);
+
   if (previous != NULL) {
     fprintf(stderr,
       "failure: Trying to allocate a block that is already allocated at "
-      "%s:%u!\n"
-      "info: Allocation was at %s:%u\n.",
-      file, line, previous->file, previous->line);
+      "%.*s:%u!\n"
+      "info: Allocation was at %.*s:%u\n.",
+      (int)path.count, path.array, line, (int)previous->path.count,
+      previous->path.array, previous->line);
     abort();
   }
 
@@ -71,7 +77,7 @@ bool rf_allocate(void** target, size_t size, char const* file, unsigned line) {
   // Record the allocation.
   push_allocation((struct allocation){.block = allocated_block,
     .max_size                                = size,
-    .file                                    = file,
+    .path                                    = path,
     .line                                    = line,
     .is_freed                                = false,
     .reallocation_count                      = 0,
@@ -87,20 +93,22 @@ bool rf_reallocate(void** target, size_t new_size, char const* file,
   // Get the information on the target block.
   struct allocation* previous = find_allocation(*target);
 
+  struct rf_string path = reduce_path(file);
+
   // If there is no record of it, report and abort.
   if (previous == NULL) {
     fprintf(stderr,
       "failure: Trying to reallocate a block that was not allocated at "
-      "%s:%u!\n",
-      file, line);
+      "%.*s:%u!\n",
+      (int)path.count, path.array, line);
     abort();
   }
 
   // If the block is already freed, report and abort.
   if (previous->is_freed) {
     fprintf(stderr,
-      "failure: Trying to reallocate a block that was freed at %s:%u!\n", file,
-      line);
+      "failure: Trying to reallocate a block that was freed at %.*s:%u!\n",
+      (int)path.count, path.array, line);
     abort();
   }
 
@@ -126,19 +134,21 @@ void rf_free(void** target, char const* file, unsigned line) {
   // Get the information on the target block.
   struct allocation* previous = find_allocation(*target);
 
+  struct rf_string path = reduce_path(file);
+
   // If there is no record of it, report and abort.
   if (previous == NULL) {
     fprintf(stderr,
-      "failure: Trying to free a block that was not allocated at %s:%u!\n",
-      file, line);
+      "failure: Trying to free a block that was not allocated at %.*s:%u!\n",
+      (int)path.count, path.array, line);
     abort();
   }
 
   // If it is already freed, report and abort.
   if (previous->is_freed) {
     fprintf(stderr,
-      "failure: Trying to free a block that was already freed at %s:%u!\n",
-      file, line);
+      "failure: Trying to free a block that was already freed at %.*s:%u!\n",
+      (int)path.count, path.array, line);
     abort();
   }
 
@@ -153,15 +163,10 @@ void rf_report_allocations(void) {
   for (size_t i = 0; i < allocation_list.count; i++) {
     struct allocation allocation = allocation_list.elements[i];
 
-    // Remove the parent directories upto the source folder.
-    struct rf_string path = rf_view_null_terminated(allocation.file);
-    rf_skip_prefix(&path,
-      rf_find_last_occurrence(path, rf_view_null_terminated("/src/")));
-
-    printf("[%zu] %s:%u: max: %zu reallocations: %u relocations: %u%s\n", i,
-      path.array, allocation.line, allocation.max_size,
-      allocation.reallocation_count, allocation.relocation_count,
-      allocation.is_freed ? "" : "LEAKED");
+    printf("[%zu] %.*s:%u: max: %zu reallocations: %u relocations: %u%s\n", i,
+      (int)allocation.path.count, allocation.path.array, allocation.line,
+      allocation.max_size, allocation.reallocation_count,
+      allocation.relocation_count, allocation.is_freed ? "" : "LEAKED");
   }
   putc('\n', stdout);
 }
@@ -169,6 +174,14 @@ void rf_report_allocations(void) {
 // ===================================================
 //    [+]   P R I V A T E   F U N C T I O N S   [+]
 // ===================================================
+
+static struct rf_string reduce_path(char const* file) {
+  // Remove the parent directories upto the source folder.
+  struct rf_string path = rf_view_null_terminated(file);
+  rf_skip_prefix(&path,
+    rf_find_last_occurrence(path, rf_view_null_terminated("/src/")));
+  return path;
+}
 
 static struct allocation* find_allocation(void* found_block) {
   for (size_t i = 0; i < allocation_list.count; i++) {
@@ -183,8 +196,8 @@ static void push_allocation(struct allocation pushed) {
   if (allocation_list.count == ALLOCATION_LIST_LIMIT) {
     fprintf(stderr,
       "failure: There are not any more space to track the allocation at "
-      "%s:%u!\n",
-      pushed.file, pushed.line);
+      "%.*s:%u!\n",
+      (int)pushed.path.count, pushed.path.array, pushed.line);
     abort();
   }
   allocation_list.elements[allocation_list.count++] = pushed;
