@@ -26,17 +26,13 @@ struct allocation {
   bool             is_freed;
 };
 
-enum {
-  /* Maximum number of allocations that could be contained in the list of
-     allocations. */
-  ALLOCATION_LIST_LIMIT = 8
-};
-
-struct {
-  /* Staticly stored array of elements in the list. */
-  struct allocation elements[ALLOCATION_LIST_LIMIT];
+static struct {
+  /* Pointer to the first allocation if it exists. */
+  struct allocation* array;
   /* Number of elements that are in the list. */
-  size_t            count;
+  size_t             count;
+  /* Maximum number of elements that fit to the array. */
+  size_t             limit;
 }
 /* Staticly stored list of allocations. */
 allocation_list;
@@ -161,7 +157,7 @@ void rf_free(void** target, char const* file, unsigned line) {
 void rf_report_allocations(void) {
   puts("\nAllocations:");
   for (size_t i = 0; i < allocation_list.count; i++) {
-    struct allocation allocation = allocation_list.elements[i];
+    struct allocation allocation = allocation_list.array[i];
 
     printf("[%zu] %.*s:%u: max: %zu reallocations: %u relocations: %u%s\n", i,
       (int)allocation.path.count, allocation.path.array, allocation.line,
@@ -185,20 +181,23 @@ static struct rf_string reduce_path(char const* file) {
 
 static struct allocation* find_allocation(void* found_block) {
   for (size_t i = 0; i < allocation_list.count; i++) {
-    if (allocation_list.elements[i].block == found_block) {
-      return allocation_list.elements + i;
+    if (allocation_list.array[i].block == found_block) {
+      return allocation_list.array + i;
     }
   }
   return NULL;
 }
 
 static void push_allocation(struct allocation pushed) {
-  if (allocation_list.count == ALLOCATION_LIST_LIMIT) {
-    fprintf(stderr,
-      "failure: There are not any more space to track the allocation at "
-      "%.*s:%u!\n",
-      (int)pushed.path.count, pushed.path.array, pushed.line);
-    abort();
+  if (allocation_list.count == allocation_list.limit) {
+    allocation_list.limit *= 2;
+    allocation_list.array = realloc(allocation_list.array,
+      allocation_list.limit * sizeof(struct allocation));
+    if (allocation_list.array == NULL) {
+      fprintf(stderr,
+        "failure: Cannot allocate memory to track allocations!\n");
+      abort();
+    }
   }
-  allocation_list.elements[allocation_list.count++] = pushed;
+  allocation_list.array[allocation_list.count++] = pushed;
 }
