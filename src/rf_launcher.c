@@ -72,8 +72,8 @@ static void execute_new_command(struct rf_new_command executed) {
 
   // Create a source file that is inside the package.
   struct rf_file library_file;
-  if (rf_open_file(&library_file, "wx", ".tr", 2, executed.created_name,
-        rf_view_null_terminated("Prelude"))) {
+  if (rf_open_file(&library_file, "wx", 3, executed.created_name,
+        rf_view_null_terminated("Prelude"), rf_view_null_terminated("tr"))) {
     fprintf(stderr,
       "failure: Cannot open prelude source `%.*s/Prelude.tr`!\n"
       "cause: %s\n",
@@ -100,8 +100,8 @@ static void execute_new_command(struct rf_new_command executed) {
 
   // Create a source file with an entry point.
   struct rf_file main_file;
-  if (rf_open_file(&main_file, "wx", ".tr", 2, executed.created_name,
-        rf_view_null_terminated("Main"))) {
+  if (rf_open_file(&main_file, "wx", 3, executed.created_name,
+        rf_view_null_terminated("Main"), rf_view_null_terminated("tr"))) {
     fprintf(stderr,
       "failure: Cannot open main source `%.*s/Main.tr`!\n"
       "cause: %s\n",

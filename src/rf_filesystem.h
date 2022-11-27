@@ -8,17 +8,26 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-/* Combination of path and stream to a file. This is necessary, because the file
- * paths must be null-terminated. `rf_string`s are not null-terminated and they
- * might be required to be joined together to create a path. Thus, the path is
- * dynamicly allocated and it is managed together with the path. */
+/* Information on a file with a stream to it. */
 struct rf_file {
-  /* Owned, null-terminated character array as the path to the file. The path
-   * might be relative or absolute. */
+  /* Null-terminated array of characters that holds the path to the file. Might
+   * be relative or absolute. */
   char* path;
   /* Owned stream to and from the file. The stream might be opened with any
    * mode. */
   FILE* stream;
+
+  /* Variant of a file. */
+  enum rf_file_variant {
+    /* A file that might be read from or written to as bytes. */
+    RF_FILE_DATA,
+    /* A file that contains other files. */
+    RF_FILE_DIRECTORY,
+    /* Any other form of file. */
+    RF_FILE_OTHER,
+  }
+  /* Variant of the file. */
+  variant;
 };
 
 // =================================================
@@ -32,14 +41,13 @@ bool rf_change_working_directory(struct rf_string path);
  * operation was not successful. Populates the `errno` on failure. */
 bool rf_create_directory(struct rf_string path);
 /* Opens the file at the path that is created by joining the given part strings,
- * whose count must be given, with directory separators in between and the given
- * extension juxtaposed at the end. Hence, the final path to the opened file
- * would be `<part1>/<part2>/.../<partN><extension>`. Writes its information to
- * the given target. Atleast a single part must be given and the number of
- * `rf_string`s must be equal to the given count. Returns whether the operation
+ * whose count must be given, with the given mode and writes the information on
+ * the file to the given target. The parts must end with the file name and file
+ * extension, which might be empty strings. Parts can start with zero or more of
+ * directory names, which cannot be empty strings. Returns whether the operation
  * was not successful. Populates the `errno` on failure. */
-bool rf_open_file(struct rf_file* target, char const* mode,
-  char const* extension, int part_count, ...);
+bool rf_open_file(struct rf_file* target, char const* mode, int part_count,
+  ...);
 /* Closes the given file and sets its pointers to `NULL`. Might fail; for
  * example, because closing a file flushes the buffered output. Returns whether
  * the operation was not successful. Populates the `errno` on failure. */

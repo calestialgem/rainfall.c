@@ -1,4 +1,4 @@
-/* Generated prelude of Name package. */
+/* Generated prelude of TestPackage package. */
 
 /* Returns a value for debugging the setup. */
 public function value(): int {

@@ -1,0 +1,6 @@
+/* Access the prelude of TestPackage for debugging the setup. */
+import TestPackage;
+
+entrypoint {
+  return TestPackage.value;
+}

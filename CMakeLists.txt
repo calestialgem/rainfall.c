@@ -15,7 +15,7 @@ add_executable(${PROJECT_NAME}
   src/rf_filesystem.c
   src/rf_modeler.c
   src/rf_launcher.c
-  srf/rf_loader.c
+  src/rf_loader.c
 )
 
 # Add project source root to include directories.

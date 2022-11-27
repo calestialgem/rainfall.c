@@ -1,6 +1,0 @@
-/* Access the prelude of Name for debugging the setup. */
-import Name;
-
-entrypoint {
-  return Name.value;
-}
