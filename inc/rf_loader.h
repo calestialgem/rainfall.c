@@ -42,9 +42,9 @@ struct rf_loader {
 //    }-{   P U B L I C   F U N C T I O N S   }-{
 // =================================================
 
-/* Loads the workspace using the given loader to the given target. */
-enum rf_status rf_load_workspace(struct rf_loader* loader,
-  struct rf_workspace*                             target);
+/* Loads the workspace to the given loader and the workspace. */
+enum rf_status rf_load_workspace(struct rf_loader* target_loader,
+  struct rf_workspace*                             target_workspace);
 /* Frees the memory resources owned by the given loader. */
 void           rf_free_loader(struct rf_loader* freed);
 

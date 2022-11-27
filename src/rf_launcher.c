@@ -1,6 +1,8 @@
 #include "rf_launcher.h"
 
 #include "rf_filesystem.h"
+#include "rf_loader.h"
+#include "rf_modeler.h"
 #include "rf_string.h"
 
 #include <errno.h>
@@ -135,6 +137,13 @@ static void execute_new_command(struct rf_new_command executed) {
 
 static void execute_check_command(struct rf_check_command executed) {
   // Load the workspace.
+  struct rf_loader    loader;
+  struct rf_workspace workspace;
+  rf_load_workspace(&loader, &workspace);
+
+  // Free used resources.
+  rf_free_loader(&loader);
+  rf_free_workspace(&workspace);
 
   // Report success.
   printf("info: Successfully checked %s.\n",

@@ -6,8 +6,8 @@
 //    }-{   P U B L I C   F U N C T I O N S   }-{
 // =================================================
 
-enum rf_status rf_load_workspace(struct rf_loader* loader,
-  struct rf_workspace*                             target) {}
+enum rf_status rf_load_workspace(struct rf_loader* target_loader,
+  struct rf_workspace*                             target_workspace) {}
 
 void rf_free_loader(struct rf_loader* freed) {
   // Free the file contents.
