@@ -21,7 +21,7 @@ bool rf_push_workspace_node(struct rf_workspace* target,
 }
 
 void rf_free_workspace(struct rf_workspace* freed) {
-  RF_FREE(&freed->array);
+  RF_FREE_ARRAY(&freed->array, freed->limit, struct rf_workspace_node);
   freed->count = 0;
   freed->limit = 0;
 }

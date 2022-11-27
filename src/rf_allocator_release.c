@@ -28,7 +28,7 @@ bool rf_reallocate(void** target, size_t new_size, char const*, unsigned) {
   return false;
 }
 
-void rf_free(void** target, char const*, unsigned) {
+void rf_free(void** target, size_t, char const*, unsigned) {
   // If the target is null, return.
   if (*target == NULL) { return; }
 
@@ -37,7 +37,7 @@ void rf_free(void** target, char const*, unsigned) {
   *target = NULL;
 }
 
-void rf_report_allocations(void) {
+void rf_finalize_allocations(void) {
   // Release allocator does not record or check allocations for maximum
   // performance.
 }

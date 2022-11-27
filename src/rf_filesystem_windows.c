@@ -65,7 +65,7 @@ bool rf_open_file(struct rf_file* target, char const* mode, int part_count,
   total_length++;
 
   // Allocate the path buffer.
-  if (RF_ALLOCATE(&target->path, total_length)) {
+  if (RF_ALLOCATE_ARRAY(&target->path, total_length, char)) {
     target->stream = NULL;
     return true;
   }
@@ -101,7 +101,7 @@ bool rf_open_file(struct rf_file* target, char const* mode, int part_count,
   // manually assigned to `errno`.
   int error_code = fopen_s(&target->stream, target->path, mode);
   if (error_code != 0) {
-    RF_FREE(target->path);
+    RF_FREE_ARRAY(target->path, total_length, char);
     target->path   = NULL;
     target->stream = NULL;
     errno          = error_code;
@@ -111,7 +111,8 @@ bool rf_open_file(struct rf_file* target, char const* mode, int part_count,
 }
 
 bool rf_close_file(struct rf_file* target) {
-  RF_FREE(&target->path);
+  RF_FREE_ARRAY(&target->path, rf_view_null_terminated(target->path).count + 1,
+    char);
 
   // Close the file and return the error status.
   int status     = fclose(target->stream);

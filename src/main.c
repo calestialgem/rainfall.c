@@ -134,10 +134,11 @@ int main(int arguments_count, char const* const* arguments_array) {
   case RF_CANCELED: break;
   case RF_FAILED: exit_code = EXIT_FAILURE; break;
   }
-  RF_FREE(&arguments_as_string.array);
+  RF_FREE_ARRAY(&arguments_as_string.array, arguments_as_string.count,
+    struct rf_string);
 
-  // Report allocations and exit.
-  rf_report_allocations();
+  // Finalize allocations and exit.
+  rf_finalize_allocations();
   return exit_code;
 }
 

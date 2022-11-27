@@ -11,12 +11,14 @@ enum rf_status rf_load_workspace(struct rf_loader* target_loader,
 
 void rf_free_loader(struct rf_loader* freed) {
   // Free the file contents.
-  RF_FREE(&freed->file_contents_buffer.array);
+  RF_FREE_ARRAY(&freed->file_contents_buffer.array,
+    freed->file_contents_buffer.limit, char);
   freed->file_contents_buffer.count = 0;
   freed->file_contents_buffer.limit = 0;
 
   // Free the models.
-  RF_FREE(&freed->models.array);
+  RF_FREE_ARRAY(&freed->models.array, freed->models.limit,
+    struct rf_linear_model);
   freed->models.count = 0;
   freed->models.limit = 0;
 }
