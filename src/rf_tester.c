@@ -1,4 +1,5 @@
-#include "rf_tester.h"
+#include "rainfall.h"
+#include "rf_internal.h"
 
 #include <stdio.h>
 #include <stdlib.h>

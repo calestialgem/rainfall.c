@@ -1,4 +1,5 @@
-#include "rf_allocator.h"
+#include "rainfall.h"
+#include "rf_internal.h"
 
 // Conditionally compile the debug or release version depending on the flag.
 #ifndef NDEBUG

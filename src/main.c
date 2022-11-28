@@ -1,9 +1,5 @@
-#include "rf_allocator.h"
-#include "rf_filesystem.h"
-#include "rf_launcher.h"
-#include "rf_status.h"
-#include "rf_string.h"
-#include "rf_tester.h"
+#include "rainfall.h"
+#include "rf_internal.h"
 
 #include <errno.h>
 #include <stdbool.h>

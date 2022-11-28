@@ -1,4 +1,5 @@
-#include "rf_filesystem.h"
+#include "rainfall.h"
+#include "rf_internal.h"
 
 // Compile the implementation for the correct platform.
 #ifdef _WIN32
