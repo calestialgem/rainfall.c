@@ -46,7 +46,10 @@ struct rf_directory_entry {
 //    }-{   P U B L I C   F U N C T I O N S   }-{
 // =================================================
 
-/* Create a path by joining the given parts. There must be at least two parts.
+/* Creates a path by copying the given string and adding a null-termination
+ * character after it. */
+struct rf_path rf_convert_to_path(struct rf_string converted);
+/* Creates a path by joining the given parts. There must be at least two parts.
  * The last two parts must be the file name and extension, and one of them can
  * be an empty string. Before them, there could be zero or more directory names,
  * which cannot be empty strings. */
