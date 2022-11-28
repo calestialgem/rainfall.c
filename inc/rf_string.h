@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-/* Immutable view of linearly stored group of characters. The string is NOT
- * guaranteed to be null-terminated. */
+/* Immutable view of linearly stored group of UTF-8 encoded characters. The
+ * string is NOT guaranteed to be null-terminated. */
 struct rf_string {
   /* Immutable pointer to the first character in the string if it exists. Can be
    * an invalid pointer if the count is 0. */
