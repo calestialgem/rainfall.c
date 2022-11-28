@@ -8,25 +8,37 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-/* Information on a file with a stream to it. */
-struct rf_file {
-  /* Null-terminated array of characters that holds the path to the file. Might
-   * be relative or absolute. */
-  char* path;
-  /* Owned stream to and from the file. The stream might be opened with any
-   * mode. */
-  FILE* stream;
+/* Path to a file, which is a null terminated string.*/
+struct rf_path {
+  /* Pointer to the first character in the path if it exists. Fallowed by a
+   * null-termination. */
+  char*  array;
+  /* Number of characters in the path. Does not include the null-termination. */
+  size_t count;
+};
 
-  /* Variant of a file. */
-  enum rf_file_variant {
-    /* A file that might be read from or written to as bytes. */
-    RF_FILE_DATA,
-    /* A file that contains other files. */
-    RF_FILE_DIRECTORY,
-    /* Any other form of file. */
-    RF_FILE_OTHER,
+/* Implementation defined data for walking over the entries in a directory. */
+struct rf_directory_walker;
+
+/* Convience type alias for pointer to the incomplete type
+ * `rf_directory_walker`, to be used outside of filesystem implementation. */
+typedef struct rf_directory_walker* rf_directory_walker_t;
+
+/* Information about an entry in a directory. */
+struct rf_directory_entry {
+  /* Path to the entry. */
+  struct rf_path path;
+
+  /* Variant of an entry. */
+  enum rf_directory_entry_variant {
+    /* File. */
+    RF_FILE_DIRECTORY_ENTRY,
+    /* Subdirectory. */
+    RF_SUBDIRECTORY_DIRECTORY_ENTRY,
+    /* Not a file or subdirectory. */
+    RF_OTHER_DIRECTORY_ENTRY,
   }
-  /* Variant of the file. */
+  /* Variant of the entry. */
   variant;
 };
 
@@ -34,23 +46,34 @@ struct rf_file {
 //    }-{   P U B L I C   F U N C T I O N S   }-{
 // =================================================
 
-/* Changes the current working directory to the given path. Returns whether the
- * operation was not successful. Populates the `errno` on failure. */
-bool rf_change_working_directory(struct rf_string path);
-/* Creates a new directory at the given path. Returns whether the
- * operation was not successful. Populates the `errno` on failure. */
-bool rf_create_directory(struct rf_string path);
-/* Opens the file at the path that is created by joining the given part strings,
- * whose count must be given, with the given mode and writes the information on
- * the file to the given target. The parts must end with the file name and file
- * extension, which might be empty strings. Parts can start with zero or more of
- * directory names, which cannot be empty strings. Returns whether the operation
- * was not successful. Populates the `errno` on failure. */
-bool rf_open_file(struct rf_file* target, char const* mode, int part_count,
-  ...);
-/* Closes the given file and sets its pointers to `NULL`. Might fail; for
- * example, because closing a file flushes the buffered output. Returns whether
- * the operation was not successful. Populates the `errno` on failure. */
-bool rf_close_file(struct rf_file* target);
+/* Create a path by joining the given parts. There must be at least two parts.
+ * The last two parts must be the file name and extension, and one of them can
+ * be an empty string. Before them, there could be zero or more directory names,
+ * which cannot be empty strings. */
+struct rf_path rf_join_path(int parts_count,
+  struct rf_string const        parts[static parts_count]);
+/* Frees the memory resources used by the given path. */
+void           rf_free_path(struct rf_path* freed);
+
+/* Changes the current working directory to the given path. */
+void rf_change_working_directory(struct rf_path path);
+/* Creates a new directory at the given path. Would accept the already existing
+ * directory at the given path if the flag is true. */
+void rf_create_directory(struct rf_path path, bool accept_existing);
+
+/* Creates a new directory walker for the directory at the given path. */
+rf_directory_walker_t rf_walk_directory(struct rf_path path);
+/* Frees the memory resources used by the given directory walker. */
+void                  rf_free_directory_walker(rf_directory_walker_t* freed);
+/* Returns whether there is an entry that is not walked in the directory and if
+ * true, sets it to the given target. */
+bool                  rf_walk_file(rf_directory_walker_t walker,
+                   struct rf_directory_entry*            target);
+
+/* Opens the file at the given path with the given mode and returns the
+ * resulting stream. */
+FILE* rf_open_file(struct rf_path path, char const* mode);
+/* Closes the given stream. */
+void  rf_close_file(FILE** closed);
 
 #endif // RF_FILESYSTEM_H
